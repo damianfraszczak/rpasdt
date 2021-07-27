@@ -5,10 +5,6 @@ ignore =
     E501,  # Line too long
     W503,  # Line break occurred before a binary operator
     W504,  # Line break occurred after a binary operator
-    D104,  # Missing docstring in public package
-    D105,  # Missing docstring in magic method
-    D106,  # Missing docstring in public nested class
-    D107,  # Missing docstring in __init__
     D200,  # One-line docstring should fit on one line with quotes
     D202,  # No blank lines allowed after function docstring
     D205,  # 1 blank line required between summary line and description
