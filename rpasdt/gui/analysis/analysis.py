@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import List, Tuple
 
 from PyQt5 import QtWidgets

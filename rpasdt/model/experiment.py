@@ -1,7 +1,7 @@
-"""Models """
+"""Models."""
 from copy import copy
 from dataclasses import dataclass
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 from networkx import Graph
 
@@ -53,11 +53,11 @@ class GraphConfig:
 
 @dataclass
 class DiffusionExperiment:
-    source_graph: Graph = None
+    source_graph: Graph
     diffusion_graph: Graph = Graph()
     graph_config: GraphConfig = GraphConfig()
     diffusion_type: DiffusionTypeEnum = DiffusionTypeEnum.SI
-    diffusion_model_properties: Dict = None
+    diffusion_model_properties: Optional[Dict] = None
     diffusion_iteration_bunch: int = 200
 
     @property
@@ -75,6 +75,6 @@ class Experiment:
 
     name: str = "Karate club simulation"
     graph_type: GraphTypeEnum = GraphTypeEnum.KARATE_CLUB
-    graph_type_properties: Dict = None
-    graph: Graph = None
+    graph_type_properties: Optional[Dict] = None
+    graph: Optional[Graph] = None
     graph_config: GraphConfig = GraphConfig()

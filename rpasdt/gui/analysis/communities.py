@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from matplotlib.lines import Line2D
 
-from rpasdt.gui.analysis.analysis import AnalysisDialog
 from rpasdt.gui.analysis.models import CommunityAnalysisData
 from rpasdt.gui.mathplotlib_components import NetworkxGraphPanel
 

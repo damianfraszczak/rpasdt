@@ -5,7 +5,7 @@ from ndlib.models import DiffusionModel
 
 from rpasdt.algorithm.taxonomies import GraphTypeEnum
 from rpasdt.common.utils import eval_if_str
-from rpasdt.gui.dynamic_form.taxonomies import (
+from rpasdt.gui.dynamic_form.models import (
     DynamicFormConfig,
     FieldInputType,
     FormFieldConfig,

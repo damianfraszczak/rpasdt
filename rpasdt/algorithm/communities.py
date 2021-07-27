@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional
 
 from community import community_louvain
-from networkx import Graph, community, k_core, k_shell
+from networkx import Graph, community, k_shell
 
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.common.utils import group_dict_by_values
@@ -32,12 +32,6 @@ def community_k_core_local(
     graph: Graph, k: Optional[int] = None, core_number: Optional[int] = None
 ) -> Dict[int, List[int]]:
     return {0: k_shell(G=graph, k=k, core_number=core_number).nodes()}
-
-
-def community_k_core_local(
-    graph: Graph, k: Optional[int] = None, core_number: Optional[int] = None
-) -> Dict[int, List[int]]:
-    return {0: k_core(G=graph, k=k, core_number=core_number).nodes()}
 
 
 def community_louvain_local(

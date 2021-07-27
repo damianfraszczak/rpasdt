@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (
 
 from rpasdt.common.enums import StringChoiceEnum
 from rpasdt.gui.dynamic_form.components import QColorField
-from rpasdt.gui.dynamic_form.taxonomies import FieldInputType, FormFieldConfig
+from rpasdt.gui.dynamic_form.models import FieldInputType, FormFieldConfig
 
 logger = logging.getLogger(__name__)
 

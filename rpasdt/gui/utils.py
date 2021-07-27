@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
 )
 
 from rpasdt.gui.dynamic_form.forms import DynamicDialog
-from rpasdt.gui.dynamic_form.taxonomies import DynamicFormConfig
+from rpasdt.gui.dynamic_form.models import DynamicFormConfig
 from rpasdt.gui.threading import QThreadPool, Worker
 from rpasdt.model.constants import APP_ICON_PATH
 
