@@ -47,16 +47,16 @@ def get_float_field(range: Optional[Tuple]):
     return box
 
 
-def get_component_type(type: type):
-    if issubclass(type, Enum):
+def get_component_type(cls: type):
+    if issubclass(cls, Enum):
         return FieldInputType.COMBOBOX
-    elif issubclass(type, bool):
+    elif issubclass(cls, bool):
         return FieldInputType.CHECKBOX
-    elif issubclass(type, int):
+    elif issubclass(cls, int):
         return FieldInputType.INTEGER
-    elif issubclass(type, float):
+    elif issubclass(cls, float):
         return FieldInputType.DOUBLE
-    elif issubclass(type, str):
+    elif issubclass(cls, str):
         return FieldInputType.SINGLE_TEXT
 
 

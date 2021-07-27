@@ -12,3 +12,4 @@ SUSCEPTIBLE_NODE_COLOR = NODE_COLOR
 ESTIMATED_SOURCE_NODE_COLOR = "#FFD700"
 RESOURCES_DIR = os.path.join(Path(__file__).parent.parent.absolute(), "resources")
 APP_ICON_PATH = os.path.join(RESOURCES_DIR, "icon.png")
+APP_NAME = "Rumor propagation and detection toolkit"

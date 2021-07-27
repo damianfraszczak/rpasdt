@@ -75,6 +75,6 @@ class Experiment:
 
     name: str = "Karate club simulation"
     graph_type: GraphTypeEnum = GraphTypeEnum.KARATE_CLUB
-    graph_type_properties: Optional[Dict] = None
-    graph: Optional[Graph] = None
+    graph_type_properties: Dict = None
+    graph: Graph = None
     graph_config: GraphConfig = GraphConfig()

@@ -1,5 +1,6 @@
 from typing import Any, Optional
 
+from PyQt5.QtCore import QThreadPool
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QAction,
@@ -11,7 +12,7 @@ from PyQt5.QtWidgets import (
 
 from rpasdt.gui.dynamic_form.forms import DynamicDialog
 from rpasdt.gui.dynamic_form.models import DynamicFormConfig
-from rpasdt.gui.threading import QThreadPool, Worker
+from rpasdt.gui.threading import Worker
 from rpasdt.model.constants import APP_ICON_PATH
 
 
