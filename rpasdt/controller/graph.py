@@ -32,7 +32,7 @@ class GraphController:
 
     def handler_edit_graph_config(self):
         graph_config = show_dynamic_dialog(
-            object=self.graph_config, title=f"Edit graph config"
+            object=self.graph_config, title="Edit graph config"
         )
         if graph_config:
             graph_config.clear()

@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 from rpasdt.gui.analysis.analysis import (
-    AnalysisDialog,
     AnalysisNetworkGraphPanel,
     BaseAnalysisDialog,
 )

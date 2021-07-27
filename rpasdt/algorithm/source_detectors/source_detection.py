@@ -1,4 +1,3 @@
-import networkx as nx
 from networkx import Graph
 
 from rpasdt.algorithm.source_detectors.centrality import (

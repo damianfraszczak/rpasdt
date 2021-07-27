@@ -7,12 +7,11 @@ from rpasdt.controller.controllers import (
 )
 from rpasdt.controller.diffusion import DiffusionGraphController
 from rpasdt.controller.graph import GraphController
-from rpasdt.gui.dynamic_form.taxonomies import DynamicFormConfig
+from rpasdt.gui.dynamic_form.models import DynamicFormConfig
 from rpasdt.gui.utils import run_long_task, show_dynamic_dialog
 from rpasdt.model.experiment import DiffusionExperiment, Experiment
 from rpasdt.network.models import NodeAttribute
 from rpasdt.network.networkx_utils import (
-    get_graph_form_field_config,
     set_node_attributes,
     show_graph_config_dialog,
 )

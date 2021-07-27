@@ -9,10 +9,7 @@ from rpasdt.form_utils import (
     GraphTypeToFormFieldsConfigMap,
     get_diffusion_model_fields_config,
 )
-from rpasdt.gui.dynamic_form.taxonomies import (
-    DynamicFormConfig,
-    FormFieldConfig,
-)
+from rpasdt.gui.dynamic_form.models import DynamicFormConfig, FormFieldConfig
 from rpasdt.gui.utils import show_dynamic_dialog
 from rpasdt.network.models import NodeAttribute
 

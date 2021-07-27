@@ -98,4 +98,3 @@ class CommunityBasedSourceDetector(SourceDetector, ABC):
             sort_dict_by_value(nodes_dict)[0]
             for cluster, nodes_dict in self.estimate_sources().items()
         ]
-        return {source: max_val for source in sources}

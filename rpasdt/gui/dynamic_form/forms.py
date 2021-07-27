@@ -12,10 +12,7 @@ from PyQt5.QtWidgets import (
 )
 
 from rpasdt.common.utils import get_object_value, set_object_value
-from rpasdt.gui.dynamic_form.taxonomies import (
-    DynamicFormConfig,
-    FormFieldConfig,
-)
+from rpasdt.gui.dynamic_form.models import DynamicFormConfig, FormFieldConfig
 from rpasdt.gui.dynamic_form.utils import (
     get_component_for_field_config,
     get_component_value,

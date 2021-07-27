@@ -9,7 +9,7 @@ from rpasdt.gui.analysis.analysis import MainNetworkGraphPanel
 from rpasdt.gui.analysis.diffusion import DiffusionGraphPanel
 from rpasdt.gui.analysis.source_detection import SourceDetectionDialog
 from rpasdt.gui.utils import create_action
-from rpasdt.model.constants import APP_ICON_PATH
+from rpasdt.model.constants import APP_ICON_PATH, APP_NAME
 from rpasdt.model.experiment import DiffusionExperiment, Experiment
 
 
@@ -74,7 +74,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.mdi = QMdiArea()
         self.setCentralWidget(self.mdi)
         self.showMaximized()
-        self.setWindowTitle("Rumour source detector toolkit")
+        self.setWindowTitle(APP_NAME)
         self.setWindowIcon(QIcon(APP_ICON_PATH))
 
         self.diffusion_widget = None

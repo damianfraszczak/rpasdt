@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (
 
 from rpasdt.common.enums import StringChoiceEnum
 from rpasdt.gui.dynamic_form.components import QColorField
-from rpasdt.gui.dynamic_form.taxonomies import FieldInputType, FormFieldConfig
+from rpasdt.gui.dynamic_form.models import FieldInputType, FormFieldConfig
 
 logger = logging.getLogger(__name__)
 
@@ -47,16 +47,16 @@ def get_float_field(range: Optional[Tuple]):
     return box
 
 
-def get_component_type(type: type):
-    if issubclass(type, Enum):
+def get_component_type(cls: type):
+    if issubclass(cls, Enum):
         return FieldInputType.COMBOBOX
-    elif issubclass(type, bool):
+    elif issubclass(cls, bool):
         return FieldInputType.CHECKBOX
-    elif issubclass(type, int):
+    elif issubclass(cls, int):
         return FieldInputType.INTEGER
-    elif issubclass(type, float):
+    elif issubclass(cls, float):
         return FieldInputType.DOUBLE
-    elif issubclass(type, str):
+    elif issubclass(cls, str):
         return FieldInputType.SINGLE_TEXT
 
 

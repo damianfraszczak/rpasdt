@@ -4,8 +4,8 @@ import matplotlib
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import networkx as nx
+from PyQt5.QtWidgets import QWidget
 
-from rpasdt.gui.analysis.analysis import AnalysisDialog
 from rpasdt.gui.analysis.models import AnalysisData
 from rpasdt.gui.mathplotlib_components import NetworkxGraphPanel
 
@@ -24,7 +24,7 @@ class CentralityGraphPanel(NetworkxGraphPanel):
         self,
         controller: "GraphController",
         data: AnalysisData,
-        parent: typing.Optional["QWidget"] = None,
+        parent: typing.Optional[QWidget] = None,
     ) -> None:
         self.data = data
         super().__init__(controller=controller, parent=parent)

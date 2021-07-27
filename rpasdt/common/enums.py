@@ -89,9 +89,6 @@ class ChoiceEnumMeta(enum.EnumMeta):
         # pylint: disable=not-an-iterable
         return tuple(obj.label for obj in cls)
 
-    def __str__(self) -> str:
-        return self.label
-
 
 class StringEnum(six.text_type, enum.Enum):
     """Enum where members are strings."""
