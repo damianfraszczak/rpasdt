@@ -9,12 +9,9 @@ from rpasdt.model.experiment import GraphConfig
 
 
 class GraphController:
-    graph_panel: 'NetworkxGraphPanel'
+    graph_panel: "NetworkxGraphPanel"
 
-    def __init__(self,
-                 window: 'MainWindow',
-                 graph: Graph,
-                 graph_config: GraphConfig):
+    def __init__(self, window: "MainWindow", graph: Graph, graph_config: GraphConfig):
         self.window = window
         self.graph = graph.copy()
         self.graph_config = copy(graph_config)
@@ -35,8 +32,7 @@ class GraphController:
 
     def handler_edit_graph_config(self):
         graph_config = show_dynamic_dialog(
-            object=self.graph_config,
-            title=f'Edit graph config'
+            object=self.graph_config, title=f"Edit graph config"
         )
         if graph_config:
             graph_config.clear()
@@ -47,7 +43,10 @@ class GraphController:
 
     def handler_graph_node_clicked(self, node_index):
         node = self.graph.nodes[node_index]
-        if show_dynamic_dialog(object=node, config=self.get_node_edit_form_config(node_index=node_index, node=node)):
+        if show_dynamic_dialog(
+            object=node,
+            config=self.get_node_edit_form_config(node_index=node_index, node=node),
+        ):
             self.handler_graph_node_edited(node)
 
     def handler_graph_node_edited(self, node):

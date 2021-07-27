@@ -1,13 +1,13 @@
+import networkx as nx
 import numpy as np
 from networkx import Graph
-import networkx as nx
 
-from rpasdt.algorithm.source_detectors.common import CommunityBasedSourceDetector
+from rpasdt.algorithm.source_detectors.common import (
+    CommunityBasedSourceDetector,
+)
 
 
-class NetSleuthCommunityBasedSourceDetector(
-    CommunityBasedSourceDetector):
-
+class NetSleuthCommunityBasedSourceDetector(CommunityBasedSourceDetector):
     def find_sources_in_community(self, graph: Graph):
         nodes = np.array(graph.nodes())
         L = nx.laplacian_matrix(graph).todense().A

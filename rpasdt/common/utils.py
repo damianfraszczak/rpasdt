@@ -1,6 +1,7 @@
 import ast
 from collections import defaultdict
-from typing import Optional, Any, Dict, List
+from typing import Any, Dict, List, Optional
+
 
 def object_to_dict(object: Any) -> dict:
     return object.__dict__
@@ -42,9 +43,8 @@ def eval_if_str(val: Any):
     return val
 
 
-def format_label(string: str,
-                 required_words: Optional[List[str]] = None) -> str:
-    string = string.replace('_', ' ')
+def format_label(string: str, required_words: Optional[List[str]] = None) -> str:
+    string = string.replace("_", " ")
     # if required_words:
     #     for word in (for word in required_words if word not in string):
     #         string += f' {word}'
@@ -52,7 +52,7 @@ def format_label(string: str,
 
 
 def multi_sum(iterable, *attributes, **kwargs):
-    sums = dict.fromkeys(attributes, kwargs.get('start', 0))
+    sums = dict.fromkeys(attributes, kwargs.get("start", 0))
     for it in iterable:
         for attr in attributes:
             sums[attr] += getattr(it, attr)

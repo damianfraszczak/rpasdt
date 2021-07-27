@@ -1,35 +1,50 @@
 import typing
 from typing import Any
 
-from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtWidgets import QWidget, QFormLayout, QDialog, QDialogButtonBox, \
-    QVBoxLayout, QLabel
+from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QFormLayout,
+    QLabel,
+    QVBoxLayout,
+    QWidget,
+)
 
 from rpasdt.common.utils import get_object_value, set_object_value
-from rpasdt.gui.dynamic_form.taxonomies import FormFieldConfig, DynamicFormConfig
-from rpasdt.gui.dynamic_form.utils import get_field_config, \
-    get_component_for_field_config, set_component_value, \
-    get_component_value
+from rpasdt.gui.dynamic_form.taxonomies import (
+    DynamicFormConfig,
+    FormFieldConfig,
+)
+from rpasdt.gui.dynamic_form.utils import (
+    get_component_for_field_config,
+    get_component_value,
+    get_field_config,
+    set_component_value,
+)
 from rpasdt.model.constants import APP_ICON_PATH
 
 
 def _get_help_icon(text: str):
     label = QLabel(text)
-    label.setFont(QFont('Times', 8))
+    label.setFont(QFont("Times", 8))
     label.setStyleSheet("color: grey;font-style: italic;")
     return label
 
 
 class DynamicForm(QWidget):
-
-    def __init__(self,
-                 object: Any,
-                 field_config: typing.Dict[str, FormFieldConfig] = None,
-                 parent: typing.Optional['QWidget'] = None) -> None:
+    def __init__(
+        self,
+        object: Any,
+        field_config: typing.Dict[str, FormFieldConfig] = None,
+        parent: typing.Optional["QWidget"] = None,
+    ) -> None:
         super().__init__(parent)
         self.object: Any = object
         self.field_config: dict[str, FormFieldConfig] = {
-            **get_field_config(object), **(field_config or {})}
+            **get_field_config(object),
+            **(field_config or {}),
+        }
 
         self.field_row_map: dict = {}
         self.field_component_map: dict = {}
@@ -52,33 +67,37 @@ class DynamicForm(QWidget):
 
     def copy_data_to_fields(self):
         for field_name, component in self.field_component_map.items():
-            value = get_object_value(self.object, field_name) or \
-                    self.field_config[field_name].default_value
-            set_component_value(component=component,
-                                value=value,
-                                options=self.field_config[field_name].options)
+            value = (
+                get_object_value(self.object, field_name)
+                or self.field_config[field_name].default_value
+            )
+            set_component_value(
+                component=component,
+                value=value,
+                options=self.field_config[field_name].options,
+            )
 
     def copy_fields_to_data(self):
         for field_name, component in self.field_component_map.items():
             value = get_component_value(
                 component=component,
                 type=self.field_config[field_name].inner_type,
-                options=self.field_config[field_name].options
+                options=self.field_config[field_name].options,
             )
             set_object_value(self.object, field_name, value)
 
 
 class DynamicDialog(QDialog):
-
-    def __init__(self,
-                 object: Any,
-                 config: typing.Optional[DynamicFormConfig] = None,
-                 parent: typing.Optional['QWidget'] = None) -> None:
+    def __init__(
+        self,
+        object: Any,
+        config: typing.Optional[DynamicFormConfig] = None,
+        parent: typing.Optional["QWidget"] = None,
+    ) -> None:
         super().__init__(parent)
         self.config = config or DynamicFormConfig()
         # creating a dialog button for ok and cancel
-        self.buttonBox = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
 
         # adding action when form is accepted
         self.buttonBox.accepted.connect(self.save)
@@ -88,10 +107,9 @@ class DynamicDialog(QDialog):
 
         # creating a vertical layout
         mainLayout = QVBoxLayout()
-        self.form = DynamicForm(parent=parent,
-                                object=object,
-                                field_config=self.config.field_config
-                                )
+        self.form = DynamicForm(
+            parent=parent, object=object, field_config=self.config.field_config
+        )
 
         # adding form group box to the layout
         mainLayout.addWidget(self.form)

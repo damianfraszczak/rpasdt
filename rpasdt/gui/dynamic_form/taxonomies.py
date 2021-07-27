@@ -1,6 +1,5 @@
-from typing import List, Tuple, Dict, Union, Callable, Optional
-
 from dataclasses import dataclass
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from rpasdt.common.enums import StringChoiceEnum
 
@@ -20,8 +19,8 @@ class FieldInputType(StringChoiceEnum):
 @dataclass
 class FormFieldConfig:
     field_name: str
-    label: str = ''
-    help_text: str = ''
+    label: str = ""
+    help_text: str = ""
     type: FieldInputType = FieldInputType.SINGLE_TEXT
     default_value: any = None
     options: List[Tuple] = None
@@ -33,6 +32,6 @@ class FormFieldConfig:
 
 @dataclass
 class DynamicFormConfig:
-    title: str = ''
+    title: str = ""
     field_config: Dict[str, FormFieldConfig] = None
     read_only_fields: Optional[List[str]] = None

@@ -8,7 +8,6 @@ from rpasdt.algorithm.source_detectors.common import SourceDetector
 
 
 class DynamicAgeSourceDetector(SourceDetector):
-
     def estimate_sources(self) -> Dict[int, Union[int, Dict[int, float]]]:
         graph = self.IG
         A = nx.adjacency_matrix(graph).todense().A

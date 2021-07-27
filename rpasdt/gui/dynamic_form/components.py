@@ -1,14 +1,16 @@
 import typing
 
-from PyQt5.QtWidgets import QPushButton, QWidget, QColorDialog
+from PyQt5.QtWidgets import QColorDialog, QPushButton, QWidget
 
 
 class QColorField(QPushButton):
-    DEFAULT_COLOR = '#000000'
+    DEFAULT_COLOR = "#000000"
 
-    def __init__(self,
-                 color: typing.Optional[str] = DEFAULT_COLOR,
-                 parent: typing.Optional[QWidget] = None) -> None:
+    def __init__(
+        self,
+        color: typing.Optional[str] = DEFAULT_COLOR,
+        parent: typing.Optional[QWidget] = None,
+    ) -> None:
         super().__init__(parent)
         self.color = color
 

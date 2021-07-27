@@ -11,4 +11,3 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ../rpasdt:/app/rpasdt
       - ../dist:/app/rpasdt/dist
-

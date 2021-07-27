@@ -6,8 +6,9 @@ from PyQt5.QtCore import Qt
 
 
 class ListTableModel(QtCore.QAbstractTableModel):
-
-    def __init__(self, data: typing.List[typing.List[typing.Any]], columns: typing.List[str]):
+    def __init__(
+        self, data: typing.List[typing.List[typing.Any]], columns: typing.List[str]
+    ):
         super(ListTableModel, self).__init__()
         self._data = data
         self._columns = columns
@@ -42,7 +43,9 @@ class ListTableModel(QtCore.QAbstractTableModel):
         # the length (only works if all rows are an equal length)
         return len(self._columns)
 
-    def headerData(self, section: int, orientation: Qt.Orientation, role: int = ...) -> typing.Any:
+    def headerData(
+        self, section: int, orientation: Qt.Orientation, role: int = ...
+    ) -> typing.Any:
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
                 return self._columns[section]

@@ -29,6 +29,7 @@ class ChoiceEnumMeta(enum.EnumMeta):
         if not already_applied:
 
             if "__str__" not in attrs:
+
                 def __str__(self):
                     return six.text_type(self.value)
 
@@ -42,9 +43,7 @@ class ChoiceEnumMeta(enum.EnumMeta):
                     else:
                         obj = base_type.__new__(cls, value)
                     obj._value_ = value
-                    obj.label = (
-                        label if label is not None else six.text_type(value)
-                    )
+                    obj.label = label if label is not None else six.text_type(value)
                     return obj
 
                 attrs["__new__"] = __new__

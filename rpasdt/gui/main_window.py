@@ -1,7 +1,6 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QMdiArea, QMdiSubWindow
-from PyQt5.QtWidgets import qApp
+from PyQt5.QtWidgets import QMdiArea, QMdiSubWindow, qApp
 
 from rpasdt.controller.app import AppController
 from rpasdt.controller.diffusion import DiffusionGraphController
@@ -11,11 +10,10 @@ from rpasdt.gui.analysis.diffusion import DiffusionGraphPanel
 from rpasdt.gui.analysis.source_detection import SourceDetectionDialog
 from rpasdt.gui.utils import create_action
 from rpasdt.model.constants import APP_ICON_PATH
-from rpasdt.model.experiment import Experiment, DiffusionExperiment
+from rpasdt.model.experiment import DiffusionExperiment, Experiment
 
 
 class MainWindow(QtWidgets.QMainWindow):
-
     def __init__(self, controller: AppController, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.controller = controller
@@ -42,32 +40,34 @@ class MainWindow(QtWidgets.QMainWindow):
     def layout_windows_cascade(self):
         self.mdi.cascadeSubWindows()
 
-    def show_experiment_window(self, experiment: Experiment,
-                               controller: "ExperimentGraphController"):
+    def show_experiment_window(
+        self, experiment: Experiment, controller: "ExperimentGraphController"
+    ):
         network_widget = MainNetworkGraphPanel(
-            controller=controller,
-            title='Initial structure'
+            controller=controller, title="Initial structure"
         )
-        network_widget.node_clicked.connect(
-            controller.handler_graph_node_clicked)
-        self.add_subwindow_with_widget(title=f'Network of {experiment.name}',
-                                       widget=network_widget)
-
-    def show_diffusion_window(self, experiment: DiffusionExperiment,
-                              controller: DiffusionGraphController):
-        diffusion_widget = DiffusionGraphPanel(
-            controller=controller
-        )
+        network_widget.node_clicked.connect(controller.handler_graph_node_clicked)
         self.add_subwindow_with_widget(
-            title=f'Diffusion simulation with {experiment.diffusion_type}',
-            widget=diffusion_widget)
+            title=f"Network of {experiment.name}", widget=network_widget
+        )
+
+    def show_diffusion_window(
+        self, experiment: DiffusionExperiment, controller: DiffusionGraphController
+    ):
+        diffusion_widget = DiffusionGraphPanel(controller=controller)
+        self.add_subwindow_with_widget(
+            title=f"Diffusion simulation with {experiment.diffusion_type}",
+            widget=diffusion_widget,
+        )
         controller.handler_edit_diffusion()
 
-    def show_source_detection_window(self,
-                                     controller: SourceDetectionGraphController):
-        self.add_subwindow(SourceDetectionDialog(
-            title=f'Source detection with {controller.source_detector}',
-            controller=controller))
+    def show_source_detection_window(self, controller: SourceDetectionGraphController):
+        self.add_subwindow(
+            SourceDetectionDialog(
+                title=f"Source detection with {controller.source_detector}",
+                controller=controller,
+            )
+        )
 
     def configure_gui(self):
         self.createMenuBar()
@@ -85,32 +85,44 @@ class MainWindow(QtWidgets.QMainWindow):
         menubar = self.menuBar()
 
         menubar.addAction(
-            create_action(parent=self,
-                          title='&About',
-                          shortcut='Ctrl+A',
-                          tooltip='About the author',
-                          handler=self.controller.handler_about_dialog))
+            create_action(
+                parent=self,
+                title="&About",
+                shortcut="Ctrl+A",
+                tooltip="About the author",
+                handler=self.controller.handler_about_dialog,
+            )
+        )
         menubar.addAction(
-            create_action(parent=self,
-                          title='&Exit',
-                          shortcut='Ctrl+Q',
-                          tooltip='Exit application',
-                          handler=qApp.quit))
+            create_action(
+                parent=self,
+                title="&Exit",
+                shortcut="Ctrl+Q",
+                tooltip="Exit application",
+                handler=qApp.quit,
+            )
+        )
 
     def create_experiment_menu(self):
         menubar = self.menuBar()
-        experimentMenu = menubar.addMenu('&Experiment')
+        experimentMenu = menubar.addMenu("&Experiment")
 
         # exit action
         experimentMenu.addAction(
-            create_action(parent=self,
-                          title='&Create',
-                          shortcut='Ctrl+N',
-                          tooltip='Create',
-                          handler=self.controller.handler_new_experiment))
+            create_action(
+                parent=self,
+                title="&Create",
+                shortcut="Ctrl+N",
+                tooltip="Create",
+                handler=self.controller.handler_new_experiment,
+            )
+        )
         experimentMenu.addAction(
-            create_action(parent=self,
-                          title='&Import',
-                          shortcut='Ctrl+I',
-                          tooltip='Import',
-                          handler=self.controller.handler_new_experiment))
+            create_action(
+                parent=self,
+                title="&Import",
+                shortcut="Ctrl+I",
+                tooltip="Import",
+                handler=self.controller.handler_new_experiment,
+            )
+        )

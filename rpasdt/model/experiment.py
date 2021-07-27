@@ -1,19 +1,32 @@
 """Models """
 from copy import copy
+from dataclasses import dataclass
 from typing import Dict, Tuple
 
-from dataclasses import dataclass
 from networkx import Graph
 
-from rpasdt.algorithm.taxonomies import GraphLayout, DiffusionGraphNodeRenderTypeEnum, DiffusionTypeEnum, GraphTypeEnum
-from rpasdt.model.constants import NODE_SIZE, NODE_COLOR, NODE_LABEL_COLOR, SOURCE_NODE_COLOR, RECOVERED_NODE_COLOR, \
-    INFECTED_NODE_COLOR, ESTIMATED_SOURCE_NODE_COLOR
+from rpasdt.algorithm.taxonomies import (
+    DiffusionGraphNodeRenderTypeEnum,
+    DiffusionTypeEnum,
+    GraphLayout,
+    GraphTypeEnum,
+)
+from rpasdt.model.constants import (
+    ESTIMATED_SOURCE_NODE_COLOR,
+    INFECTED_NODE_COLOR,
+    NODE_COLOR,
+    NODE_LABEL_COLOR,
+    NODE_SIZE,
+    RECOVERED_NODE_COLOR,
+    SOURCE_NODE_COLOR,
+)
 from rpasdt.network.taxonomies import NodeAttributeEnum
 
 
 @dataclass
 class GraphConfig:
     """The graph rendering configuration."""
+
     node_color: str = NODE_COLOR
     node_size: int = NODE_SIZE
     node_label_font_color: str = NODE_LABEL_COLOR
@@ -22,7 +35,9 @@ class GraphConfig:
     graph_position: Dict[int, Tuple] = None
     graph_layout: GraphLayout = GraphLayout.SPRING
     # diffusion
-    graph_node_rendering_type: DiffusionGraphNodeRenderTypeEnum = DiffusionGraphNodeRenderTypeEnum.FULL
+    graph_node_rendering_type: DiffusionGraphNodeRenderTypeEnum = (
+        DiffusionGraphNodeRenderTypeEnum.FULL
+    )
     source_node_color: str = SOURCE_NODE_COLOR
     recovered_node_color: str = RECOVERED_NODE_COLOR
     susceptible_node_color: str = NODE_COLOR
@@ -47,14 +62,18 @@ class DiffusionExperiment:
 
     @property
     def source_nodes(self):
-        return [node_index for node_index, data in self.source_graph.nodes(data=True) if
-                data.get(NodeAttributeEnum.SOURCE)]
+        return [
+            node_index
+            for node_index, data in self.source_graph.nodes(data=True)
+            if data.get(NodeAttributeEnum.SOURCE)
+        ]
 
 
 @dataclass
 class Experiment:
     """The initial configured situation."""
-    name: str = 'Karate club simulation'
+
+    name: str = "Karate club simulation"
     graph_type: GraphTypeEnum = GraphTypeEnum.KARATE_CLUB
     graph_type_properties: Dict = None
     graph: Graph = None

@@ -1,4 +1,5 @@
 from typing import Dict
+
 import networkx as nx
 from networkx import Graph
 
@@ -17,18 +18,17 @@ CENTRALITY_OPERATION_MAP = {
 }
 
 
-def compute_centrality(centrality: CentralityOptionEnum, graph: Graph, *args,
-                       **kwargs) -> Dict[int, float]:
+def compute_centrality(
+    centrality: CentralityOptionEnum, graph: Graph, *args, **kwargs
+) -> Dict[int, float]:
     return CENTRALITY_OPERATION_MAP.get(centrality)(graph)
 
 
 def compute_unbiased_centrality(
-    centrality: CentralityOptionEnum,
-    r: float,
-    graph: Graph,
-    *args, **kwargs) -> Dict[
-    int, float]:
+    centrality: CentralityOptionEnum, r: float, graph: Graph, *args, **kwargs
+) -> Dict[int, float]:
     centrality_measure = compute_centrality(centrality=centrality, graph=graph)
-    return {node: centrality / max(graph.degree(node) ** r, 0.0001)
-            for node, centrality in
-            centrality_measure.items()}
+    return {
+        node: centrality / max(graph.degree(node) ** r, 0.0001)
+        for node, centrality in centrality_measure.items()
+    }

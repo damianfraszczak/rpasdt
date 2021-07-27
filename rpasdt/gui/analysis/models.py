@@ -1,6 +1,6 @@
-from typing import Dict, Any, List
-
 from dataclasses import dataclass, field
+from typing import Any, Dict, List
+
 from networkx import Graph
 
 from rpasdt.algorithm.models import SingleSourceDetectionEvaluation
@@ -40,7 +40,10 @@ class CommunityAnalysisData(AnalysisData):
 
     @property
     def table_data(self):
-        return [[cluster, ','.join([str(node) for node in nodes])] for cluster, nodes in self.communities_data.items()]
+        return [
+            [cluster, ",".join([str(node) for node in nodes])]
+            for cluster, nodes in self.communities_data.items()
+        ]
 
 
 @dataclass

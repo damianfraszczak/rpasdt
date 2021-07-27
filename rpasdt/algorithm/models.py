@@ -1,9 +1,11 @@
+from dataclasses import dataclass
 from typing import Optional
 
-from dataclasses import dataclass
-
-from rpasdt.algorithm.taxonomies import CommunityOptionEnum, CentralityOptionEnum, \
-    SourceSelectionOptionEnum
+from rpasdt.algorithm.taxonomies import (
+    CentralityOptionEnum,
+    CommunityOptionEnum,
+    SourceSelectionOptionEnum,
+)
 
 
 @dataclass
@@ -23,7 +25,9 @@ class CentralityBasedSourceDetectionConfig(SourceDetectionConfig):
 
 
 @dataclass
-class UnbiasedCentralityBasedSourceDetectionConfig(CentralityBasedSourceDetectionConfig):
+class UnbiasedCentralityBasedSourceDetectionConfig(
+    CentralityBasedSourceDetectionConfig
+):
     r: float = 0.85
 
 
@@ -34,13 +38,15 @@ class CommunitiesBasedSourceDetectionConfig(SourceDetectionConfig):
 
 @dataclass
 class CentralityCommunityBasedSourceDetectionConfig(
-    CommunitiesBasedSourceDetectionConfig):
+    CommunitiesBasedSourceDetectionConfig
+):
     centrality_algorithm: CentralityOptionEnum = CentralityOptionEnum.DEGREE
 
 
 @dataclass
 class UnbiasedCentralityCommunityBasedSourceDetectionConfig(
-    CentralityCommunityBasedSourceDetectionConfig):
+    CentralityCommunityBasedSourceDetectionConfig
+):
     r: float = 0.85
 
 

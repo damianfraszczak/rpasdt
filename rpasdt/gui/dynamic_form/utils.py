@@ -1,14 +1,20 @@
 import logging
 from collections import OrderedDict
 from enum import Enum
-from typing import Any, get_type_hints, List, Tuple, Optional, Dict, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, get_type_hints
 
-from PyQt5.QtWidgets import QWidget, QLineEdit, QComboBox, QCheckBox, QSpinBox, \
-    QDoubleSpinBox
+from PyQt5.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDoubleSpinBox,
+    QLineEdit,
+    QSpinBox,
+    QWidget,
+)
 
 from rpasdt.common.enums import StringChoiceEnum
 from rpasdt.gui.dynamic_form.components import QColorField
-from rpasdt.gui.dynamic_form.taxonomies import FormFieldConfig, FieldInputType
+from rpasdt.gui.dynamic_form.taxonomies import FieldInputType, FormFieldConfig
 
 logger = logging.getLogger(__name__)
 
@@ -54,11 +60,11 @@ def get_component_type(type: type):
         return FieldInputType.SINGLE_TEXT
 
 
-def set_component_value(component: QWidget,
-                        value: Any,
-                        options: Optional[List[Tuple]] = None):
+def set_component_value(
+    component: QWidget, value: Any, options: Optional[List[Tuple]] = None
+):
     if isinstance(component, QLineEdit):
-        component.setText(value or '')
+        component.setText(value or "")
     elif isinstance(component, QCheckBox):
         component.setChecked(bool(value or False))
     elif isinstance(component, QSpinBox):
@@ -71,17 +77,16 @@ def set_component_value(component: QWidget,
         component.color = value
 
 
-def get_component_value(component: QWidget,
-                        type: type,
-                        options: Optional[List[Tuple]] = None):
+def get_component_value(
+    component: QWidget, type: type, options: Optional[List[Tuple]] = None
+):
     if isinstance(component, QLineEdit):
         return component.text()
     elif isinstance(component, QCheckBox):
         return component.isChecked()
     elif isinstance(component, QComboBox) and options:
         return get_option_value(
-            type=type,
-            option_value=options[component.currentIndex()][0]
+            type=type, option_value=options[component.currentIndex()][0]
         )
     elif isinstance(component, QSpinBox):
         return component.value()
@@ -103,8 +108,7 @@ def get_option_value(type: type, option_value: Any) -> List[Tuple]:
     return option_value
 
 
-def get_component_for_field_config(field_config: FormFieldConfig) -> Optional[
-    QWidget]:
+def get_component_for_field_config(field_config: FormFieldConfig) -> Optional[QWidget]:
     widget = None
     if FieldInputType.COMBOBOX == field_config.type:
         widget = get_combo_box(field_config.options)
@@ -119,22 +123,22 @@ def get_component_for_field_config(field_config: FormFieldConfig) -> Optional[
     elif FieldInputType.COLOR == field_config.type:
         widget = QColorField()
     if widget and field_config.read_only:
-        read_only_method = getattr(widget, 'setReadOnly', None)
+        read_only_method = getattr(widget, "setReadOnly", None)
         if read_only_method:
             read_only_method(field_config.read_only)
         else:
             logger.warning(
-                f'Component for field {field_config.field_name} does not support read only option.')
+                f"Component for field {field_config.field_name} does not support read only option."
+            )
     return widget
 
 
 def format_field_label(val: str) -> str:
-    return (val or '').replace('_', ' ').title()
+    return (val or "").replace("_", " ").title()
 
 
 def clear_type_hint(type_hint):
-    if hasattr(type_hint, '__origin__') and getattr(type_hint,
-                                                    '__origin__') is Union:
+    if hasattr(type_hint, "__origin__") and getattr(type_hint, "__origin__") is Union:
         return type_hint.__args__[0]
     return type_hint if isinstance(type_hint, type) else None
 
@@ -152,7 +156,7 @@ def get_field_config(object: Any) -> Dict[str, FormFieldConfig]:
                 type=get_component_type(inner_type),
                 default_value=getattr(object, field_name, None),
                 options=get_field_options(inner_type),
-                inner_type=inner_type
+                inner_type=inner_type,
             )
 
     return result
