@@ -17,7 +17,7 @@ case "$1" in
     ;;
 
   package)
-    exec pyinstaller -n rpasdt --onefile --windowed /app/rpasdt/main.py
+    exec pyinstaller --onefile --windowed /app/rpasdt/main.py
     ;;
 
   *)
