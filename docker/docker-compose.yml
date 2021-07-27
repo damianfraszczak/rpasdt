@@ -1,0 +1,14 @@
+version: "3.3"
+services:
+  gui:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: run
+    environment:
+      - DISPLAY=$DISPLAY
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ../rpasdt:/app/rpasdt
+      - ../dist:/app/rpasdt/dist
+

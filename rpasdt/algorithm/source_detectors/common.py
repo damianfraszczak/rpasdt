@@ -1,0 +1,89 @@
+from abc import ABC, abstractmethod
+from typing import Optional, Dict, Union, List, Tuple
+
+from networkx import Graph
+
+from rpasdt.algorithm.communities import find_communities
+from rpasdt.algorithm.models import CommunitiesBasedSourceDetectionConfig, \
+    SourceDetectionConfig, SingleSourceDetectionEvaluation
+from rpasdt.algorithm.source_detection_evaluation import \
+    compute_source_detection_evaluation
+from rpasdt.common.utils import sort_dict_by_value
+
+
+class SourceDetector(ABC):
+    CONFIG_CLASS = SourceDetectionConfig
+
+    def __init__(self, G: Graph, IG: Graph,
+                 config: Optional[SourceDetectionConfig] = None):
+        self.G = G
+        self.IG = IG
+        self._config = config
+
+    @property
+    def config(self):
+        if not self._config:
+            self._config = self.create_config()
+        return self._config
+
+    def create_config(self):
+        return self.CONFIG_CLASS()
+
+    @abstractmethod
+    def estimate_sources(self) -> Dict[int, Union[int, Dict[int, float]]]:
+        pass
+
+    def process_estimation(self, result: Dict[int, float]):
+        return sort_dict_by_value(result)[:self.config.number_of_sources]
+
+    @property
+    def detected_sources(self) -> Union[int, List[int]]:
+        result = [source for source, _ in
+                  self.detected_sources_estimation]
+        return result[0] if len(result) == 1 else result
+
+    @property
+    def detected_sources_estimation(self) -> List[Tuple[int, float]]:
+        return self.process_estimation(self.estimate_sources())
+
+    def evaluate_sources(self, real_sources: List[
+        int]) -> SingleSourceDetectionEvaluation:
+        return compute_source_detection_evaluation(
+            G=self.IG,
+            real_sources=real_sources,
+            detected_sources=self.detected_sources
+        )
+
+
+class CommunityBasedSourceDetector(SourceDetector, ABC):
+    CONFIG_CLASS = CommunitiesBasedSourceDetectionConfig
+
+    def __init__(self, G: Graph, IG: Graph, config: Optional[
+        CommunitiesBasedSourceDetectionConfig] = None):
+        super().__init__(G, IG, config)
+
+    @property
+    def communities(self) -> Dict[int, List[int]]:
+        return {
+            0: self.IG} if self.config.number_of_sources == 1 else find_communities(
+            alg=self.config.communities_algorithm,
+            graph=self.IG,
+            communities_count=self.config.number_of_sources)
+
+    def estimate_sources(self) -> Dict[int, Dict[int, float]]:
+        return {
+            cluster: self.find_sources_in_community(self.IG.subgraph(nodes))
+            for
+            cluster, nodes in self.communities.items()}
+
+    @abstractmethod
+    def find_sources_in_community(self, graph: Graph):
+        pass
+
+    def process_estimation(self, result: Dict[int, float]) -> Union[
+        int, List[int]]:
+        # in one community there is exactly one source
+        # [0] get first from sorted, [0] get node index
+        return [sort_dict_by_value(nodes_dict)[0] for cluster, nodes_dict in
+                self.estimate_sources().items()]
+        return {source: max_val for source in sources}

@@ -1,0 +1,11 @@
+isort==5.9.2
+matplotlib==3.4.2
+ndlib==5.1.0
+networkx==2.6.1
+PyQt5==5.15.4
+python-louvain==0.15
+typing
+typing-extensions
+dataclasses
+PyInstaller
+numpy
