@@ -17,8 +17,9 @@ case "$1" in
     ;;
 
   package)
-    exec pyinstaller -n rpasdt /app/rpasdt/main.py
+    exec pyinstaller -n rpasdt --onefile --windowed /app/rpasdt/main.py
     ;;
+
   *)
     echo "
     Usage: docker-compose run rpasdt <command>
@@ -26,7 +27,7 @@ case "$1" in
     Commands:
         help: this help text
 
-        shell: Open an interractive shell in the container
+        shell: Open an interactive shell in the container
 
         run: Run the application
 
