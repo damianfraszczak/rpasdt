@@ -9,3 +9,4 @@ typing==3.7.4.3
 typing-extensions==3.10.0.0
 PyInstaller==4.4
 numpy==1.21.1
+dataclasses-json==0.5.4

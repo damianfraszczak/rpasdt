@@ -5,6 +5,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QAction,
     QDialog,
+    QFileDialog,
     QMessageBox,
     QProgressDialog,
     QWidget,
@@ -133,3 +134,13 @@ def run_long_task(
         )
     )
     pool.start(worker)
+
+
+def show_open_file_dialog() -> Optional[str]:
+    result = QFileDialog.getOpenFileName()
+    return result[0] if result else ""
+
+
+def show_save_file_dialog() -> Optional[str]:
+    result = QFileDialog.getSaveFileName()
+    return result[0] if result else ""

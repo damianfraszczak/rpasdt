@@ -217,10 +217,11 @@ def create_source_detection_action(parent, handler):
     menu = QMenu("Source detection", parent=parent)
     action.setMenu(menu)
     for alg in SourceDetectionAlgorithm:
+        title = " ".join(alg.value.split("_")).title()
         menu.addAction(
             create_action(
-                title=alg.title(),
-                tooltip=alg.title(),
+                title=title,
+                tooltip=title,
                 icon=QApplication.style().standardIcon(QStyle.SP_TrashIcon),
                 parent=parent,
                 handler=partial(handler.handler_configure_source_detection, alg),
@@ -301,4 +302,14 @@ def create_edit_graph_config_action(parent, handler):
         tooltip="Edit graph config",
         handler=handler.handler_edit_graph_config,
         icon=QApplication.style().standardIcon(QStyle.SP_FileIcon),
+    )
+
+
+def create_export_experiment_action(parent, handler):
+    return create_action(
+        parent=parent,
+        title="Export experiment",
+        tooltip="Export experiment",
+        handler=handler.handler_export_experiment,
+        icon=QApplication.style().standardIcon(QStyle.SP_DriveFDIcon),
     )

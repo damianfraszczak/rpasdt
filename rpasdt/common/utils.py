@@ -1,4 +1,5 @@
 import ast
+import re
 from collections import defaultdict
 from typing import Any, Dict, List, Optional
 
@@ -57,3 +58,7 @@ def multi_sum(iterable, *attributes, **kwargs):
         for attr in attributes:
             sums[attr] += getattr(it, attr)
     return sums
+
+
+def camel_case_split(str):
+    return re.findall(r"[A-Z](?:[a-z]+|[A-Z]*(?=[A-Z]|$))", str)

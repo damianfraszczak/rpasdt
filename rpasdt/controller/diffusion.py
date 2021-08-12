@@ -126,7 +126,9 @@ class DiffusionGraphController(
             IG=self.experiment.diffusion_graph,
             number_of_sources=len(self.experiment.source_nodes),
         )
-        config = show_dynamic_dialog(source_detector.config)
+        config = show_dynamic_dialog(
+            source_detector.config, "Configure source detector"
+        )
         if config:
             run_long_task(
                 function=source_detector.estimate_sources,

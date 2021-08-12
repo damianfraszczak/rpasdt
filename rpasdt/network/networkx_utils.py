@@ -96,7 +96,7 @@ def show_graph_config_dialog(
             object=graph_type_properties,
             config=DynamicFormConfig(
                 field_config=get_graph_form_field_config(graph_type),
-                title=f"Edit {graph_type} properties",
+                title=f"Edit {graph_type.label} properties",
             ),
         )
     return graph_type_properties

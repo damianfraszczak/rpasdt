@@ -12,7 +12,7 @@ from rpasdt.algorithm.models import (
 from rpasdt.algorithm.source_detection_evaluation import (
     compute_source_detection_evaluation,
 )
-from rpasdt.common.utils import sort_dict_by_value
+from rpasdt.common.utils import camel_case_split, sort_dict_by_value
 
 
 class SourceDetector(ABC):
@@ -56,6 +56,9 @@ class SourceDetector(ABC):
         return compute_source_detection_evaluation(
             G=self.IG, real_sources=real_sources, detected_sources=self.detected_sources
         )
+
+    def __str__(self) -> str:
+        return " ".join(camel_case_split(self.__class__.__name__))
 
 
 class CommunityBasedSourceDetector(SourceDetector, ABC):

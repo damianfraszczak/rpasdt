@@ -1,13 +1,15 @@
 """Models."""
 from copy import copy
-from dataclasses import dataclass
-from typing import Dict, Optional, Tuple
+from dataclasses import dataclass, field
+from typing import Any, Dict, Optional, Tuple
 
+from dataclasses_json import dataclass_json
 from networkx import Graph
 
 from rpasdt.algorithm.taxonomies import (
     DiffusionGraphNodeRenderTypeEnum,
     DiffusionTypeEnum,
+    GraphDataFormatEnum,
     GraphLayout,
     GraphTypeEnum,
 )
@@ -27,22 +29,22 @@ from rpasdt.network.taxonomies import NodeAttributeEnum
 class GraphConfig:
     """The graph rendering configuration."""
 
-    node_color: str = NODE_COLOR
-    node_size: int = NODE_SIZE
-    node_label_font_color: str = NODE_LABEL_COLOR
-    display_node_labels: bool = True
-    display_node_extra_labels: bool = True
-    graph_position: Dict[int, Tuple] = None
-    graph_layout: GraphLayout = GraphLayout.SPRING
+    node_color: str = field(default=NODE_COLOR)
+    node_size: int = field(default=NODE_SIZE)
+    node_label_font_color: str = field(default=NODE_LABEL_COLOR)
+    display_node_labels: bool = field(default=True)
+    display_node_extra_labels: bool = field(default=True)
+    graph_position: Optional[Dict[int, Tuple]] = field(default=None)
+    graph_layout: GraphLayout = field(default=GraphLayout.SPRING)
     # diffusion
-    graph_node_rendering_type: DiffusionGraphNodeRenderTypeEnum = (
-        DiffusionGraphNodeRenderTypeEnum.FULL
+    graph_node_rendering_type: DiffusionGraphNodeRenderTypeEnum = field(
+        default=DiffusionGraphNodeRenderTypeEnum.FULL
     )
-    source_node_color: str = SOURCE_NODE_COLOR
-    recovered_node_color: str = RECOVERED_NODE_COLOR
-    susceptible_node_color: str = NODE_COLOR
-    infected_node_color: str = INFECTED_NODE_COLOR
-    estimated_source_node_color: str = ESTIMATED_SOURCE_NODE_COLOR
+    source_node_color: str = field(default=SOURCE_NODE_COLOR)
+    recovered_node_color: str = field(default=RECOVERED_NODE_COLOR)
+    susceptible_node_color: str = field(default=NODE_COLOR)
+    infected_node_color: str = field(default=INFECTED_NODE_COLOR)
+    estimated_source_node_color: str = field(default=ESTIMATED_SOURCE_NODE_COLOR)
 
     def clone(self):
         return copy(self)
@@ -53,12 +55,12 @@ class GraphConfig:
 
 @dataclass
 class DiffusionExperiment:
-    source_graph: Graph
-    diffusion_graph: Graph = Graph()
-    graph_config: GraphConfig = GraphConfig()
-    diffusion_type: DiffusionTypeEnum = DiffusionTypeEnum.SI
-    diffusion_model_properties: Optional[Dict] = None
-    diffusion_iteration_bunch: int = 200
+    source_graph: Graph = field(default_factory=Graph)
+    diffusion_graph: Graph = field(default_factory=Graph)
+    graph_config: GraphConfig = field(default_factory=GraphConfig)
+    diffusion_type: DiffusionTypeEnum = field(default=DiffusionTypeEnum.SI)
+    diffusion_model_properties: Dict = field(default_factory=dict)
+    diffusion_iteration_bunch: int = field(default=200)
 
     @property
     def source_nodes(self):
@@ -73,8 +75,20 @@ class DiffusionExperiment:
 class Experiment:
     """The initial configured situation."""
 
-    name: str = "Karate club simulation"
-    graph_type: GraphTypeEnum = GraphTypeEnum.KARATE_CLUB
-    graph_type_properties: Dict = None
-    graph: Graph = None
-    graph_config: GraphConfig = GraphConfig()
+    name: str = field(default="Experiment")
+    graph_type: GraphTypeEnum = field(default=GraphTypeEnum.WATTS_STROGATZ)
+    graph_type_properties: Dict = field(default_factory=dict)
+    graph: Graph = field(default_factory=Graph)
+    graph_config: GraphConfig = field(default_factory=GraphConfig)
+
+
+@dataclass_json
+@dataclass
+class ExperimentExportModel:
+    name: str
+    graph_type: GraphTypeEnum
+    # @dataclass_json has a problem with parsing when type Dict is used here
+    graph_type_properties: Any
+    graph_data: str
+    graph_data_format: GraphDataFormatEnum
+    graph_config: GraphConfig

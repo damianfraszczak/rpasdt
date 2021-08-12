@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import (
 )
 
 from rpasdt.common.enums import StringChoiceEnum
-from rpasdt.gui.dynamic_form.components import QColorField
+from rpasdt.gui.dynamic_form.components import QColorField, QFileField
 from rpasdt.gui.dynamic_form.models import FieldInputType, FormFieldConfig
 
 logger = logging.getLogger(__name__)
@@ -75,10 +75,12 @@ def set_component_value(
         component.setCurrentText(dict(options)[value])
     elif isinstance(component, QColorField):
         component.color = value
+    elif isinstance(component, QFileField):
+        component.file_path = value
 
 
 def get_component_value(
-    component: QWidget, type: type, options: Optional[List[Tuple]] = None
+    component: QWidget, cls: type, options: Optional[List[Tuple]] = None
 ):
     if isinstance(component, QLineEdit):
         return component.text()
@@ -86,7 +88,7 @@ def get_component_value(
         return component.isChecked()
     elif isinstance(component, QComboBox) and options:
         return get_option_value(
-            type=type, option_value=options[component.currentIndex()][0]
+            cls=cls, option_value=options[component.currentIndex()][0]
         )
     elif isinstance(component, QSpinBox):
         return component.value()
@@ -94,17 +96,19 @@ def get_component_value(
         return component.value()
     elif isinstance(component, QColorField):
         return component.color
+    elif isinstance(component, QFileField):
+        return component.file_path
     return None
 
 
-def get_field_options(type: type) -> List[Tuple]:
-    if issubclass(type, StringChoiceEnum):
-        return type.choices
+def get_field_options(cls: type) -> List[Tuple]:
+    if issubclass(cls, StringChoiceEnum):
+        return cls.choices
 
 
-def get_option_value(type: type, option_value: Any) -> List[Tuple]:
-    if issubclass(type, StringChoiceEnum):
-        return type(option_value)
+def get_option_value(cls: type, option_value: Any) -> Any:
+    if isinstance(cls, type) and issubclass(cls, StringChoiceEnum):
+        return cls(option_value)
     return option_value
 
 
@@ -122,6 +126,8 @@ def get_component_for_field_config(field_config: FormFieldConfig) -> Optional[QW
         widget = QLineEdit()
     elif FieldInputType.COLOR == field_config.type:
         widget = QColorField()
+    elif FieldInputType.FILE == field_config.type:
+        widget = QFileField()
     if widget and field_config.read_only:
         read_only_method = getattr(widget, "setReadOnly", None)
         if read_only_method:

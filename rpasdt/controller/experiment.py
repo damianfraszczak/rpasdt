@@ -8,8 +8,13 @@ from rpasdt.controller.controllers import (
 from rpasdt.controller.diffusion import DiffusionGraphController
 from rpasdt.controller.graph import GraphController
 from rpasdt.gui.dynamic_form.models import DynamicFormConfig
-from rpasdt.gui.utils import run_long_task, show_dynamic_dialog
+from rpasdt.gui.utils import (
+    run_long_task,
+    show_dynamic_dialog,
+    show_save_file_dialog,
+)
 from rpasdt.model.experiment import DiffusionExperiment, Experiment
+from rpasdt.model.utils import save_experiment
 from rpasdt.network.models import NodeAttribute
 from rpasdt.network.networkx_utils import (
     set_node_attributes,
@@ -86,7 +91,9 @@ class ExperimentGraphController(
         self.redraw_graph()
 
     def handler_select_sources(self):
-        sources_config = show_dynamic_dialog(object=NetworkSourceSelectionConfig())
+        sources_config = show_dynamic_dialog(
+            object=NetworkSourceSelectionConfig(), title="Select sources automatically"
+        )
         if sources_config:
             self.handler_clear_sources()
             sources = select_sources(config=sources_config, graph=self.graph)
@@ -108,3 +115,9 @@ class ExperimentGraphController(
         elif node.get(NodeAttributeEnum.COLOR) == self.graph_config.source_node_color:
             node[NodeAttributeEnum.COLOR] = self.graph_config.susceptible_node_color
         super().handler_graph_node_edited(node)
+
+    def handler_export_experiment(self):
+        file_path = show_save_file_dialog()
+        if file_path:
+            # TODO run in async
+            save_experiment(experiment=self.experiment, file_path=file_path)

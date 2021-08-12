@@ -123,6 +123,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 title="&Import",
                 shortcut="Ctrl+I",
                 tooltip="Import",
-                handler=self.controller.handler_new_experiment,
+                handler=self.controller.handler_import_experiment,
             )
         )
