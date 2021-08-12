@@ -21,6 +21,10 @@ class DiffusionGraphNodeRenderTypeEnum(StringChoiceEnum):
     ONLY_INFECTED = ("ONLY_INFECTED", "Only infected nodes")
 
 
+class GraphDataFormatEnum(StringChoiceEnum):
+    MULTILINE_ADJLIST = ("MULTILINE_ADJLIST", "Multiline adjacency list")
+
+
 class GraphTypeEnum(StringChoiceEnum):
     """Available graph types and predefined topologies."""
 
@@ -40,6 +44,7 @@ class GraphTypeEnum(StringChoiceEnum):
         "CONNECTED_CAVEMAN_GRAPH",
         "Connected Caveman graph of l cliques of size k",
     )
+    CUSTOM = ("CUSTOM", "Custom graph")
 
 
 class DiffusionTypeEnum(StringChoiceEnum):

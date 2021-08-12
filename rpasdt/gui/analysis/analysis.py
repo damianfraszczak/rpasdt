@@ -51,14 +51,13 @@ class AnalysisDialog(BaseAnalysisDialog):
     def __init__(
         self, controller: "AnalysisGraphController", title: str, graph_panel: type
     ):
-        super(AnalysisDialog, self).__init__()
+
         self.controller = controller
-        self.title = title
         self.graph_panel = graph_panel
         self.graph = controller.graph
         self.graph_config = controller.graph_config
         self.data = controller.data
-
+        super(AnalysisDialog, self).__init__(title)
         self.configure_gui()
 
     def get_table_data(self):

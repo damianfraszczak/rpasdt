@@ -14,6 +14,7 @@ class FieldInputType(StringChoiceEnum):
     INTEGER = "INTEGER"
     PASSWORD = "PASSWORD"
     COLOR = "COLOR"
+    FILE = "FILE"
 
 
 @dataclass
