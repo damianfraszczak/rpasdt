@@ -6,8 +6,10 @@ from rpasdt.gui.utils import (
     run_long_task,
     show_alert_dialog,
     show_dynamic_dialog,
+    show_open_file_dialog,
 )
 from rpasdt.model.experiment import Experiment
+from rpasdt.model.utils import import_experiment
 from rpasdt.network.networkx_utils import (
     get_graph_default_properties,
     show_graph_config_dialog,
@@ -55,3 +57,10 @@ class AppController:
                         experiment=experiment, graph=graph
                     ),
                 )
+
+    def handler_import_experiment(self):
+        file_path = show_open_file_dialog()
+        if file_path:
+            # TODO run in async
+            experiment = import_experiment(file_path)
+            self.load_experiment(experiment=experiment, graph=experiment.graph)

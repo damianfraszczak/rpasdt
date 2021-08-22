@@ -12,6 +12,7 @@ class GraphController:
     graph_panel: "NetworkxGraphPanel"
 
     def __init__(self, window: "MainWindow", graph: Graph, graph_config: GraphConfig):
+        super().__init__()
         self.window = window
         self.graph = graph.copy()
         self.graph_config = copy(graph_config)

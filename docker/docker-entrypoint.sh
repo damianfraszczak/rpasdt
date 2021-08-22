@@ -1,7 +1,6 @@
 #!/bin/bash
 
 source ~/.bashrc
-rpasdt
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Docker service command

@@ -53,6 +53,7 @@ class DynamicForm(QWidget):
         row_index = 0
         for field_name, field_config in self.field_config.items():
             component = get_component_for_field_config(field_config)
+
             label = field_config.label or field_name
             if component and label:
                 self.layout().addRow(label, component)
@@ -78,7 +79,7 @@ class DynamicForm(QWidget):
         for field_name, component in self.field_component_map.items():
             value = get_component_value(
                 component=component,
-                type=self.field_config[field_name].inner_type,
+                cls=self.field_config[field_name].inner_type,
                 options=self.field_config[field_name].options,
             )
             set_object_value(self.object, field_name, value)

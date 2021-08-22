@@ -9,10 +9,14 @@ from rpasdt.algorithm.source_detectors.source_detection import (
     SourceDetector,
     get_source_detector,
 )
-from rpasdt.algorithm.taxonomies import SourceDetectionAlgorithm
+from rpasdt.algorithm.taxonomies import (
+    DiffusionGraphNodeRenderTypeEnum,
+    SourceDetectionAlgorithm,
+)
 from rpasdt.controller.controllers import (
     CentralityAnalysisControllerMixin,
     CommunityAnalysisControllerMixin,
+    NetworkAnalysisControllerMixin,
 )
 from rpasdt.controller.graph import GraphController
 from rpasdt.controller.source_detection import SourceDetectionGraphController
@@ -23,7 +27,10 @@ from rpasdt.network.taxonomies import NodeAttributeEnum
 
 
 class DiffusionGraphController(
-    GraphController, CentralityAnalysisControllerMixin, CommunityAnalysisControllerMixin
+    GraphController,
+    CentralityAnalysisControllerMixin,
+    CommunityAnalysisControllerMixin,
+    NetworkAnalysisControllerMixin,
 ):
     def __init__(self, window: "MainWindow", experiment: DiffusionExperiment):
         super().__init__(window, experiment.diffusion_graph, experiment.graph_config)
@@ -120,13 +127,20 @@ class DiffusionGraphController(
         super().redraw_graph()
 
     def handler_configure_source_detection(self, algorithm: SourceDetectionAlgorithm):
+        IG = get_diffusion_graph(
+            source_graph=self.experiment.source_graph,
+            infected_nodes=self.infected_nodes,
+            graph_node_rendering_type=DiffusionGraphNodeRenderTypeEnum.ONLY_INFECTED,
+        )
         source_detector = get_source_detector(
             algorithm=algorithm,
             G=self.experiment.source_graph,
-            IG=self.experiment.diffusion_graph,
+            IG=IG,
             number_of_sources=len(self.experiment.source_nodes),
         )
-        config = show_dynamic_dialog(source_detector.config)
+        config = show_dynamic_dialog(
+            source_detector.config, "Configure source detector"
+        )
         if config:
             run_long_task(
                 function=source_detector.estimate_sources,

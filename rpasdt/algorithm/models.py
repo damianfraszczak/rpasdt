@@ -1,11 +1,23 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import List, Optional
 
 from rpasdt.algorithm.taxonomies import (
     CentralityOptionEnum,
     CommunityOptionEnum,
     SourceSelectionOptionEnum,
 )
+
+
+class NetworkInformation:
+    summary: str
+    density: float
+    avg_degree: float
+    diameter: int
+    average_clustering: float
+    degree_histogram: List[int]
+    number_of_edges: int
+    bridges: List[int]
+    number_connected_components: int
 
 
 @dataclass

@@ -3,7 +3,11 @@ from typing import Dict
 
 from ndlib.models import DiffusionModel
 
-from rpasdt.algorithm.taxonomies import GraphTypeEnum
+from rpasdt.algorithm.taxonomies import (
+    CommunityOptionEnum,
+    GraphDataFormatEnum,
+    GraphTypeEnum,
+)
 from rpasdt.common.utils import eval_if_str
 from rpasdt.gui.dynamic_form.models import (
     DynamicFormConfig,
@@ -32,13 +36,22 @@ GRAPH_CONFIG_FIELD_CONFIG = {
 GraphTypeToFormFieldsConfigMap = {
     GraphTypeEnum.WATTS_STROGATZ: {
         "n": FormFieldConfig(
-            field_name="n", default_value=100, type=FieldInputType.INTEGER
+            field_name="n",
+            default_value=100,
+            type=FieldInputType.INTEGER,
+            help_text="The number of nodes",
         ),
         "k": FormFieldConfig(
-            field_name="k", default_value=4, type=FieldInputType.INTEGER
+            field_name="k",
+            default_value=4,
+            type=FieldInputType.INTEGER,
+            help_text="Each node is connected to k nearest neighbors in ring topology",
         ),
         "p": FormFieldConfig(
-            field_name="p", default_value=0.5, type=FieldInputType.DOUBLE
+            field_name="p",
+            default_value=0.5,
+            type=FieldInputType.DOUBLE,
+            help_text="The probability of rewiring each edge",
         ),
     },
     GraphTypeEnum.BALANCED_TREE: {
@@ -69,18 +82,21 @@ GraphTypeToFormFieldsConfigMap = {
             default_value=5,
             type=FieldInputType.INTEGER,
             help_text="The number of nodes.",
+            inner_type=int,
         ),
         "p": FormFieldConfig(
             field_name="p",
             default_value=0.5,
             type=FieldInputType.DOUBLE,
             help_text="Probability for edge creation",
+            inner_type=float,
         ),
         "seed": FormFieldConfig(
             field_name="seed",
             default_value=100,
             type=FieldInputType.INTEGER,
             help_text="Indicator of random number generation state",
+            inner_type=int,
         ),
     },
     GraphTypeEnum.CAVEMAN_GRAPH: {
@@ -89,12 +105,14 @@ GraphTypeToFormFieldsConfigMap = {
             default_value=5,
             type=FieldInputType.INTEGER,
             help_text="Cliques number",
+            inner_type=int,
         ),
         "k": FormFieldConfig(
             field_name="k",
             default_value=3,
             type=FieldInputType.INTEGER,
             help_text="Cliques size",
+            inner_type=int,
         ),
     },
     GraphTypeEnum.CONNECTED_CAVEMAN_GRAPH: {
@@ -103,12 +121,39 @@ GraphTypeToFormFieldsConfigMap = {
             default_value=5,
             type=FieldInputType.INTEGER,
             help_text="Cliques number",
+            inner_type=int,
         ),
         "k": FormFieldConfig(
             field_name="k",
             default_value=3,
             type=FieldInputType.INTEGER,
             help_text="Cliques size",
+            inner_type=int,
+        ),
+    },
+    GraphTypeEnum.STAR: {
+        "n": FormFieldConfig(
+            field_name="n",
+            default_value=10,
+            type=FieldInputType.INTEGER,
+            help_text="node labels are 0 to n with center 0. ",
+            inner_type=int,
+        ),
+    },
+    GraphTypeEnum.CUSTOM: {
+        "graph_data_format": FormFieldConfig(
+            field_name="graph_data_format",
+            default_value=GraphDataFormatEnum.MULTILINE_ADJLIST,
+            type=FieldInputType.COMBOBOX,
+            help_text="Graph data format",
+            options=GraphDataFormatEnum.choices,
+            inner_type=GraphDataFormatEnum,
+        ),
+        "file_path": FormFieldConfig(
+            field_name="file_path",
+            type=FieldInputType.FILE,
+            help_text="Graph file path",
+            inner_type=str,
         ),
     },
 }
@@ -141,6 +186,17 @@ NodeAttributeFormFieldsConfig = {
         type=FieldInputType.CHECKBOX,
         label="Is source ?",
     ),
+}
+
+CommunityTypeToFormFieldsConfigMap = {
+    CommunityOptionEnum.AGDL: {
+        "kc": FormFieldConfig(
+            field_name="kc",
+            default_value=4,
+            type=FieldInputType.INTEGER,
+            help_text="Size of the neighbor set for each cluster",
+        ),
+    },
 }
 
 

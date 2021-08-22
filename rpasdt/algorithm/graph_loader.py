@@ -3,7 +3,16 @@ from typing import Dict
 import networkx as nx
 from networkx import Graph
 
+from rpasdt.algorithm.graph_export_import import GRAPH_IMPORTER
 from rpasdt.algorithm.taxonomies import GraphTypeEnum
+
+
+def load_custom_graph(graph_type_properties):
+    graph_data_format = graph_type_properties["graph_data_format"]
+    file_path = graph_type_properties["file_path"]
+    with open(file_path, "r") as file:
+        return GRAPH_IMPORTER[graph_data_format](file.read())
+
 
 GRAPH_TYPE_LOADER = {
     GraphTypeEnum.WATTS_STROGATZ: lambda graph_type_properties: nx.watts_strogatz_graph(
@@ -28,6 +37,10 @@ GRAPH_TYPE_LOADER = {
     GraphTypeEnum.CONNECTED_CAVEMAN_GRAPH: lambda graph_type_properties: nx.connected_caveman_graph(
         **graph_type_properties
     ),
+    GraphTypeEnum.STAR: lambda graph_type_properties: nx.star_graph(
+        **graph_type_properties
+    ),
+    GraphTypeEnum.CUSTOM: load_custom_graph,
 }
 
 

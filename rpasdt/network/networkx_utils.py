@@ -75,7 +75,7 @@ def get_grouped_nodes(data):
 
 
 def get_nodes_color(nodes_value: List[int], cmap=None):
-    low, *_, high = sorted(nodes_value)
+    low, *_, high = sorted(nodes_value) if len(nodes_value) > 1 else (1, 1)
     norm = mpl.colors.Normalize(vmin=low, vmax=high, clip=True)
     mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
     return [mapper.to_rgba(i) for i in nodes_value]
@@ -96,7 +96,7 @@ def show_graph_config_dialog(
             object=graph_type_properties,
             config=DynamicFormConfig(
                 field_config=get_graph_form_field_config(graph_type),
-                title=f"Edit {graph_type} properties",
+                title=f"Edit {graph_type.label} properties",
             ),
         )
     return graph_type_properties

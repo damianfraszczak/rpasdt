@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from networkx import Graph
 
-from rpasdt.algorithm.communities import find_communities
+from rpasdt.algorithm.communities_new import find_communities
 from rpasdt.algorithm.models import (
     CommunitiesBasedSourceDetectionConfig,
     SingleSourceDetectionEvaluation,
@@ -12,7 +12,7 @@ from rpasdt.algorithm.models import (
 from rpasdt.algorithm.source_detection_evaluation import (
     compute_source_detection_evaluation,
 )
-from rpasdt.common.utils import sort_dict_by_value
+from rpasdt.common.utils import camel_case_split, sort_dict_by_value
 
 
 class SourceDetector(ABC):
@@ -57,6 +57,9 @@ class SourceDetector(ABC):
             G=self.IG, real_sources=real_sources, detected_sources=self.detected_sources
         )
 
+    def __str__(self) -> str:
+        return " ".join(camel_case_split(self.__class__.__name__))
+
 
 class CommunityBasedSourceDetector(SourceDetector, ABC):
     CONFIG_CLASS = CommunitiesBasedSourceDetectionConfig
@@ -75,9 +78,9 @@ class CommunityBasedSourceDetector(SourceDetector, ABC):
             {0: self.IG}
             if self.config.number_of_sources == 1
             else find_communities(
-                alg=self.config.communities_algorithm,
+                type=self.config.communities_algorithm,
                 graph=self.IG,
-                communities_count=self.config.number_of_sources,
+                number_communities=self.config.number_of_sources,
             )
         )
 

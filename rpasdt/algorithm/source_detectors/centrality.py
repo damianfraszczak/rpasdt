@@ -22,9 +22,7 @@ class CentralityBasedSourceDetector(SourceDetector):
     CONFIG_CLASS = CentralityBasedSourceDetectionConfig
 
     def estimate_sources(self) -> Dict[int, Union[float, Dict[int, float]]]:
-        return compute_centrality(
-            centrality=self.config.centrality_algorithm, graph=self.IG
-        )
+        return compute_centrality(type=self.config.centrality_algorithm, graph=self.IG)
 
 
 class UnbiasedCentralityBasedSourceDetector(SourceDetector):
@@ -32,7 +30,7 @@ class UnbiasedCentralityBasedSourceDetector(SourceDetector):
 
     def estimate_sources(self) -> Dict[int, Union[float, Dict[int, float]]]:
         return compute_unbiased_centrality(
-            centrality=self.config.centrality_algorithm, r=self.config.r, graph=self.IG
+            type=self.config.centrality_algorithm, r=self.config.r, graph=self.IG
         )
 
 
@@ -48,9 +46,7 @@ class CentralityCommunityBasedSourceDetector(CommunityBasedSourceDetector):
         super().__init__(G, IG, config)
 
     def find_sources_in_community(self, graph: Graph):
-        return compute_centrality(
-            centrality=self.config.centrality_algorithm, graph=graph
-        )
+        return compute_centrality(type=self.config.centrality_algorithm, graph=graph)
 
     def __str__(self) -> str:
         return f"Centrality based source detector: {self.config.centrality_algorithm}"
@@ -63,5 +59,5 @@ class UnbiasedCentralityCommunityBasedSourceDetector(
 
     def find_sources_in_community(self, graph: Graph):
         return compute_unbiased_centrality(
-            centrality=self.config.centrality_algorithm, graph=graph, r=self.config.r
+            type=self.config.centrality_algorithm, graph=graph, r=self.config.r
         )

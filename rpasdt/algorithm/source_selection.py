@@ -20,7 +20,7 @@ def __source_selection_centrality(
     return [
         node
         for node, _ in sorted(
-            compute_centrality(centrality=centrality, graph=graph).items(),
+            compute_centrality(type=centrality, graph=graph).items(),
             key=lambda x: x[1],
             reverse=True,
         )
@@ -31,17 +31,17 @@ SOURCE_SELECTION_OPERATION_MAP = {
     SourceSelectionOptionEnum.RANDOM: __source_selection_random_nodes,
     SourceSelectionOptionEnum.DEGREE: lambda graph, number_of_sources: __source_selection_centrality(
         graph=graph,
-        centrality=CentralityOptionEnum.DEGREE,
+        type=CentralityOptionEnum.DEGREE,
         number_of_sources=number_of_sources,
     ),
     SourceSelectionOptionEnum.BETWEENNESS: lambda graph, number_of_sources: __source_selection_centrality(
         graph=graph,
-        centrality=CentralityOptionEnum.BETWEENNESS,
+        type=CentralityOptionEnum.BETWEENNESS,
         number_of_sources=number_of_sources,
     ),
     SourceSelectionOptionEnum.CLOSENESS: lambda graph, number_of_sources: __source_selection_centrality(
         graph=graph,
-        centrality=CentralityOptionEnum.CLOSENESS,
+        type=CentralityOptionEnum.CLOSENESS,
         number_of_sources=number_of_sources,
     ),
 }

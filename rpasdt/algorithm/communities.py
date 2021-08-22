@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional
 
 from community import community_louvain
-from networkx import Graph, community, k_shell
+from networkx import Graph, community
 
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.common.utils import group_dict_by_values
@@ -10,28 +10,6 @@ from rpasdt.network.networkx_utils import map_networkx_communities_to_dict
 
 def community_bipartition_local(graph: Graph) -> Dict[int, List[int]]:
     return community.kernighan_lin_bisection(graph)
-
-
-def community_k_clique_local(
-    graph: Graph, clique_size: int = 2
-) -> Dict[int, List[int]]:
-    return map_networkx_communities_to_dict(
-        [c for c in community.k_clique_communities(graph, clique_size)]
-    )
-
-
-def community_k_shell_local(
-    graph: Graph, k: Optional[int] = None, core_size: Optional[int] = None
-) -> Dict[int, List[int]]:
-    return map_networkx_communities_to_dict(
-        [c for c in k_shell(G=graph, k=k, core_number=core_size)]
-    )
-
-
-def community_k_core_local(
-    graph: Graph, k: Optional[int] = None, core_number: Optional[int] = None
-) -> Dict[int, List[int]]:
-    return {0: k_shell(G=graph, k=k, core_number=core_number).nodes()}
 
 
 def community_louvain_local(
@@ -98,15 +76,15 @@ def community_tree_local(
 
 
 COMMUNITY_OPERATION_MAP = {
-    CommunityOptionEnum.LOUVAIN: community_louvain_local,
-    CommunityOptionEnum.GIRVAN_NEWMAN: community_girvan_newman_local,
-    CommunityOptionEnum.BIPARTITION: community_bipartition_local,
-    CommunityOptionEnum.GREEDY_MODULARITY: community_greedy_modularity_local,
-    CommunityOptionEnum.NAIVE_MODULARITY: community_naive_modularity_local,
-    CommunityOptionEnum.LABEL_PROPAGATION: community_label_propagation_local,
-    CommunityOptionEnum.TREE: community_tree_local,
-    CommunityOptionEnum.K_CLIQUE: community_k_clique_local,
-    CommunityOptionEnum.K_CORE: community_k_clique_local,
+    # CommunityOptionEnum.LOUVAIN: community_louvain_local,
+    # CommunityOptionEnum.GIRVAN_NEWMAN: community_girvan_newman_local,
+    # CommunityOptionEnum.BIPARTITION: community_bipartition_local,
+    # CommunityOptionEnum.GREEDY_MODULARITY: community_greedy_modularity_local,
+    # CommunityOptionEnum.NAIVE_MODULARITY: community_naive_modularity_local,
+    # CommunityOptionEnum.LABEL_PROPAGATION: community_label_propagation_local,
+    # CommunityOptionEnum.TREE: community_tree_local,
+    # CommunityOptionEnum.K_CLIQUE: community_k_clique_local,
+    # CommunityOptionEnum.K_CORE: community_k_clique_local,
 }
 
 
