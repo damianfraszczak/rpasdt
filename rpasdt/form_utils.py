@@ -3,7 +3,11 @@ from typing import Dict
 
 from ndlib.models import DiffusionModel
 
-from rpasdt.algorithm.taxonomies import GraphDataFormatEnum, GraphTypeEnum
+from rpasdt.algorithm.taxonomies import (
+    CommunityOptionEnum,
+    GraphDataFormatEnum,
+    GraphTypeEnum,
+)
 from rpasdt.common.utils import eval_if_str
 from rpasdt.gui.dynamic_form.models import (
     DynamicFormConfig,
@@ -127,6 +131,15 @@ GraphTypeToFormFieldsConfigMap = {
             inner_type=int,
         ),
     },
+    GraphTypeEnum.STAR: {
+        "n": FormFieldConfig(
+            field_name="n",
+            default_value=10,
+            type=FieldInputType.INTEGER,
+            help_text="node labels are 0 to n with center 0. ",
+            inner_type=int,
+        ),
+    },
     GraphTypeEnum.CUSTOM: {
         "graph_data_format": FormFieldConfig(
             field_name="graph_data_format",
@@ -173,6 +186,17 @@ NodeAttributeFormFieldsConfig = {
         type=FieldInputType.CHECKBOX,
         label="Is source ?",
     ),
+}
+
+CommunityTypeToFormFieldsConfigMap = {
+    CommunityOptionEnum.AGDL: {
+        "kc": FormFieldConfig(
+            field_name="kc",
+            default_value=4,
+            type=FieldInputType.INTEGER,
+            help_text="Size of the neighbor set for each cluster",
+        ),
+    },
 }
 
 

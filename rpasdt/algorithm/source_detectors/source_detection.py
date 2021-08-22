@@ -42,3 +42,8 @@ def get_source_detector(
     for key, value in kwargs.items():
         setattr(detector.config, key, value)
     return detector
+
+
+# G = nx.karate_club_graph()
+# detector = get_source_detector(SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED, G=G,IG=G, number_of_sources=2)
+# print(detector.detected_sources)

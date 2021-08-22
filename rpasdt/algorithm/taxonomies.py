@@ -33,6 +33,10 @@ class GraphTypeEnum(StringChoiceEnum):
     BALANCED_TREE = ("BALANCED_TREE", "Balanced tree")
     COMPLETE = ("COMPLETE", "Complete graph")
     ERDOS_RENYI = ("ERDOS_RENYI", "Erdős-Rényi graph or a binomial graph")
+    STAR = (
+        "STAR",
+        "The star graph consists of one center node connected to n outer nodes.",
+    )
     # Social Networks
     KARATE_CLUB = ("KARATE_CLUB_GRAPH", "Karate club")
     DAVIS_SOUTHERN = ("DAVIS_SOUTHERN", "Davis Southern women social network")
@@ -98,41 +102,166 @@ class CentralityOptionEnum(StringChoiceEnum):
     PAGE_RANK = ("PageRank", "Returns the PageRank of the nodes in the graph.")
 
 
+class ClusteringOptionEnum(StringChoiceEnum):
+    K_CLIQUE = ("k_clique", "Finds clusters in a graph using the K-Clique method.")
+    K_CORE = ("k_core", "Finds clusters in a graph using the K-core method.")
+    K_SHELL = ("k_shell", "Finds clusters in a graph using the K-shell method.")
+    K_CRUST = ("k_crust", "Finds clusters in a graph using the K-shell method.")
+    K_CORONA = ("k_corona", "Finds clusters in a graph using the K-shell method.")
+    K_MEANS = ("k_means", "Finds clusters in a graph using the K-means method.")
+
+
 class CommunityOptionEnum(StringChoiceEnum):
-    BIPARTITION = (
-        "bipartition",
-        "Finds 2 communities in a graph using the Kernighan method.",
+    AGDL = (
+        "agdl",
+        "AGDL is a graph-based agglomerative algorithm, for clustering high-dimensional data.",
     )
-    LOUVAIN = ("louvain", "Find communities in graph using the Louvain method.")
-    # centrality based
+    ASYNC_FLUID = (
+        "async_fluid",
+        "Fluid Communities (FluidC) is based on the simple idea of fluids (i.e., communities) interacting in an environment (i.e., a non-complete graph), expanding and contracting.",
+    )
+    BELIEF = (
+        "belief",
+        "Belief community seeks the consensus of many high-modularity partitions.",
+    )
+    CPM = ("cpm", "CPM is a model where the quality function to optimize is:")
+    CHINESEWHISPERS = (
+        "chinesewhispers",
+        "Fuzzy graph clustering that (i) creates an intermediate representation of the input graph, which reflects the â€śambiguityâ€ť of its nodes, and (ii) uses hard clustering to discover crisp clusters in such â€śdisambiguatedâ€ť intermediate graph.",
+    )
+    DER = ("der", "DER is a Diffusion Entropy Reducer graph clustering algorithm.")
+    EDMOT = ("edmot", "The algorithm first creates the graph of higher order motifs.")
+    EIGENVECTOR = (
+        "eigenvector",
+        "Newmanâ€™s leading eigenvector method for detecting community structure based on modularity.",
+    )
+    EM = ("em", "EM is based on based on a mixture model.")
+    GA = ("ga", "Genetic based approach to discover communities in social networks.")
+    GDMP2 = (
+        "gdmp2",
+        "Gdmp2 is a method for identifying a set of dense subgraphs of a given sparse graph.",
+    )
+    GEMSEC = (
+        "gemsec",
+        "The procedure uses random walks to approximate the pointwise mutual information matrix obtained by pooling normalized adjacency matrix powers.",
+    )
     GIRVAN_NEWMAN = (
         "girvan_newman",
-        "Finds communities in a graph using the Girvan–Newman method.",
+        "The Girvan-Newman algorithm detects communities by progressively removing edges from the original graph.",
     )
     GREEDY_MODULARITY = (
         "greedy_modularity",
-        "Finds communities in a graph using the Clauset-Newman-Moore greedy modularity maximization.",
+        "The CNM algorithm uses the modularity to find the communities strcutures.",
     )
-    NAIVE_MODULARITY = (
-        (
-            "naive_modularity",
-            "Find communities in graph using the naive modularity maximization.",
-        ),
+    HEAD_TAIL = (
+        "head_tail",
+        "Identifying homogeneous communities in complex networks by applying head/tail breaks on edge betweenness given its heavy-tailed distribution.",
     )
+    INFOMAP = ("infomap", "Infomap is based on ideas of information theory.")
+    KCUT = ("kcut", "An Efficient Spectral Algorithm for Network Community Discovery.")
     LABEL_PROPAGATION = (
         "label_propagation",
-        "Finds communities in a graph using the Label propagation method.",
+        "The Label Propagation algorithm (LPA) detects communities using network structure alone.",
     )
-    TREE = (
-        "tree",
-        "Finds communities in a graph using the Lukes Algorithm for exact optimal weighted tree partitioning.",
+    LEIDEN = (
+        "leiden",
+        "The Leiden algorithm is an improvement of the Louvain algorithm.",
     )
-    K_CLIQUE = ("k_clique", "Finds communities in a graph using the K-Clique method.")
-    K_CORE = ("k_core", "Finds core in a graph using the K-core method.")
-    K_SHELL = ("k_shell", "Finds shell in a graph using the K-shell method.")
-    K_CRUST = ("k_crust", "Finds crust in a graph using the K-shell method.")
-    K_CORONA = ("k_corona", "Finds korona in a graph using the K-shell method.")
-    K_MEANS = ("k_means", "Finds communities in a graph using the K-means method.")
+    LOUVAIN = ("louvain", "Louvain maximizes a modularity score for each community.")
+    LSWL = (
+        "lswl",
+        "LSWL locally discovers networksâ€™ the communities precisely, deterministically, and quickly.",
+    )
+    LSWL_PLUS = (
+        "lswl_plus",
+        "LSWL+ is capable of finding a partition with overlapping communities or without them, based on user preferences.",
+    )
+    MARKOV_CLUSTERING = (
+        "markov_clustering",
+        "The Markov clustering algorithm (MCL) is based on simulation of (stochastic) flow in graphs.",
+    )
+    MCODE = (
+        "mcode",
+        "MCODE is the earliest seed-growth method for predicting protein complexes from PPI networks.",
+    )
+    MOD_M = (
+        "mod_m",
+        "Community Discovery algorithm designed to find local optimal community structures in large networks starting from a given source vertex.",
+    )
+    MOD_R = (
+        "mod_r",
+        "Community Discovery algorithm that infers the hierarchy of communities that enclose a given vertex by exploring the graph one vertex at a time.",
+    )
+    PARIS = (
+        "paris",
+        "Paris is a hierarchical graph clustering algorithm inspired by modularity-based clustering techniques.",
+    )
+    PYCOMBO = (
+        "pycombo",
+        "This is an implementation (for Modularity maximization) of the community detection algorithm called â€śComboâ€ť.",
+    )
+    RBER_POTS = (
+        "rber_pots",
+        "rber_pots is a model where the quality function to optimize is:",
+    )
+    RB_POTS = (
+        "rb_pots",
+        "Rb_pots is a model where the quality function to optimize is:",
+    )
+    RICCI_COMMUNITY = (
+        "ricci_community",
+        "Curvature is a geometric property to describe the local shape of an object.",
+    )
+    R_SPECTRAL_CLUSTERING = (
+        "r_spectral_clustering",
+        "Spectral clustering partitions the nodes of a graph into groups based upon the eigenvectors of the graph Laplacian.",
+    )
+    SCAN = (
+        "scan",
+        "SCAN (Structural Clustering Algorithm for Networks) is an algorithm which detects clusters, hubs and outliers in networks.",
+    )
+    SIGNIFICANCE_COMMUNITIES = (
+        "significance_communities",
+        "Significance_communities is a model where the quality function to optimize is:",
+    )
+    SPINGLASS = (
+        "spinglass",
+        "Spinglass relies on an analogy between a very popular statistical mechanic model called Potts spin glass, and the community structure.",
+    )
+    SURPRISE_COMMUNITIES = (
+        "surprise_communities",
+        "Surprise_communities is a model where the quality function to optimize is:",
+    )
+    WALKTRAP = ("walktrap", "walktrap is an approach based on random walks.")
+    SBM_DL = (
+        "sbm_dl",
+        "Efficient Monte Carlo and greedy heuristic for the inference of stochastic block models.",
+    )
+    SBM_DL_NESTED = (
+        "sbm_dl_nested",
+        "Efficient Monte Carlo and greedy heuristic for the inference of stochastic block models.",
+    )
+    SCD = (
+        "scd",
+        "The procedure greedily optimizes the approximate weighted community clustering metric.",
+    )
+    SPECTRAL = (
+        "spectral",
+        "SCD implements a Spectral Clustering algorithm for Communities Discovery.",
+    )
+    THRESHOLD_CLUSTERING = (
+        "threshold_clustering",
+        "Developed for semantic similarity networks, this algorithm specifically targets weighted and directed graphs.",
+    )
+
+
+class NetworkAnalysisOptionEnum(StringChoiceEnum):
+    DENSITY = ("density", "The density of a graph.")
+    AVERAGE_CLUSTERING = ("average_clustering", "The average clustering of a graph.")
+    SUMMARY = (
+        "summary",
+        "The summary includes the number of nodes and edges, or neighbours for a single node.",
+    )
 
 
 class SourceSelectionOptionEnum(StringChoiceEnum):

@@ -5,6 +5,7 @@ from rpasdt.algorithm.source_detectors.source_detection import SourceDetector
 from rpasdt.controller.controllers import (
     CentralityAnalysisControllerMixin,
     CommunityAnalysisControllerMixin,
+    NetworkAnalysisControllerMixin,
 )
 from rpasdt.controller.graph import GraphController
 from rpasdt.gui.analysis.models import SourceDetectionAnalysisData
@@ -13,7 +14,10 @@ from rpasdt.network.taxonomies import NodeAttributeEnum
 
 
 class SourceDetectionGraphController(
-    GraphController, CentralityAnalysisControllerMixin, CommunityAnalysisControllerMixin
+    GraphController,
+    CentralityAnalysisControllerMixin,
+    CommunityAnalysisControllerMixin,
+    NetworkAnalysisControllerMixin,
 ):
     def __init__(
         self,

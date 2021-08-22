@@ -4,9 +4,9 @@ ndlib==5.1.0
 networkx==2.6.1
 PyQt5==5.15.4
 PyQt5-stubs==5.15.2.0
-python-louvain==0.15
 typing==3.7.4.3
 typing-extensions==3.10.0.0
 PyInstaller==4.4
 numpy==1.21.1
 dataclasses-json==0.5.4
+cdlib==0.2.4

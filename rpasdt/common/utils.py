@@ -1,7 +1,8 @@
 import ast
+import inspect
 import re
 from collections import defaultdict
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Mapping, Optional, _GenericAlias
 
 
 def object_to_dict(object: Any) -> dict:
@@ -62,3 +63,23 @@ def multi_sum(iterable, *attributes, **kwargs):
 
 def camel_case_split(str):
     return re.findall(r"[A-Z](?:[a-z]+|[A-Z]*(?=[A-Z]|$))", str)
+
+
+def get_function_params(func) -> Mapping[str, inspect.Parameter]:
+    return inspect.signature(func).parameters
+
+
+def get_default_value(type: _GenericAlias, default: Optional[Any]) -> Optional[Any]:
+    if default and default != inspect.Parameter.empty:
+        return default
+    try:
+        return type()
+    except Exception:
+        return None
+
+
+def get_function_default_kwargs(func) -> Dict[str, Any]:
+    return {
+        name: get_default_value(type=param.annotation, default=param.default)
+        for name, param in get_function_params(func).items()
+    }

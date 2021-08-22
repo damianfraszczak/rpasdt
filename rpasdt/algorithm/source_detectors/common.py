@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from networkx import Graph
 
-from rpasdt.algorithm.communities import find_communities
+from rpasdt.algorithm.communities_new import find_communities
 from rpasdt.algorithm.models import (
     CommunitiesBasedSourceDetectionConfig,
     SingleSourceDetectionEvaluation,
@@ -78,9 +78,9 @@ class CommunityBasedSourceDetector(SourceDetector, ABC):
             {0: self.IG}
             if self.config.number_of_sources == 1
             else find_communities(
-                alg=self.config.communities_algorithm,
+                type=self.config.communities_algorithm,
                 graph=self.IG,
-                communities_count=self.config.number_of_sources,
+                number_communities=self.config.number_of_sources,
             )
         )
 

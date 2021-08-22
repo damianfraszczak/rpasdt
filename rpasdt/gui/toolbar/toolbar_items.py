@@ -1,103 +1,31 @@
 from functools import partial
+from typing import Dict, Tuple, Union
 
 from PyQt5.QtWidgets import QApplication, QMenu, QStyle
 
 from rpasdt.algorithm.taxonomies import (
     CentralityOptionEnum,
     CommunityOptionEnum,
+    NetworkAnalysisOptionEnum,
     SourceDetectionAlgorithm,
 )
+from rpasdt.common.enums import StringChoiceEnum
+from rpasdt.common.utils import format_label
 from rpasdt.gui.utils import create_action
 
+
+def _get_toolbar_choices(enum: StringChoiceEnum):
+    return {
+        f"{enum.__class__.__name__}_{enum.name}": (format_label(enum.value), enum.label)
+        for enum in enum
+    }
+
+
 # TODO Link Prediction
+ANALYSIS_HANDLER_PREFIX = "handler_analysis_"
+CENTRALITY_OPTIONS = _get_toolbar_choices(CentralityOptionEnum)
+COMMUNITY_OPTIONS = _get_toolbar_choices(CommunityOptionEnum)
 
-CENTRALITY_OPTIONS = {
-    CentralityOptionEnum.DEGREE: ("Degree", "Compute the degree centrality for nodes."),
-    CentralityOptionEnum.EIGENVECTOR: (
-        "Eigenvector",
-        "Compute the eigenvector centrality for the graph G.",
-    ),
-    CentralityOptionEnum.KATZ: (
-        "Katz",
-        "Compute the Katz centrality for the nodes of the graph G.",
-    ),
-    CentralityOptionEnum.CLOSENESS: (
-        "Closeness",
-        "Compute closeness centrality for nodes.",
-    ),
-    CentralityOptionEnum.BETWEENNESS: (
-        "Betweenness",
-        "Compute the shortest-path betweenness centrality for nodes.",
-    ),
-    # CentralityOptionEnum.EDGE_BETWEENNESS: ('Edge betweenness', ('Compute betweenness centrality for edges.')),
-    CentralityOptionEnum.HARMONIC: (
-        "Harmonic Centrality",
-        "Compute harmonic centrality for nodes.",
-    ),
-    CentralityOptionEnum.VOTE_RANK: (
-        "Vote rank",
-        "Select a list of influential nodes in a graph using VoteRank algorithm",
-    ),
-    CentralityOptionEnum.PAGE_RANK: (
-        "Page rank",
-        "Compute page rank centrality for nodes.",
-    ),
-}
-
-COMMUNITY_OPTIONS = {
-    CommunityOptionEnum.BIPARTITION: (
-        "Bipartitions",
-        "Partition a graph into two blocks using the Kernighan–Lin algorithm.",
-    ),
-    CommunityOptionEnum.LOUVAIN: (
-        "Louvain",
-        "Find communities in graph using the Louvain method.",
-    ),
-    CommunityOptionEnum.GIRVAN_NEWMAN: (
-        "Girvan-Newman",
-        "Finds communities in a graph using the Girvan–Newman method.",
-    ),
-    CommunityOptionEnum.GREEDY_MODULARITY: (
-        "Clauset-Newman-Moore greedy modularity",
-        "Finds communities in a graph using the Clauset-Newman-Moore greedy modularity maximization.",
-    ),
-    # CommunityOptionEnum.NAIVE_MODULARITY: (
-    #     'Naive greedy modularity',
-    #     'Find communities in graph using the greedy modularity maximization.'
-    # ),
-    CommunityOptionEnum.LABEL_PROPAGATION: (
-        "Label propagation",
-        "Generates community sets determined by label propagation",
-    ),
-    CommunityOptionEnum.TREE: (
-        "Tree partitioning",
-        "Optimal partitioning of a weighted tree using the Lukes algorithm.",
-    ),
-    CommunityOptionEnum.K_CLIQUE: (
-        "K-Clique",
-        "Find k-clique communities in graph using the percolation method.",
-    ),
-    CommunityOptionEnum.K_CORE: (
-        "K-Core",
-        "Finds core in a graph using the K-core method.",
-    ),
-    CommunityOptionEnum.K_SHELL: (
-        "K-Shell",
-        "Finds shell in a graph using the K-shell method.",
-    ),
-    CommunityOptionEnum.K_CRUST: (
-        "K-Crust",
-        "Finds crust in a graph using the K-shell method.",
-    ),
-    CommunityOptionEnum.K_CORONA: (
-        "K-Corona",
-        "Finds korona in a graph using the K-shell method.",
-    ),
-    CommunityOptionEnum.K_MEANS: (
-        "K-Means",
-        "Finds communities in a graph using the K-means method.",
-    ),
-}
 NETWORK_OPTIONS = {
     "bridge": ("Bridges", "Generate all bridges in a graph."),
     "cycle": (
@@ -122,22 +50,29 @@ NETWORK_OPTIONS = {
     ),
 }
 
+NETWORK_OPTIONS = _get_toolbar_choices(NetworkAnalysisOptionEnum)
+
 
 def _create_actions(
-    definition_map, handler: "GraphController", method_prefix="handler", parent=None
+    definition_map: Union[Dict, Tuple],
+    handler: "GraphController",
+    method_prefix="handler",
+    parent=None,
 ):
     return [
         create_action(
             title=title,
             tooltip=tooltip,
-            handler=getattr(handler, f"{method_prefix}_{method_name}", None),
+            handler=getattr(handler, f"{method_prefix}{method_name}", None),
             parent=parent,
         )
         for method_name, (title, tooltip) in definition_map.items()
     ]
 
 
-def _create_menu(title, definition_map, handler, method_prefix, parent):
+def _create_menu(
+    title: str, definition_map: Union[Dict, Tuple], handler, method_prefix, parent
+):
     menu = QMenu(title, parent)
     menu.addActions(_create_actions(definition_map, handler, method_prefix, parent))
     menu.setTitle(title)
@@ -160,7 +95,7 @@ def create_analysis_action(parent, handler):
             title="Centrality analysis",
             definition_map=CENTRALITY_OPTIONS,
             handler=handler,
-            method_prefix="handler_analysis_centrality",
+            method_prefix=ANALYSIS_HANDLER_PREFIX,
             parent=parent,
         )
     )
@@ -170,18 +105,21 @@ def create_analysis_action(parent, handler):
             title="Community analysis",
             definition_map=COMMUNITY_OPTIONS,
             handler=handler,
-            method_prefix="handler_analysis_community",
+            method_prefix=ANALYSIS_HANDLER_PREFIX,
             parent=parent,
         )
     )
-    # menu.addSeparator()
-    # menu.addMenu(_create_menu(title="Network analysis",
-    #                           definition_map=NETWORK_OPTIONS,
-    #                           handler=handler,
-    #                           method_prefix='handler_analysis_network',
-    #                           parent=parent
-    #                           ))
-    # menu.addSeparator()
+    menu.addSeparator()
+    menu.addMenu(
+        _create_menu(
+            title="Network analysis",
+            definition_map=NETWORK_OPTIONS,
+            handler=handler,
+            method_prefix=ANALYSIS_HANDLER_PREFIX,
+            parent=parent,
+        )
+    )
+    menu.addSeparator()
     return action
 
 

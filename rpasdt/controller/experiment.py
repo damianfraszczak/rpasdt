@@ -4,6 +4,7 @@ from rpasdt.algorithm.source_selection import select_sources
 from rpasdt.controller.controllers import (
     CentralityAnalysisControllerMixin,
     CommunityAnalysisControllerMixin,
+    NetworkAnalysisControllerMixin,
 )
 from rpasdt.controller.diffusion import DiffusionGraphController
 from rpasdt.controller.graph import GraphController
@@ -24,7 +25,10 @@ from rpasdt.network.taxonomies import NodeAttributeEnum
 
 
 class ExperimentGraphController(
-    GraphController, CentralityAnalysisControllerMixin, CommunityAnalysisControllerMixin
+    GraphController,
+    CentralityAnalysisControllerMixin,
+    CommunityAnalysisControllerMixin,
+    NetworkAnalysisControllerMixin,
 ):
     def __init__(self, window: "MainWindow", experiment: Experiment):
         super().__init__(window, experiment.graph, experiment.graph_config)

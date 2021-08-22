@@ -37,6 +37,9 @@ GRAPH_TYPE_LOADER = {
     GraphTypeEnum.CONNECTED_CAVEMAN_GRAPH: lambda graph_type_properties: nx.connected_caveman_graph(
         **graph_type_properties
     ),
+    GraphTypeEnum.STAR: lambda graph_type_properties: nx.star_graph(
+        **graph_type_properties
+    ),
     GraphTypeEnum.CUSTOM: load_custom_graph,
 }
 
