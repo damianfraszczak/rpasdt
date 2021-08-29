@@ -1,7 +1,7 @@
 """Models."""
 from copy import copy
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, Union
 
 from dataclasses_json import dataclass_json
 from networkx import Graph
@@ -54,24 +54,6 @@ class GraphConfig:
 
 
 @dataclass
-class DiffusionExperiment:
-    source_graph: Graph = field(default_factory=Graph)
-    diffusion_graph: Graph = field(default_factory=Graph)
-    graph_config: GraphConfig = field(default_factory=GraphConfig)
-    diffusion_type: DiffusionTypeEnum = field(default=DiffusionTypeEnum.SI)
-    diffusion_model_properties: Dict = field(default_factory=dict)
-    diffusion_iteration_bunch: int = field(default=200)
-
-    @property
-    def source_nodes(self):
-        return [
-            node_index
-            for node_index, data in self.source_graph.nodes(data=True)
-            if data.get(NodeAttributeEnum.SOURCE)
-        ]
-
-
-@dataclass
 class Experiment:
     """The initial configured situation."""
 
@@ -92,3 +74,27 @@ class ExperimentExportModel:
     graph_data: str
     graph_data_format: GraphDataFormatEnum
     graph_config: GraphConfig
+
+
+class SimulationStep:
+    start: Union[int, float]
+    end: Union[int, float]
+    range: Union[int, float] = 1
+
+
+@dataclass
+class DiffusionExperiment:
+    source_graph: Graph = field(default_factory=Graph)
+    diffusion_graph: Graph = field(default_factory=Graph)
+    graph_config: GraphConfig = field(default_factory=GraphConfig)
+    diffusion_type: DiffusionTypeEnum = field(default=DiffusionTypeEnum.SI)
+    diffusion_model_properties: Dict = field(default_factory=dict)
+    diffusion_iteration_bunch: int = field(default=200)
+
+    @property
+    def source_nodes(self):
+        return [
+            node_index
+            for node_index, data in self.source_graph.nodes(data=True)
+            if data.get(NodeAttributeEnum.SOURCE)
+        ]

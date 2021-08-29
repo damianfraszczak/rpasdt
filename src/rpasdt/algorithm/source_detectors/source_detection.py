@@ -1,5 +1,8 @@
+from typing import Optional
+
 from networkx import Graph
 
+from rpasdt.algorithm.models import SourceDetectionConfig
 from rpasdt.algorithm.source_detectors.centrality import (
     CentralityBasedSourceDetector,
     CentralityCommunityBasedSourceDetector,
@@ -9,6 +12,9 @@ from rpasdt.algorithm.source_detectors.centrality import (
 from rpasdt.algorithm.source_detectors.common import SourceDetector
 from rpasdt.algorithm.source_detectors.dynamic_age import (
     DynamicAgeSourceDetector,
+)
+from rpasdt.algorithm.source_detectors.jordan_center import (
+    JordanCenterCommunityBasedSourceDetector,
 )
 from rpasdt.algorithm.source_detectors.net_sleuth import (
     NetSleuthCommunityBasedSourceDetector,
@@ -26,6 +32,7 @@ SOURCE_DETECTORS = {
     SourceDetectionAlgorithm.DYNAMIC_AGE: DynamicAgeSourceDetector,
     SourceDetectionAlgorithm.NET_SLEUTH: NetSleuthCommunityBasedSourceDetector,
     SourceDetectionAlgorithm.RUMOR_CENTER: RumorCenterCommunityBasedSourceDetector,
+    SourceDetectionAlgorithm.JORDAN_CENTER: JordanCenterCommunityBasedSourceDetector,
 }
 
 
@@ -34,16 +41,18 @@ def get_source_detector(
     G: Graph,
     IG: Graph,
     number_of_sources=1,
+    config: Optional[SourceDetectionConfig] = None,
     *args,
     **kwargs
 ) -> SourceDetector:
-    detector = SOURCE_DETECTORS.get(algorithm)(G=G, IG=IG)
-    detector.config.number_of_sources = number_of_sources
+    detector = SOURCE_DETECTORS.get(algorithm)(G=G, IG=IG, config=config)
+    if number_of_sources > 1:
+        detector.config.number_of_sources = number_of_sources
     for key, value in kwargs.items():
         setattr(detector.config, key, value)
     return detector
 
 
 # G = nx.karate_club_graph()
-# detector = get_source_detector(SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED, G=G,IG=G, number_of_sources=2)
+# detector = get_source_detector(SourceDetectionAlgorithm.JORDAN_CENTER, G=G,IG=G, number_of_sources=2)
 # print(detector.detected_sources)

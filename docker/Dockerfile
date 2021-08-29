@@ -20,7 +20,7 @@ WORKDIR /app/
 
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
-COPY rpasdt /app/rpasdt
+COPY src/rpasdt /app/rpasdt
 COPY docker/docker-entrypoint.sh docker-entrypoint.sh
 RUN chmod +x docker-entrypoint.sh
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

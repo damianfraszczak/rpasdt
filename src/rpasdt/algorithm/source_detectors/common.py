@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from functools import cached_property
 from typing import Dict, List, Optional, Tuple, Union
 
 from networkx import Graph
@@ -41,12 +42,12 @@ class SourceDetector(ABC):
     def process_estimation(self, result: Dict[int, float]):
         return sort_dict_by_value(result)[: self.config.number_of_sources]
 
-    @property
+    @cached_property
     def detected_sources(self) -> Union[int, List[int]]:
         result = [source for source, _ in self.detected_sources_estimation]
         return result[0] if len(result) == 1 else result
 
-    @property
+    @cached_property
     def detected_sources_estimation(self) -> List[Tuple[int, float]]:
         return self.process_estimation(self.estimate_sources())
 
@@ -72,8 +73,9 @@ class CommunityBasedSourceDetector(SourceDetector, ABC):
     ):
         super().__init__(G, IG, config)
 
-    @property
+    @cached_property
     def communities(self) -> Dict[int, List[int]]:
+
         return (
             {0: self.IG}
             if self.config.number_of_sources == 1
