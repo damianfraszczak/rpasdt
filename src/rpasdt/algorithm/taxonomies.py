@@ -63,6 +63,12 @@ class DiffusionTypeEnum(StringChoiceEnum):
     INDEPENDENT_CASCADES = ("INDEPENDENT_CASCADES", "Independent Cascades")
 
 
+class DiffusionSimulationMode(StringChoiceEnum):
+    SINGLE = ("SINGLE", "Single iteration.")
+    BUNCH = ("BUNCH", "Bunch of iterations.")
+    TO_FULL_COVER = ("TO_FULL_COVER", "To cover the whole network.")
+
+
 class NodeStatusEnum(StringChoiceEnum):
     """Available node statuses."""
 
@@ -72,10 +78,12 @@ class NodeStatusEnum(StringChoiceEnum):
     BLOCKED = "Blocked"
 
 
-# mappign how the statuses from ndlib corresponds to this app
-NodeStatusToNodeStatusCodeMap = {
+#  Numbers based on cdlib.
+NodeStatusToValueMapping = {
     NodeStatusEnum.SUSCEPTIBLE: 0,
     NodeStatusEnum.INFECTED: 1,
+    NodeStatusEnum.RECOVERED: 2,
+    NodeStatusEnum.BLOCKED: -1,
 }
 
 
@@ -294,3 +302,4 @@ class SourceDetectionAlgorithm(StringChoiceEnum):
         "community_unbiased_centrality",
         "Find sources with community unbiased centrality based algorithm.",
     )
+    JORDAN_CENTER = ("jordan_center", "Find sources with Jordan center algorithm.")

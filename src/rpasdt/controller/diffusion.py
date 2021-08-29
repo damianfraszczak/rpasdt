@@ -3,7 +3,10 @@ from typing import List
 from ndlib.models import DiffusionModel
 from networkx import Graph
 
-from rpasdt.algorithm.diffusion import get_and_init_diffusion_model
+from rpasdt.algorithm.diffusion import (
+    get_and_init_diffusion_model,
+    get_nodes_by_diffusion_status,
+)
 from rpasdt.algorithm.graph_drawing import get_diffusion_graph
 from rpasdt.algorithm.source_detectors.source_detection import (
     SourceDetector,
@@ -85,7 +88,9 @@ class DiffusionGraphController(
 
     def diffusion_execute_iteration_bunch(self):
         self.init_diffusion()
-        iterations = self.diffusion_model.iteration_bunch(200)
+        iterations = self.diffusion_model.iteration_bunch(
+            self.experiment.diffusion_iteration_bunch
+        )
         self.update_diffusion_graph()
         return iterations
 
@@ -98,10 +103,8 @@ class DiffusionGraphController(
 
     @property
     def infected_nodes(self) -> List[int]:
-        return (
-            [key for key, value in self.diffusion_model.status.items() if value == 1]
-            if self.diffusion_model
-            else []
+        return get_nodes_by_diffusion_status(
+            diffusion_model=self.diffusion_model, node_status=NodeAttributeEnum.INFECTED
         )
 
     def graph_config_changed(self):

@@ -47,7 +47,22 @@ SOURCE_SELECTION_OPERATION_MAP = {
 }
 
 
-def select_sources(config: NetworkSourceSelectionConfig, graph: Graph, *args, **kwargs):
+def select_sources(config: NetworkSourceSelectionConfig, graph: Graph):
     return SOURCE_SELECTION_OPERATION_MAP.get(config.algorithm)(
         graph=graph, number_of_sources=config.number_of_sources
+    )
+
+
+def select_sources_with_params(
+    graph: Graph,
+    number_of_sources: int = 1,
+    algorithm: SourceSelectionOptionEnum = SourceSelectionOptionEnum.RANDOM,
+    *args,
+    **kwargs
+):
+    return select_sources(
+        config=NetworkSourceSelectionConfig(
+            algorithm=algorithm, number_of_sources=number_of_sources
+        ),
+        graph=graph,
     )

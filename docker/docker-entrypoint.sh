@@ -6,6 +6,7 @@ source ~/.bashrc
 # Docker service command
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 case "$1" in
   shell)
     exec /bin/bash
@@ -15,11 +16,16 @@ case "$1" in
     exec su qtuser -c 'python3 /app/rpasdt/main.py'
     ;;
 
+  python3)
+    exec python3 "${@:2}"
+    ;;
+
   package)
     exec pyinstaller --onefile --windowed /app/rpasdt/main.py
     ;;
 
   *)
+
     echo "
     Usage: docker-compose run rpasdt <command>
 
@@ -29,6 +35,8 @@ case "$1" in
         shell: Open an interactive shell in the container
 
         run: Run the application
+
+        python3: Run python shell
 
         package: Generate an executable artifact
     "

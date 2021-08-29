@@ -14,7 +14,11 @@ from ndlib.models.epidemics import (
 from ndlib.models.ModelConfig import Configuration
 from networkx import Graph
 
-from rpasdt.algorithm.taxonomies import DiffusionTypeEnum, NodeStatusEnum
+from rpasdt.algorithm.taxonomies import (
+    DiffusionTypeEnum,
+    NodeStatusEnum,
+    NodeStatusToValueMapping,
+)
 from rpasdt.common.utils import eval_if_str
 
 DiffusionTypeToDiffusionModelMap = {
@@ -54,3 +58,18 @@ def get_and_init_diffusion_model(
     config.add_model_initial_configuration(NodeStatusEnum.INFECTED, source_nodes)
     diffusion_model.set_initial_status(config)
     return diffusion_model, model_params
+
+
+def get_nodes_by_diffusion_status(
+    diffusion_model: DiffusionModel = None,
+    node_status: NodeStatusEnum = NodeStatusEnum.INFECTED,
+):
+    return (
+        [
+            key
+            for key, value in diffusion_model.status.items()
+            if value == NodeStatusToValueMapping[node_status]
+        ]
+        if diffusion_model
+        else []
+    )

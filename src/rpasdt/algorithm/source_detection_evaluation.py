@@ -50,7 +50,13 @@ def compute_source_detection_evaluation(
     )
 
     return SingleSourceDetectionEvaluation(
-        error_distance=error_distance, TP=TP, FP=FP, FN=FN
+        G=G,
+        real_sources=real_sources,
+        detected_sources=detected_sources,
+        error_distance=error_distance,
+        TP=TP,
+        FP=FP,
+        FN=FN,
     )
 
 
