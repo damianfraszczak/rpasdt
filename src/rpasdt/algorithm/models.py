@@ -48,6 +48,11 @@ class CentralityBasedSourceDetectionConfig(SourceDetectionConfig):
 
 
 @dataclass
+class MultipleCentralityBasedSourceDetectionConfig(SourceDetectionConfig):
+    centrality_algorithms: List[CentralityOptionEnum] = field(default_factory=list)
+
+
+@dataclass
 class UnbiasedCentralityBasedSourceDetectionConfig(
     CentralityBasedSourceDetectionConfig
 ):

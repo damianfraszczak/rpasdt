@@ -15,6 +15,7 @@ class FieldInputType(StringChoiceEnum):
     PASSWORD = "PASSWORD"
     COLOR = "COLOR"
     FILE = "FILE"
+    MULTI_SELECT = "MULTI_SELECT"
 
 
 @dataclass

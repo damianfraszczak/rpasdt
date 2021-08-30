@@ -290,6 +290,10 @@ class SourceDetectionAlgorithm(StringChoiceEnum):
     NET_SLEUTH = ("net_sleuth", "Find sources with NetSleuth algorithm.")
     RUMOR_CENTER = ("rumor_center", "Find sources with Rumor center algorithm.")
     CENTRALITY_BASED = ("centrality", "Find sources with centrality based algorithm.")
+    MULTIPLE_CENTRALITY_BASED = (
+        "multiple_centrality",
+        "Find sources with multiple centrality based algorithm.",
+    )
     UNBIASED_CENTRALITY_BASED = (
         "unbiased_centrality",
         "Find sources with unbiased centrality based algorithm.",

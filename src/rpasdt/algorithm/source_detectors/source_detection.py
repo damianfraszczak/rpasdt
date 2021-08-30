@@ -6,6 +6,7 @@ from rpasdt.algorithm.models import SourceDetectionConfig
 from rpasdt.algorithm.source_detectors.centrality import (
     CentralityBasedSourceDetector,
     CentralityCommunityBasedSourceDetector,
+    MultipleCentralityBasedSourceDetector,
     UnbiasedCentralityBasedSourceDetector,
     UnbiasedCentralityCommunityBasedSourceDetector,
 )
@@ -26,6 +27,7 @@ from rpasdt.algorithm.taxonomies import SourceDetectionAlgorithm
 
 SOURCE_DETECTORS = {
     SourceDetectionAlgorithm.CENTRALITY_BASED: CentralityBasedSourceDetector,
+    SourceDetectionAlgorithm.MULTIPLE_CENTRALITY_BASED: MultipleCentralityBasedSourceDetector,
     SourceDetectionAlgorithm.UNBIASED_CENTRALITY_BASED: UnbiasedCentralityBasedSourceDetector,
     SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED: CentralityCommunityBasedSourceDetector,
     SourceDetectionAlgorithm.COMMUNITY_UNBIASED_CENTRALITY_BASED: UnbiasedCentralityCommunityBasedSourceDetector,
@@ -53,6 +55,20 @@ def get_source_detector(
     return detector
 
 
+#  sample usage
+# import networkx as nx
+#
 # G = nx.karate_club_graph()
-# detector = get_source_detector(SourceDetectionAlgorithm.JORDAN_CENTER, G=G,IG=G, number_of_sources=2)
+# detector = get_source_detector(
+#     SourceDetectionAlgorithm.MULTIPLE_CENTRALITY_BASED,
+#     G=G,
+#     IG=G,
+#     number_of_sources=2,
+#     config=MultipleCentralityBasedSourceDetectionConfig(
+#         centrality_algorithms=[
+#             CentralityOptionEnum.DEGREE,
+#             CentralityOptionEnum.BETWEENNESS,
+#         ]
+#     ),
+# )
 # print(detector.detected_sources)

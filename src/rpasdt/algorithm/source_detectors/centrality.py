@@ -1,3 +1,4 @@
+from collections import Counter
 from typing import Dict, Optional, Union
 
 from networkx import Graph
@@ -9,6 +10,7 @@ from rpasdt.algorithm.centralities import (
 from rpasdt.algorithm.models import (
     CentralityBasedSourceDetectionConfig,
     CentralityCommunityBasedSourceDetectionConfig,
+    MultipleCentralityBasedSourceDetectionConfig,
     UnbiasedCentralityBasedSourceDetectionConfig,
     UnbiasedCentralityCommunityBasedSourceDetectionConfig,
 )
@@ -23,6 +25,19 @@ class CentralityBasedSourceDetector(SourceDetector):
 
     def estimate_sources(self) -> Dict[int, Union[float, Dict[int, float]]]:
         return compute_centrality(type=self.config.centrality_algorithm, graph=self.IG)
+
+
+class MultipleCentralityBasedSourceDetector(SourceDetector):
+    CONFIG_CLASS = MultipleCentralityBasedSourceDetectionConfig
+
+    def estimate_sources(self) -> Dict[int, Union[float, Dict[int, float]]]:
+        sums = Counter()
+        for alg in self.config.centrality_algorithms:
+            sums.update(compute_centrality(type=alg, graph=self.IG))
+        return {
+            node: value / len(self.config.centrality_algorithms)
+            for node, value in sums.items()
+        }
 
 
 class UnbiasedCentralityBasedSourceDetector(SourceDetector):

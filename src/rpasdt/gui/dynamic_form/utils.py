@@ -3,11 +3,14 @@ from collections import OrderedDict
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union, get_type_hints
 
+from PyQt5.QtCore import QItemSelectionModel, QModelIndex
 from PyQt5.QtWidgets import (
+    QAbstractItemView,
     QCheckBox,
     QComboBox,
     QDoubleSpinBox,
     QLineEdit,
+    QListWidget,
     QSpinBox,
     QWidget,
 )
@@ -17,6 +20,16 @@ from rpasdt.gui.dynamic_form.components import QColorField, QFileField
 from rpasdt.gui.dynamic_form.models import FieldInputType, FormFieldConfig
 
 logger = logging.getLogger(__name__)
+
+
+def get_multi_select(options: List[Tuple]):
+    if not options:
+        return None
+    list = QListWidget()
+    list.setSelectionMode(QAbstractItemView.MultiSelection)
+    for _, label in options:
+        list.addItem(label)
+    return list
 
 
 def get_combo_box(options: List[Tuple]):
@@ -77,6 +90,15 @@ def set_component_value(
         component.color = value
     elif isinstance(component, QFileField):
         component.file_path = value
+    elif isinstance(component, QListWidget):
+        options_index = {option[0]: index for index, option in enumerate(options)}
+        for single_value in value:
+            list_index = component.model().index(
+                options_index[single_value], 0, QModelIndex()
+            )
+            component.selectionModel().setCurrentIndex(
+                list_index, QItemSelectionModel.Select
+            )
 
 
 def get_component_value(
@@ -98,6 +120,8 @@ def get_component_value(
         return component.color
     elif isinstance(component, QFileField):
         return component.file_path
+    elif isinstance(component, QListWidget):
+        return [options[index.row()][0] for index in component.selectedIndexes()]
     return None
 
 
@@ -116,6 +140,7 @@ def get_component_for_field_config(field_config: FormFieldConfig) -> Optional[QW
     widget = None
     if FieldInputType.COMBOBOX == field_config.type:
         widget = get_combo_box(field_config.options)
+        widget = get_multi_select(field_config.options)
     elif FieldInputType.CHECKBOX == field_config.type:
         widget = QCheckBox()
     elif FieldInputType.INTEGER == field_config.type:
