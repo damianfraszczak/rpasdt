@@ -13,15 +13,19 @@ case "$1" in
     ;;
 
   run)
-    exec su qtuser -c 'python3 /app/rpasdt/main.py'
+    exec python /app/rpasdt/gui/main.py
     ;;
 
-  python3)
-    exec python3 "${@:2}"
+  cli)
+    exec python /app/rpasdt/cli/main.py
+    ;;
+
+  python)
+    exec python "${@:2}"
     ;;
 
   package)
-    exec pyinstaller --onefile --windowed /app/rpasdt/main.py
+    exec pyinstaller --onefile --windowed /app/rpasdt/gui/main.py
     ;;
 
   *)
@@ -34,9 +38,11 @@ case "$1" in
 
         shell: Open an interactive shell in the container
 
-        run: Run the application
+        run: Run the application GUI
 
-        python3: Run python shell
+        cli: Run CLI commands
+
+        python: Run python shell
 
         package: Generate an executable artifact
     "

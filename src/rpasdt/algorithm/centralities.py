@@ -1,9 +1,10 @@
-from typing import Dict
+from typing import Dict, Union
 
 import networkx as nx
 from networkx import Graph
 
 from rpasdt.algorithm.taxonomies import CentralityOptionEnum
+from rpasdt.common.utils import get_enum
 
 CENTRALITY_OPERATION_MAP = {
     CentralityOptionEnum.DEGREE: nx.degree_centrality,
@@ -19,15 +20,17 @@ CENTRALITY_OPERATION_MAP = {
 
 
 def compute_centrality(
-    type: CentralityOptionEnum, graph: Graph, *args, **kwargs
+    type: Union[str, CentralityOptionEnum], graph: Graph, *args, **kwargs
 ) -> Dict[int, float]:
-    return CENTRALITY_OPERATION_MAP.get(type)(graph)
+    return CENTRALITY_OPERATION_MAP.get(get_enum(type, CentralityOptionEnum))(graph)
 
 
 def compute_unbiased_centrality(
-    type: CentralityOptionEnum, r: float, graph: Graph, *args, **kwargs
+    type: Union[str, CentralityOptionEnum], r: float, graph: Graph, *args, **kwargs
 ) -> Dict[int, float]:
-    centrality_measure = compute_centrality(type=type, graph=graph)
+    centrality_measure = compute_centrality(
+        type=get_enum(type, CentralityOptionEnum), graph=graph
+    )
     return {
         node: centrality / max(graph.degree(node) ** r, 0.0001)
         for node, centrality in centrality_measure.items()

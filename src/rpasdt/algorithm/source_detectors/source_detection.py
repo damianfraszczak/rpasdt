@@ -55,7 +55,6 @@ def get_source_detector(
     return detector
 
 
-#  sample usage
 # import networkx as nx
 #
 # G = nx.karate_club_graph()

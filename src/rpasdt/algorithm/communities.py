@@ -1,101 +1,40 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Union
 
-from community import community_louvain
-from networkx import Graph, community
+import networkx as nx
+from cdlib import algorithms
+from networkx import Graph
 
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
-from rpasdt.common.utils import group_dict_by_values
-from rpasdt.network.networkx_utils import map_networkx_communities_to_dict
+from rpasdt.common.utils import get_enum, get_function_default_kwargs
+
+NUMBER_OF_COMMUNITIES_KWARG_NAMES = ["k", "number_communities", "level"]
 
 
-def community_bipartition_local(graph: Graph) -> Dict[int, List[int]]:
-    return community.kernighan_lin_bisection(graph)
-
-
-def community_louvain_local(
-    graph: Graph, communities_count: Optional[int] = None
-) -> Dict[int, List[int]]:
-    return {
-        community + 1: node
-        for community, node in group_dict_by_values(
-            community_louvain.best_partition(graph)
-        ).items()
-    }
-
-
-def community_girvan_newman_local(
-    graph: Graph, communities_count: Optional[int] = None
-) -> Dict[int, List[int]]:
-    if not communities_count:
-        communities_count = 1
-    community_generator = community.girvan_newman(graph)
-    for cc in community_generator:
-        if len(cc) >= communities_count:
-            break
-    return map_networkx_communities_to_dict(cc)
-
-
-def community_label_propagation_local(
-    graph: Graph, communities_count: Optional[int] = None
-) -> Dict[int, List[int]]:
-    return map_networkx_communities_to_dict(
-        [c for c in community.label_propagation_communities(graph)]
-    )
-
-
-def community_greedy_modularity_local(
-    graph: Graph, communities_count: Optional[int] = None
-) -> Dict[int, List[int]]:
-    return map_networkx_communities_to_dict(
-        [c for c in community.greedy_modularity_communities(graph)]
-    )
-
-
-def community_naive_greedy_modularity_local(
-    graph: Graph, communities_count: Optional[int] = None
-) -> Dict[int, List[int]]:
-    return map_networkx_communities_to_dict(
-        [c for c in community.naive_greedy_modularity_communities(graph)]
-    )
-
-
-def community_naive_modularity_local(
-    graph: Graph, communities_count: Optional[int] = None
-) -> Dict[int, List[int]]:
-    return map_networkx_communities_to_dict(
-        [c for c in community.naive_greedy_modularity_communities(graph)]
-    )
-
-
-def community_tree_local(
-    graph: Graph, communities_count: Optional[int] = None
-) -> Dict[int, List[int]]:
-    return map_networkx_communities_to_dict(
-        [c for c in community.lukes_partitioning(graph)]
-    )
-
-
-COMMUNITY_OPERATION_MAP = {
-    # CommunityOptionEnum.LOUVAIN: community_louvain_local,
-    # CommunityOptionEnum.GIRVAN_NEWMAN: community_girvan_newman_local,
-    # CommunityOptionEnum.BIPARTITION: community_bipartition_local,
-    # CommunityOptionEnum.GREEDY_MODULARITY: community_greedy_modularity_local,
-    # CommunityOptionEnum.NAIVE_MODULARITY: community_naive_modularity_local,
-    # CommunityOptionEnum.LABEL_PROPAGATION: community_label_propagation_local,
-    # CommunityOptionEnum.TREE: community_tree_local,
-    # CommunityOptionEnum.K_CLIQUE: community_k_clique_local,
-    # CommunityOptionEnum.K_CORE: community_k_clique_local,
-}
+def _update_communities_kwarg(
+    type: CommunityOptionEnum, kwargs: Dict, number_communities: int
+):
+    for name in NUMBER_OF_COMMUNITIES_KWARG_NAMES:
+        if name in kwargs:
+            kwargs[name] = (
+                number_communities - 1
+                if type == CommunityOptionEnum.GIRVAN_NEWMAN
+                else number_communities
+            )
 
 
 def find_communities(
-    alg: CommunityOptionEnum,
+    type: Union[str, CommunityOptionEnum],
     graph: Graph,
-    communities_count: Optional[int] = None,
-    *args,
-    **kwargs
+    number_communities: int = 1,
+    **alg_kwargs
 ) -> Dict[int, List[int]]:
-    community_alg = COMMUNITY_OPERATION_MAP.get(alg)
-    if alg:
-        return community_alg(graph=graph, communities_count=communities_count)
-    return {}
+    alg = getattr(algorithms, get_enum(type, CommunityOptionEnum).value)
+    kwargs = {**get_function_default_kwargs(alg), **alg_kwargs, **{"g_original": graph}}
+    _update_communities_kwarg(
+        type=type, kwargs=kwargs, number_communities=number_communities
+    )
+    result = alg(**kwargs)
+    return {index: community for index, community in enumerate(result.communities)}
+
+
+G = nx.karate_club_graph()

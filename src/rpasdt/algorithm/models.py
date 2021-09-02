@@ -103,9 +103,9 @@ class SimulationConfig:
 
     graph: Optional[Graph] = None
     graph_type: Optional[GraphTypeEnum] = GraphTypeEnum.KARATE_CLUB
-    graph_type_properties: Dict = field(default_factory=dict)
+    graph_type_properties: Dict[str, Any] = field(default_factory=dict)
 
-    source_nodes: [Optional[List[int]]] = None
+    source_nodes: Optional[List[int]] = None
     source_selection_config: NetworkSourceSelectionConfig = (
         NetworkSourceSelectionConfig()
     )
@@ -114,7 +114,7 @@ class SimulationConfig:
 @dataclass
 class DiffusionModelSimulationConfig:
     diffusion_model_type: DiffusionTypeEnum = DiffusionTypeEnum.SI
-    diffusion_model_params: Dict = field(default_factory=dict)
+    diffusion_model_params: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass

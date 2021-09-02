@@ -17,6 +17,7 @@ from rpasdt.gui.dynamic_form.utils import (
     get_component_for_field_config,
     get_component_value,
     get_field_config,
+    get_type_representation_for_field_config,
     set_component_value,
 )
 from rpasdt.model.constants import APP_ICON_PATH
@@ -42,7 +43,6 @@ class DynamicForm(QWidget):
             **get_field_config(object),
             **(field_config or {}),
         }
-
         self.field_row_map: dict = {}
         self.field_component_map: dict = {}
         self.setLayout(QFormLayout())
@@ -52,6 +52,11 @@ class DynamicForm(QWidget):
     def init_fields(self):
         row_index = 0
         for field_name, field_config in self.field_config.items():
+            field_config.type_representation = get_type_representation_for_field_config(
+                field_config
+            )
+            if not field_config.type_representation:
+                continue
             component = get_component_for_field_config(field_config)
 
             label = field_config.label or field_name
@@ -79,7 +84,7 @@ class DynamicForm(QWidget):
         for field_name, component in self.field_component_map.items():
             value = get_component_value(
                 component=component,
-                cls=self.field_config[field_name].inner_type,
+                type_representation=self.field_config[field_name].type_representation,
                 options=self.field_config[field_name].options,
             )
             set_object_value(self.object, field_name, value)

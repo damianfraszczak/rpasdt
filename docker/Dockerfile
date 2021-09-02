@@ -7,20 +7,24 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV LIBGL_ALWAYS_INDIRECT=1
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH "${PYTHONPATH}:/app/"
+
 RUN adduser --quiet --disabled-password qtuser && usermod -a -G audio qtuser
 
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-pyqt5 \
-    pyqt5-dev-tools
+    pyqt5-dev-tools \
+    && cd /usr/local/bin \
+    && ln -s /usr/bin/python3 python
 
-RUN mkdir -p /app/rpasdt
-
+RUN mkdir -p /app/rpasdt && chown -R qtuser /app/
 WORKDIR /app/
-
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
-COPY src/rpasdt /app/rpasdt
 COPY docker/docker-entrypoint.sh docker-entrypoint.sh
 RUN chmod +x docker-entrypoint.sh
+
+USER qtuser
+COPY src/rpasdt /app/rpasdt
+
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

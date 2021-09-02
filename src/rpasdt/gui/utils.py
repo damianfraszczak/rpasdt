@@ -4,6 +4,7 @@ from PyQt5.QtCore import QThreadPool
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QAction,
+    QApplication,
     QDialog,
     QFileDialog,
     QMessageBox,
@@ -13,7 +14,7 @@ from PyQt5.QtWidgets import (
 
 from rpasdt.gui.dynamic_form.forms import DynamicDialog
 from rpasdt.gui.dynamic_form.models import DynamicFormConfig
-from rpasdt.gui.threading import Worker
+from rpasdt.gui.thread_utils import Worker
 from rpasdt.model.constants import APP_ICON_PATH
 
 
@@ -75,14 +76,15 @@ def show_alert_dialog(
     informative_text: str = None,
     detailed_text: str = None,
 ):
-    return show_message_box(
-        title=title,
-        text=text,
-        icon=icon,
-        informative_text=informative_text,
-        detailed_text=detailed_text,
-        buttons=QMessageBox.Ok,
-    )
+    if QApplication.instance():
+        return show_message_box(
+            title=title,
+            text=text,
+            icon=icon,
+            informative_text=informative_text,
+            detailed_text=detailed_text,
+            buttons=QMessageBox.Ok,
+        )
 
 
 def show_error_dialog(title: str, error_msg: str):

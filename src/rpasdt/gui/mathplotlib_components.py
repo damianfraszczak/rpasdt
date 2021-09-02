@@ -24,23 +24,82 @@ CLICK_EPSILON = 0.001
 NODE_LABEL_OFFSET = 0.08
 
 
-class NetworkxGraphPanel(QWidget):
+class MatplotlibPanel(QWidget):
     node_clicked = pyqtSignal(int)
 
+    def __init__(
+        self,
+        title: typing.Optional[str] = None,
+        parent: typing.Optional["QWidget"] = None,
+    ) -> None:
+        super().__init__(parent)
+        self.title = title
+        self.configure_gui()
+
+    def create_toolbar(self):
+        return NavigationToolbar(self.canvas, self)
+
+    def configure_gui(self):
+        self.figure = plt.figure()
+        self.canvas = FigureCanvas(self.figure)
+
+        toolbar = self.create_toolbar()
+
+        layout = QVBoxLayout()
+        if toolbar:
+            layout.addWidget(toolbar)
+        layout.addWidget(self.canvas)
+        self.canvas.mpl_connect("button_press_event", self.onclick)
+        self.setLayout(layout)
+        self.redraw()
+
+    def draw_content(self) -> None:
+        pass
+
+    def draw_legend(self) -> None:
+        pass
+
+    def redraw(self) -> None:
+        # set current figure to be active, to redraw self figure not other
+        plt.figure(self.figure.number)
+        self.figure.clf()
+        if self.title:
+            plt.title(self.title)
+        self.draw_legend()
+        self.draw_content()
+        self.canvas.draw()
+
+    def onclick(self, event):
+        pass
+
+
+class SimplePlotPanel(MatplotlibPanel):
+    def __init__(
+        self,
+        plot_renderer: typing.Callable,
+        title: typing.Optional[str] = None,
+        parent: typing.Optional["QWidget"] = None,
+    ) -> None:
+        self.plot_renderer = plot_renderer
+        super().__init__(title=title, parent=parent)
+
+    def draw_content(self) -> None:
+        self.plot_renderer()
+
+
+class NetworkxGraphPanel(MatplotlibPanel):
     def __init__(
         self,
         controller: "GraphController",
         parent: typing.Optional["QWidget"] = None,
         title: typing.Optional[str] = None,
     ) -> None:
-        super().__init__(parent)
         self.controller = controller
-        self.title = title
         self.graph = controller.graph
         self.graph_config = controller.graph_config
         if controller:
             controller.graph_panel = self
-        self.configure_gui()
+        super().__init__(title=title, parent=parent)
 
     def find_node_index_for_event(self, event) -> typing.Optional[int]:
         if event.inaxes:
@@ -66,23 +125,6 @@ class NetworkxGraphPanel(QWidget):
                 self.graph, NodeAttributeEnum.EXTRA_LABEL, skip_empty=True
             ),
         )
-
-    def create_toolbar(self):
-        return NavigationToolbar(self.canvas, self)
-
-    def configure_gui(self):
-        self.figure = plt.figure()
-        self.canvas = FigureCanvas(self.figure)
-
-        toolbar = self.create_toolbar()
-
-        layout = QVBoxLayout()
-        if toolbar:
-            layout.addWidget(toolbar)
-        layout.addWidget(self.canvas)
-        self.canvas.mpl_connect("button_press_event", self.onclick)
-        self.setLayout(layout)
-        self.redraw()
 
     @property
     def graph_position(self):
@@ -123,26 +165,15 @@ class NetworkxGraphPanel(QWidget):
             font_color=self.graph_config.node_label_font_color,
         )
 
-    def draw_legend(self):
-        pass
-
-    def redraw(self):
+    def draw_content(self) -> None:
         if not self.graph:
             return
-        # set current figure to be active, to redraw self figure not other
-        plt.figure(self.figure.number)
-        self.figure.clf()
-        if self.title:
-            plt.title(self.title)
-        nodes = self.draw_nodes()
-        edges = self.draw_edges()
+        self.draw_nodes()
+        self.draw_edges()
         if self.graph_config.display_node_labels:
             self.draw_labels()
         if self.graph_config.display_node_extra_labels:
             self.draw_extra_labels()
-        self.draw_legend()
-        self.canvas.draw()
-        return (nodes, edges)
 
 
 class NetworkxGraphPanelWithToolbar(NetworkxGraphPanel):

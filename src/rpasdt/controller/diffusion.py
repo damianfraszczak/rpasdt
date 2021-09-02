@@ -1,5 +1,6 @@
-from typing import List
+from typing import Dict, List
 
+import matplotlib
 from ndlib.models import DiffusionModel
 from networkx import Graph
 
@@ -8,12 +9,14 @@ from rpasdt.algorithm.diffusion import (
     get_nodes_by_diffusion_status,
 )
 from rpasdt.algorithm.graph_drawing import get_diffusion_graph
+from rpasdt.algorithm.plots import plot_diffusion_trends
 from rpasdt.algorithm.source_detectors.source_detection import (
     SourceDetector,
     get_source_detector,
 )
 from rpasdt.algorithm.taxonomies import (
     DiffusionGraphNodeRenderTypeEnum,
+    NodeStatusEnum,
     SourceDetectionAlgorithm,
 )
 from rpasdt.controller.controllers import (
@@ -23,10 +26,13 @@ from rpasdt.controller.controllers import (
 )
 from rpasdt.controller.graph import GraphController
 from rpasdt.controller.source_detection import SourceDetectionGraphController
-from rpasdt.form_utils import get_diffusion_model_form_config
+from rpasdt.gui.analysis.analysis import SimplePlotAppDialog
+from rpasdt.gui.form_utils import get_diffusion_model_form_config
 from rpasdt.gui.utils import run_long_task, show_dynamic_dialog
 from rpasdt.model.experiment import DiffusionExperiment
 from rpasdt.network.taxonomies import NodeAttributeEnum
+
+matplotlib.use("Qt5Agg")
 
 
 class DiffusionGraphController(
@@ -39,6 +45,7 @@ class DiffusionGraphController(
         super().__init__(window, experiment.diffusion_graph, experiment.graph_config)
         self.experiment = experiment
         self.diffusion_model: DiffusionModel = None
+        self.raw_iterations: List[Dict] = list()
 
     def update_graph(self, graph: Graph):
         self.experiment.diffusion_graph = graph
@@ -51,6 +58,7 @@ class DiffusionGraphController(
     def init_diffusion(self):
         if self.diffusion_model:
             return
+        self.raw_iterations = list()
         source_graph = self.experiment.source_graph
         source_nodes = self.experiment.source_nodes
         (
@@ -81,9 +89,7 @@ class DiffusionGraphController(
     def diffusion_execute_iteration_handler(self):
         self.init_diffusion()
         iteration = self.diffusion_model.iteration()
-        self.graph_panel.title = f'Iteration {iteration.get("iteration")}'
-        self.update_diffusion_graph()
-        self.redraw_graph()
+        self.update_status_after_iterations([iteration])
         return iteration
 
     def diffusion_execute_iteration_bunch(self):
@@ -91,7 +97,7 @@ class DiffusionGraphController(
         iterations = self.diffusion_model.iteration_bunch(
             self.experiment.diffusion_iteration_bunch
         )
-        self.update_diffusion_graph()
+        self.update_status_after_iterations(iterations)
         return iterations
 
     def diffusion_execute_iteration_bunch_handler(self):
@@ -101,10 +107,16 @@ class DiffusionGraphController(
             callback=lambda iterations: self.redraw_graph(),
         )
 
+    def update_status_after_iterations(self, iterations: List[Dict]):
+        self.graph_panel.title = f"Iteration {self.diffusion_model.actual_iteration}"
+        self.raw_iterations.extend(iterations)
+        self.update_diffusion_graph()
+        self.redraw_graph()
+
     @property
     def infected_nodes(self) -> List[int]:
         return get_nodes_by_diffusion_status(
-            diffusion_model=self.diffusion_model, node_status=NodeAttributeEnum.INFECTED
+            diffusion_model=self.diffusion_model, node_status=NodeStatusEnum.INFECTED
         )
 
     def graph_config_changed(self):
@@ -159,5 +171,15 @@ class DiffusionGraphController(
                 window=self.window,
                 experiment=self.experiment,
                 source_detector=source_detector,
+            )
+        )
+
+    def handler_plot_diffusion_trend(self):
+        self.window.add_subwindow(
+            SimplePlotAppDialog(
+                title=f"Trends for {self.diffusion_model.name}",
+                plot_renderer=lambda: plot_diffusion_trends(
+                    self.diffusion_model, self.raw_iterations
+                ),
             )
         )

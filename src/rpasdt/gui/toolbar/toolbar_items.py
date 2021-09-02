@@ -168,6 +168,28 @@ def create_source_detection_action(parent, handler):
     return action
 
 
+def create_diffusion_plots_action(parent, controller):
+    action = create_action(
+        title="Plots",
+        tooltip="Diffusion specific plots",
+        icon=QApplication.style().standardIcon(QStyle.SP_DirIcon),
+        parent=parent,
+    )
+    menu = QMenu("Plots", parent=parent)
+    action.setMenu(menu)
+    plots = {"Trends": controller.handler_plot_diffusion_trend}
+    for title, handler in plots.items():
+        menu.addAction(
+            create_action(
+                title=title,
+                tooltip=title,
+                parent=parent,
+                handler=handler,
+            )
+        )
+    return action
+
+
 def create_source_selection_action(parent, handler):
     action = create_action(
         title="Source selection",
