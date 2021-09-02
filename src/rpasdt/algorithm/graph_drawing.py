@@ -34,7 +34,7 @@ def compute_graph_draw_position(
 def get_diffusion_graph(
     source_graph: nx.Graph,
     infected_nodes: List[int],
-    graph_node_rendering_type: DiffusionGraphNodeRenderTypeEnum,
+    graph_node_rendering_type: DiffusionGraphNodeRenderTypeEnum = DiffusionGraphNodeRenderTypeEnum.ONLY_INFECTED,
 ) -> nx.Graph:
     if DiffusionGraphNodeRenderTypeEnum.FULL == graph_node_rendering_type:
         return source_graph.subgraph(source_graph.nodes())

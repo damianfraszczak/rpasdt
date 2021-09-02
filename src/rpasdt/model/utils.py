@@ -1,5 +1,9 @@
 from rpasdt.algorithm.graph_export_import import GRAPH_EXPORTER, GRAPH_IMPORTER
 from rpasdt.algorithm.taxonomies import GraphDataFormatEnum
+from rpasdt.common.utils import (
+    export_dataclass_as_json,
+    import_dataclass_from_json,
+)
 from rpasdt.model.experiment import Experiment, ExperimentExportModel
 
 
@@ -25,15 +29,14 @@ def save_experiment(
     export_model: ExperimentExportModel = export_experiment(
         experiment=experiment, graph_data_format=graph_data_format
     )
-    json_data = export_model.to_json()
-    with open(file_path, "w") as file:
-        file.write(json_data)
+    export_dataclass_as_json(object=export_model, file_path=file_path)
 
 
 def import_experiment(file_path: str) -> Experiment:
-    with open(file_path, "r") as file:
-        json_data = file.read()
-    export_model: ExperimentExportModel = ExperimentExportModel.from_json(json_data)
+    export_model: ExperimentExportModel = import_dataclass_from_json(
+        type=ExperimentExportModel, file_path=file_path
+    )
+
     return Experiment(
         name=export_model.name,
         graph_config=export_model.graph_config,

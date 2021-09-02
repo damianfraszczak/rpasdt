@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, Type
 
 from networkx import Graph
 
 from rpasdt.algorithm.centralities import compute_centrality
-from rpasdt.algorithm.communities_new import find_communities
+from rpasdt.algorithm.communities import find_communities
 from rpasdt.algorithm.network_analysis import compute_network_analysis
 from rpasdt.algorithm.taxonomies import (
     CentralityOptionEnum,
@@ -14,12 +14,12 @@ from rpasdt.algorithm.taxonomies import (
 from rpasdt.common.enums import StringChoiceEnum
 from rpasdt.common.utils import format_label
 from rpasdt.controller.graph import GraphController
-from rpasdt.form_utils import CommunityTypeToFormFieldsConfigMap
 from rpasdt.gui.analysis.analysis import AnalysisDialog
 from rpasdt.gui.analysis.centrality import CentralityGraphPanel
 from rpasdt.gui.analysis.communities import CommunityGraphPanel
 from rpasdt.gui.analysis.models import AnalysisData, CommunityAnalysisData
 from rpasdt.gui.dynamic_form.models import DynamicFormConfig, FormFieldConfig
+from rpasdt.gui.form_utils import CommunityTypeToFormFieldsConfigMap
 from rpasdt.gui.utils import (
     run_long_task,
     show_alert_dialog,
@@ -32,7 +32,11 @@ ANALYSIS_HANDLER_PREFIX = "handler_analysis_"
 
 class AnalysisGraphController(GraphController):
     def __init__(
-        self, window: "MainWindow", graph: Graph, graph_config: GraphConfig, data: Dict
+        self,
+        window: "MainWindow",
+        graph: Graph,
+        graph_config: GraphConfig,
+        data: AnalysisData,
     ):
         super().__init__(window, graph, graph_config)
         self.data = data
@@ -40,7 +44,7 @@ class AnalysisGraphController(GraphController):
 
 @dataclass
 class AnalysisEnumHandler:
-    enum: StringChoiceEnum
+    enum: Type[StringChoiceEnum]
     alg_executor: Callable
     title: str
     result_handler: Callable
@@ -101,7 +105,7 @@ class AnalysisControllerMixin:
 
         return _run_task
 
-    def _get_handler_key(self, enum: StringChoiceEnum):
+    def _get_handler_key(self, enum: Type[StringChoiceEnum]):
         return enum.__name__
 
     def add_handler(self, handler_info: AnalysisEnumHandler):

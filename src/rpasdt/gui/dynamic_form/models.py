@@ -1,7 +1,13 @@
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from rpasdt.common.enums import StringChoiceEnum
+
+
+@dataclass
+class TypeRepresentation:
+    main_type: type
+    generic_type: Optional[type] = None
 
 
 class FieldInputType(StringChoiceEnum):
@@ -12,7 +18,7 @@ class FieldInputType(StringChoiceEnum):
     DATE = "DATE"
     DOUBLE = "DOUBLE"
     INTEGER = "INTEGER"
-    PASSWORD = "PASSWORD"
+    PASSWORD = "PASSWORD"  # noqa
     COLOR = "COLOR"
     FILE = "FILE"
     MULTI_SELECT = "MULTI_SELECT"
@@ -29,7 +35,7 @@ class FormFieldConfig:
     visible: Union[bool, Callable] = None
     read_only: bool = False
     range: List = None
-    inner_type: Type = None
+    type_representation: Optional[TypeRepresentation] = None
 
 
 @dataclass

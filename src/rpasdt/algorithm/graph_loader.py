@@ -1,17 +1,22 @@
-from typing import Dict
+from typing import Dict, Union
 
 import networkx as nx
 from networkx import Graph
 
 from rpasdt.algorithm.graph_export_import import GRAPH_IMPORTER
-from rpasdt.algorithm.taxonomies import GraphTypeEnum
+from rpasdt.algorithm.taxonomies import GraphDataFormatEnum, GraphTypeEnum
+from rpasdt.common.utils import get_enum
 
 
-def load_custom_graph(graph_type_properties):
+def _load_graph(input_graph_path: str, graph_data_format: GraphDataFormatEnum) -> Graph:
+    with open(input_graph_path, "r") as file:
+        return GRAPH_IMPORTER[graph_data_format](file.read())
+
+
+def _load_custom_graph(graph_type_properties: Dict) -> Graph:
     graph_data_format = graph_type_properties["graph_data_format"]
     file_path = graph_type_properties["file_path"]
-    with open(file_path, "r") as file:
-        return GRAPH_IMPORTER[graph_data_format](file.read())
+    return _load_graph(input_graph_path=file_path, graph_data_format=graph_data_format)
 
 
 GRAPH_TYPE_LOADER = {
@@ -40,12 +45,17 @@ GRAPH_TYPE_LOADER = {
     GraphTypeEnum.STAR: lambda graph_type_properties: nx.star_graph(
         **graph_type_properties
     ),
-    GraphTypeEnum.CUSTOM: load_custom_graph,
+    GraphTypeEnum.CUSTOM: _load_custom_graph,
 }
 
 
 def load_graph(
-    graph_type: GraphTypeEnum, graph_type_properties: Dict = None, *args, **kwargs
+    graph_type: Union[GraphTypeEnum, str],
+    graph_type_properties: Dict = None,
+    *args,
+    **kwargs
 ) -> Graph:
     graph_type_properties = graph_type_properties or {}
-    return GRAPH_TYPE_LOADER[graph_type](graph_type_properties=graph_type_properties)
+    graph_type = get_enum(graph_type, GraphTypeEnum)
+    loader = GRAPH_TYPE_LOADER.get(graph_type)
+    return loader(graph_type_properties=graph_type_properties)

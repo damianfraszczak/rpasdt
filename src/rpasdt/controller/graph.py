@@ -2,8 +2,8 @@ from copy import copy
 
 from networkx import Graph
 
-from rpasdt.form_utils import get_node_edit_config
 from rpasdt.gui.analysis.analysis import AnalysisDialog
+from rpasdt.gui.form_utils import get_node_edit_config
 from rpasdt.gui.utils import show_dynamic_dialog
 from rpasdt.model.experiment import GraphConfig
 

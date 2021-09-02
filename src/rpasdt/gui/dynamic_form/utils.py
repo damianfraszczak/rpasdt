@@ -1,7 +1,8 @@
 import logging
 from collections import OrderedDict
+from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union, get_type_hints
+from typing import Any, Dict, List, Optional, Tuple, get_type_hints
 
 from PyQt5.QtCore import QItemSelectionModel, QModelIndex
 from PyQt5.QtWidgets import (
@@ -17,9 +18,22 @@ from PyQt5.QtWidgets import (
 
 from rpasdt.common.enums import StringChoiceEnum
 from rpasdt.gui.dynamic_form.components import QColorField, QFileField
-from rpasdt.gui.dynamic_form.models import FieldInputType, FormFieldConfig
+from rpasdt.gui.dynamic_form.models import (
+    FieldInputType,
+    FormFieldConfig,
+    TypeRepresentation,
+)
 
 logger = logging.getLogger(__name__)
+
+FieldRepresentationForFieldType = {
+    FieldInputType.INTEGER: TypeRepresentation(int),
+    FieldInputType.SINGLE_TEXT: TypeRepresentation(str),
+    FieldInputType.COLOR: TypeRepresentation(str),
+    FieldInputType.PASSWORD: TypeRepresentation(str),
+    FieldInputType.DOUBLE: TypeRepresentation(float),
+    FieldInputType.DATE: TypeRepresentation(datetime),
+}
 
 
 def get_multi_select(options: List[Tuple]):
@@ -60,22 +74,31 @@ def get_float_field(range: Optional[Tuple]):
     return box
 
 
-def get_component_type(cls: type):
-    if issubclass(cls, Enum):
-        return FieldInputType.COMBOBOX
-    elif issubclass(cls, bool):
-        return FieldInputType.CHECKBOX
-    elif issubclass(cls, int):
-        return FieldInputType.INTEGER
-    elif issubclass(cls, float):
-        return FieldInputType.DOUBLE
-    elif issubclass(cls, str):
-        return FieldInputType.SINGLE_TEXT
+def get_component_type(
+    type_representation: TypeRepresentation,
+) -> Optional[FieldInputType]:
+    cls = type_representation.main_type
+    generic_type = type_representation.generic_type
+    if generic_type:
+        if issubclass(generic_type, list):
+            return FieldInputType.MULTI_SELECT
+    elif isinstance(cls, type):
+        if issubclass(cls, Enum):
+            return FieldInputType.COMBOBOX
+        elif issubclass(cls, bool):
+            return FieldInputType.CHECKBOX
+        elif issubclass(cls, int):
+            return FieldInputType.INTEGER
+        elif issubclass(cls, float):
+            return FieldInputType.DOUBLE
+        elif issubclass(cls, str):
+            return FieldInputType.SINGLE_TEXT
+    return None
 
 
 def set_component_value(
     component: QWidget, value: Any, options: Optional[List[Tuple]] = None
-):
+) -> None:
     if isinstance(component, QLineEdit):
         component.setText(value or "")
     elif isinstance(component, QCheckBox):
@@ -93,6 +116,7 @@ def set_component_value(
     elif isinstance(component, QListWidget):
         options_index = {option[0]: index for index, option in enumerate(options)}
         for single_value in value:
+            print(single_value)
             list_index = component.model().index(
                 options_index[single_value], 0, QModelIndex()
             )
@@ -102,8 +126,12 @@ def set_component_value(
 
 
 def get_component_value(
-    component: QWidget, cls: type, options: Optional[List[Tuple]] = None
+    component: QWidget,
+    type_representation: TypeRepresentation,
+    options: Optional[List[Tuple]] = None,
 ):
+    cls = type_representation.main_type
+
     if isinstance(component, QLineEdit):
         return component.text()
     elif isinstance(component, QCheckBox):
@@ -121,12 +149,16 @@ def get_component_value(
     elif isinstance(component, QFileField):
         return component.file_path
     elif isinstance(component, QListWidget):
-        return [options[index.row()][0] for index in component.selectedIndexes()]
+        return [
+            get_option_value(cls=cls, option_value=options[index.row()][0])
+            for index in component.selectedIndexes()
+        ]
     return None
 
 
-def get_field_options(cls: type) -> List[Tuple]:
-    if issubclass(cls, StringChoiceEnum):
+def get_field_options(type_representation: TypeRepresentation) -> List[Tuple]:
+    cls = type_representation.main_type
+    if isinstance(cls, type) and issubclass(cls, StringChoiceEnum):
         return cls.choices
 
 
@@ -140,7 +172,6 @@ def get_component_for_field_config(field_config: FormFieldConfig) -> Optional[QW
     widget = None
     if FieldInputType.COMBOBOX == field_config.type:
         widget = get_combo_box(field_config.options)
-        widget = get_multi_select(field_config.options)
     elif FieldInputType.CHECKBOX == field_config.type:
         widget = QCheckBox()
     elif FieldInputType.INTEGER == field_config.type:
@@ -153,6 +184,8 @@ def get_component_for_field_config(field_config: FormFieldConfig) -> Optional[QW
         widget = QColorField()
     elif FieldInputType.FILE == field_config.type:
         widget = QFileField()
+    elif FieldInputType.MULTI_SELECT == field_config.type:
+        widget = get_multi_select(field_config.options)
     if widget and field_config.read_only:
         read_only_method = getattr(widget, "setReadOnly", None)
         if read_only_method:
@@ -168,10 +201,32 @@ def format_field_label(val: str) -> str:
     return (val or "").replace("_", " ").title()
 
 
-def clear_type_hint(type_hint):
-    if hasattr(type_hint, "__origin__") and getattr(type_hint, "__origin__") is Union:
-        return type_hint.__args__[0]
-    return type_hint if isinstance(type_hint, type) else None
+def get_type_hint_representation(type_hint) -> Optional[TypeRepresentation]:
+    try:
+        if hasattr(type_hint, "__origin__"):
+            origin = getattr(type_hint, "__origin__")
+            if origin is Optional:
+                return get_type_hint_representation(type_hint.__args__[0])
+            if issubclass(origin, List):
+                return TypeRepresentation(
+                    main_type=type_hint.__args__[0], generic_type=list
+                )
+        return (
+            TypeRepresentation(main_type=type_hint)
+            if isinstance(type_hint, type)
+            else None
+        )
+    except Exception as exc:
+        logger.error(exc)
+        return None
+
+
+def get_type_representation_for_field_config(
+    field_config: FormFieldConfig,
+) -> Optional[TypeRepresentation]:
+    return field_config.type_representation or FieldRepresentationForFieldType.get(
+        field_config.type
+    )
 
 
 def get_field_config(object: Any) -> Dict[str, FormFieldConfig]:
@@ -179,15 +234,15 @@ def get_field_config(object: Any) -> Dict[str, FormFieldConfig]:
     cls = type(object)
     type_hints = get_type_hints(cls)
     for field_name, inner_type in type_hints.items():
-        inner_type = clear_type_hint(inner_type)
-        if inner_type:
+        type_representation = get_type_hint_representation(inner_type)
+        if type_representation:
             result[field_name] = FormFieldConfig(
                 field_name=field_name,
                 label=format_field_label(field_name),
-                type=get_component_type(inner_type),
+                type=get_component_type(type_representation),
                 default_value=getattr(object, field_name, None),
-                options=get_field_options(inner_type),
-                inner_type=inner_type,
+                options=get_field_options(type_representation),
+                type_representation=type_representation,
             )
 
     return result

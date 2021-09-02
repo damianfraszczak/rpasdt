@@ -28,7 +28,7 @@ class GraphDataFormatEnum(StringChoiceEnum):
 class GraphTypeEnum(StringChoiceEnum):
     """Available graph types and predefined topologies."""
 
-    WATTS_STROGATZ = ("WATTS_STROGATZ_GRAPH", "Watts-Strogatz")
+    WATTS_STROGATZ = ("WATTS_STROGATZ", "Watts-Strogatz")
 
     BALANCED_TREE = ("BALANCED_TREE", "Balanced tree")
     COMPLETE = ("COMPLETE", "Complete graph")
@@ -38,7 +38,7 @@ class GraphTypeEnum(StringChoiceEnum):
         "The star graph consists of one center node connected to n outer nodes.",
     )
     # Social Networks
-    KARATE_CLUB = ("KARATE_CLUB_GRAPH", "Karate club")
+    KARATE_CLUB = ("KARATE_CLUB", "Karate club")
     DAVIS_SOUTHERN = ("DAVIS_SOUTHERN", "Davis Southern women social network")
     FLORENTINE_FAMILIES = ("FLORENTINE_FAMILIES", "Florentine families graph")
     LES_MISERABLES = ("LES_MISERABLES", "Les Miserables graph")
@@ -141,7 +141,7 @@ class CommunityOptionEnum(StringChoiceEnum):
     EDMOT = ("edmot", "The algorithm first creates the graph of higher order motifs.")
     EIGENVECTOR = (
         "eigenvector",
-        "Newmanâ€™s leading eigenvector method for detecting community structure based on modularity.",
+        "Newmans leading eigenvector method for detecting community structure based on modularity.",
     )
     EM = ("em", "EM is based on based on a mixture model.")
     GA = ("ga", "Genetic based approach to discover communities in social networks.")

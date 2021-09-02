@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Callable, List, Tuple
 
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMdiSubWindow, QTabWidget
@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QMdiSubWindow, QTabWidget
 from rpasdt.gui.mathplotlib_components import (
     NetworkxGraphPanel,
     NetworkxGraphPanelWithToolbar,
+    SimplePlotPanel,
 )
 from rpasdt.gui.table.models import ListTableModel
 from rpasdt.gui.toolbar.toolbars import AnalysisNetworkGraphToolbar
@@ -20,12 +21,31 @@ class AnalysisNetworkGraphPanel(NetworkxGraphPanel):
         return AnalysisNetworkGraphToolbar(self.canvas, self, self.controller)
 
 
-class BaseAnalysisDialog(QMdiSubWindow):
+class AppDialog(QMdiSubWindow):
     def __init__(self, title: str) -> None:
         super().__init__()
         self.title = title
         self.configure_gui()
 
+    def configure_gui(self):
+        """Configure UI"""
+        self.setWindowTitle(self.title)
+
+
+class SimplePlotAppDialog(AppDialog):
+    def __init__(self, title: str, plot_renderer: Callable) -> None:
+        self.plot_renderer = plot_renderer
+        super().__init__(title)
+
+    def configure_gui(self):
+        """Configure UI"""
+        super().configure_gui()
+        self.setWidget(
+            SimplePlotPanel(title=self.title, plot_renderer=self.plot_renderer)
+        )
+
+
+class BaseAnalysisDialog(AppDialog):
     def add_tab(self, widget, title):
         self.tabPanel.addTab(widget, title)
 
@@ -51,7 +71,6 @@ class AnalysisDialog(BaseAnalysisDialog):
     def __init__(
         self, controller: "AnalysisGraphController", title: str, graph_panel: type
     ):
-
         self.controller = controller
         self.graph_panel = graph_panel
         self.graph = controller.graph

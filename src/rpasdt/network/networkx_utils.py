@@ -5,11 +5,11 @@ from ndlib.models import DiffusionModel
 from networkx import Graph
 
 from rpasdt.algorithm.taxonomies import GraphTypeEnum
-from rpasdt.form_utils import (
+from rpasdt.gui.dynamic_form.models import DynamicFormConfig, FormFieldConfig
+from rpasdt.gui.form_utils import (
     GraphTypeToFormFieldsConfigMap,
     get_diffusion_model_fields_config,
 )
-from rpasdt.gui.dynamic_form.models import DynamicFormConfig, FormFieldConfig
 from rpasdt.gui.utils import show_dynamic_dialog
 from rpasdt.network.models import NodeAttribute
 

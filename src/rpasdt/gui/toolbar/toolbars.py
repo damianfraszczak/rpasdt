@@ -3,6 +3,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from rpasdt.gui.toolbar.toolbar_items import (
     create_analysis_action,
     create_diffusion_action,
+    create_diffusion_plots_action,
     create_diffusion_simulation_actions,
     create_edit_diffusion_action,
     create_edit_graph_config_action,
@@ -47,6 +48,9 @@ class DiffusionNetworkGraphToolbar(AnalysisNetworkGraphToolbar):
         )
         self.addActions(
             create_diffusion_simulation_actions(parent=self, controller=toolbar_handler)
+        )
+        self.addAction(
+            create_diffusion_plots_action(parent=self, controller=toolbar_handler)
         )
         self.addAction(
             create_source_detection_action(parent=self, handler=toolbar_handler)
