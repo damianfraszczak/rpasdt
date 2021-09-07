@@ -86,8 +86,8 @@ class CLIInterface:
     def compute_centrality(
         self,
         input_graph_path: str,
-        graph_data_format: GraphDataFormatEnum,
         centrality: CentralityOptionEnum,
+        graph_data_format: GraphDataFormatEnum = GraphDataFormatEnum.MULTILINE_ADJLIST,
         output_file_path: Optional[str] = None,
     ) -> None:
         """Compute centrality for the given graph.
@@ -109,8 +109,8 @@ class CLIInterface:
     def compute_communities(
         self,
         input_graph_path: str,
-        graph_data_format: GraphDataFormatEnum,
         community: CommunityOptionEnum,
+        graph_data_format: GraphDataFormatEnum = GraphDataFormatEnum.MULTILINE_ADJLIST,
         community_properties: Optional[Dict] = None,
         output_file_path: Optional[str] = None,
     ) -> None:

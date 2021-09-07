@@ -1,13 +1,13 @@
 version: "3.3"
 services:
-  gui:
+  rpasdt:
     build:
       context: ..
       dockerfile: docker/Dockerfile
     command: run
     environment:
-      - DISPLAY=$DISPLAY
+      - DISPLAY=192.168.100.7:0.0
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ../src/rpasdt:/app/rpasdt
-      - ../dist:/app/dist
+      - ../dist:/app/pyinstaller_config/dist
