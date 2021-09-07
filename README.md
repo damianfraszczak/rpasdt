@@ -2,6 +2,10 @@
 
 RP&SDT - Rumour propagation and source detection toolkit.
 
+## Documentation
+
+Documentation is available [here](https://rpasdt.readthedocs.io/en/latest/).
+
 ## Docker Setup
 
 To use docker, refer to its [README](docs/files/docker.md) file.
