@@ -25,7 +25,9 @@ case "$1" in
     ;;
 
   package)
-    exec pyinstaller --onefile --windowed /app/rpasdt/gui/main.py
+    echo -e "\nBuilding an executable artifact."
+    cd pyinstaller_config
+    exec pyinstaller --onefile --windowed rpasdt.spec
     ;;
 
   *)

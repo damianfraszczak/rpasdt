@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from networkx import Graph
 
-from rpasdt.algorithm.communities_new import find_communities
+from rpasdt.algorithm.communities import find_communities
 from rpasdt.algorithm.models import (
     CommunitiesBasedSourceDetectionConfig,
     SingleSourceDetectionEvaluation,

@@ -26,5 +26,5 @@ RUN chmod +x docker-entrypoint.sh
 
 USER qtuser
 COPY src/rpasdt /app/rpasdt
-
+COPY pyinstaller_config /app/pyinstaller_config
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
