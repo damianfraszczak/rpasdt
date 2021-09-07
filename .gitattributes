@@ -1,0 +1,2 @@
+dist/linux/rpasdt filter=lfs diff=lfs merge=lfs -text
+dist/windows/rpasdt.exe filter=lfs diff=lfs merge=lfs -text
