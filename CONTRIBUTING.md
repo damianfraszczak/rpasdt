@@ -19,16 +19,12 @@ You will have to manually install a database engine and create a database yourse
 ### Release a version
 
 - Merge your PR into **`master`**
-- Update changelog in api_clients/CHANGELOG.md
-- Change the version in api_clients/version.py
+- Update changelog in CHANGELOG.md
+- Change the version in src/rpasdt/version.py
 - Commit. `git commit -m 'Release version x.y.z'`
 - Tag the commit. `git tag -a x.y.z -m 'Release version x.y.z'`
 - Push (do not forget --tags). `git push origin master --tags`
-- Merge master into release when tests passes in Travis.
-- Push to **`release`** branch.
 
-When tests passes in Travis in release branch it automatically builds the package and
-publishes it to our PyPi server.
 
 
 ## Pre-commit Hooks
