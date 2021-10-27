@@ -1,3 +1,4 @@
+"""Common methods shared throughout the app."""
 import ast
 import inspect
 import re
@@ -9,16 +10,22 @@ from dataclasses_json import dataclass_json
 
 
 def write_to_file(text: str, file_path: str) -> None:
+    """Save provided text into file with given path."""
     with open(file_path, "w") as file:
         file.write(text)
 
 
 def read_from_file(file_path: str) -> str:
+    """Read content from the file."""
     with open(file_path, "r") as file:
         return file.read()
 
 
 def get_object_type_as_json_exportable(object: Any) -> Type:
+    """Get object type to be json exportable.
+
+    It appends to_json method to an object type dynamically.
+    """
     object_type = object if isinstance(object, type) else type(object)
     if not getattr(object_type, "to_json", None):
         object_type = dataclass_json(object_type)
@@ -52,10 +59,12 @@ def get_enum(value: Union[Enum, str], enum_type: type) -> Enum:
 
 
 def object_to_dict(object: Any) -> dict:
+    """Return dict representation of object."""
     return object.__dict__
 
 
 def copy_dict_values_into_object(object: Any, dict: dict) -> None:
+    """Update object properties with dict values."""
     for key, value in dict.items():
         setattr(object, key, value)
 

@@ -1,3 +1,4 @@
+"""CLI interface.."""
 from typing import Any, Dict, List, Optional
 
 from networkx import Graph

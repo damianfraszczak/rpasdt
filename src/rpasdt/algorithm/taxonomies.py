@@ -1,3 +1,4 @@
+"""Algorithms taxonomies."""
 from rpasdt.common.enums import StringChoiceEnum
 
 
@@ -17,6 +18,8 @@ class GraphLayout(StringChoiceEnum):
 
 
 class DiffusionGraphNodeRenderTypeEnum(StringChoiceEnum):
+    """Available graph nodes rendering nodes."""
+
     FULL = ("FULL", "Full graph")
     ONLY_INFECTED = ("ONLY_INFECTED", "Only infected nodes")
 
@@ -60,10 +63,18 @@ class DiffusionTypeEnum(StringChoiceEnum):
     SEIR = ("SEIR", "SEIR Model")
     SWIR = ("SWIR", "SWIR Model")
     THRESHOLD = ("THRESHOLD", "Threshold")
+    GENERALISED_THRESHOLD = ("GENERALISED_THRESHOLD", "Generalised Threshold")
+    KERTESZ_THRESHOLD = ("KERTESZ_THRESHOLD", "Kertesz Threshold")
     INDEPENDENT_CASCADES = ("INDEPENDENT_CASCADES", "Independent Cascades")
+    VOTER = ("VOTER", "Voter")
+    Q_VOTER = ("Q_VOTER", "Q-Voter")
+    MAJORITY_RULE = ("MAJORITY_RULE", "Majority rule")
+    SZNAJD = ("SZNAJD", "Sznajd")
 
 
 class DiffusionSimulationMode(StringChoiceEnum):
+    """Available diffusion simulation modes."""
+
     SINGLE = ("SINGLE", "Single iteration.")
     BUNCH = ("BUNCH", "Bunch of iterations.")
     TO_FULL_COVER = ("TO_FULL_COVER", "To cover the whole network.")
@@ -88,6 +99,8 @@ NodeStatusToValueMapping = {
 
 
 class CentralityOptionEnum(StringChoiceEnum):
+    """Available centrality measures."""
+
     DEGREE = ("degree", "Compute the degree centrality for nodes.")
     EIGENVECTOR = ("eigenvector", "Compute the eigenvector centrality for the graph G.")
     KATZ = ("katz", "Compute the Katz centrality for the nodes of the graph G.")
@@ -120,6 +133,8 @@ class ClusteringOptionEnum(StringChoiceEnum):
 
 
 class CommunityOptionEnum(StringChoiceEnum):
+    """Available community detection methods."""
+
     AGDL = (
         "agdl",
         "AGDL is a graph-based agglomerative algorithm, for clustering high-dimensional data.",
@@ -264,6 +279,8 @@ class CommunityOptionEnum(StringChoiceEnum):
 
 
 class NetworkAnalysisOptionEnum(StringChoiceEnum):
+    """Available network analysis measures."""
+
     DENSITY = ("density", "The density of a graph.")
     AVERAGE_CLUSTERING = ("average_clustering", "The average clustering of a graph.")
     SUMMARY = (
@@ -273,6 +290,8 @@ class NetworkAnalysisOptionEnum(StringChoiceEnum):
 
 
 class SourceSelectionOptionEnum(StringChoiceEnum):
+    """Available source selection methods."""
+
     RANDOM = ("random", "Select sources in random way.")
     DEGREE = ("degree", "Select sources according to degree centrality metrics.")
     CLOSENESS = (
@@ -286,6 +305,8 @@ class SourceSelectionOptionEnum(StringChoiceEnum):
 
 
 class SourceDetectionAlgorithm(StringChoiceEnum):
+    """Available source detection methods."""
+
     DYNAMIC_AGE = ("dynamic_age", "Find sources with dynamic age algorithm.")
     NET_SLEUTH = ("net_sleuth", "Find sources with NetSleuth algorithm.")
     RUMOR_CENTER = ("rumor_center", "Find sources with Rumor center algorithm.")

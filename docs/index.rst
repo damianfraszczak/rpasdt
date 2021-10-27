@@ -11,8 +11,11 @@ Welcome to RP&SDT's documentation!
    :caption: Contents:
 
    Introduction <files/introduction.md>
+   Contributing <files/contributing.md>
    Docker <files/docker.md>
    CLI <files/cli.md>
+   Sample codes  <files/sample_codes.md>
+   Sample configuration files  <files/sample_configuration_files.md>
    Reference <source/modules>
 
 

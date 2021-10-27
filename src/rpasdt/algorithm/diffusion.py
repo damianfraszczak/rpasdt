@@ -1,9 +1,12 @@
+"""Diffusion models configuration."""
 import random
 from typing import Dict, List, Optional
 
 from ndlib.models import DiffusionModel
 from ndlib.models.epidemics import (
+    GeneralisedThresholdModel,
     IndependentCascadesModel,
+    KerteszThresholdModel,
     SEIRModel,
     SIModel,
     SIRModel,
@@ -12,6 +15,12 @@ from ndlib.models.epidemics import (
     ThresholdModel,
 )
 from ndlib.models.ModelConfig import Configuration
+from ndlib.models.opinions import (
+    MajorityRuleModel,
+    QVoterModel,
+    SznajdModel,
+    VoterModel,
+)
 from networkx import Graph
 
 from rpasdt.algorithm.taxonomies import (
@@ -28,17 +37,28 @@ DiffusionTypeToDiffusionModelMap = {
     DiffusionTypeEnum.SEIR: SEIRModel,
     DiffusionTypeEnum.SWIR: SWIRModel,
     DiffusionTypeEnum.THRESHOLD: ThresholdModel,
+    DiffusionTypeEnum.KERTESZ_THRESHOLD: KerteszThresholdModel,
+    DiffusionTypeEnum.GENERALISED_THRESHOLD: GeneralisedThresholdModel,
     DiffusionTypeEnum.INDEPENDENT_CASCADES: IndependentCascadesModel,
+    DiffusionTypeEnum.VOTER: VoterModel,
+    DiffusionTypeEnum.Q_VOTER: QVoterModel,
+    DiffusionTypeEnum.MAJORITY_RULE: MajorityRuleModel,
+    DiffusionTypeEnum.SZNAJD: SznajdModel,
 }
+# ndlib diffusion model configuration kwargs
+NDLIB_MODEL_KWARG = "model"
+NDLIB_RANGE_KWARG = "range"
+NDLIB_DEFAULT_KWARG = "default"
 
 
 def get_diffusion_model_default_params(diffusion_model: DiffusionModel) -> Dict:
-    parameters = diffusion_model.get_model_parameters().get("model")
+    """Return default configuration for provided diffusion model."""
+    parameters = diffusion_model.get_model_parameters().get(NDLIB_MODEL_KWARG)
     result = {}
     for field, details in parameters.items():
-        range = eval_if_str(details.get("range"))
+        range = eval_if_str(details.get(NDLIB_RANGE_KWARG))
         default_val = details.get(
-            "default", random.uniform(range[0], range[1]) if range else 0
+            NDLIB_DEFAULT_KWARG, random.uniform(range[0], range[1]) if range else 0
         )
         result[field] = default_val
     return result
@@ -50,6 +70,7 @@ def get_and_init_diffusion_model(
     source_nodes: List[int],
     model_params: Optional[Dict] = None,
 ):
+    """Create and initialize diffusion model based on provided config."""
     diffusion_model = DiffusionTypeToDiffusionModelMap[diffusion_type](graph)
     config = Configuration()
     model_params = model_params or get_diffusion_model_default_params(diffusion_model)
@@ -63,7 +84,8 @@ def get_and_init_diffusion_model(
 def get_nodes_by_diffusion_status(
     diffusion_model: DiffusionModel = None,
     node_status: NodeStatusEnum = NodeStatusEnum.INFECTED,
-):
+) -> List[int]:
+    """Return nodes with required status."""
     return (
         [
             key

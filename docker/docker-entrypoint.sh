@@ -30,6 +30,11 @@ case "$1" in
     exec pyinstaller --onefile --windowed rpasdt.spec
     ;;
 
+  makedoc)
+    cd docs
+    exec make html
+    ;;
+
   *)
 
     echo "
@@ -47,6 +52,8 @@ case "$1" in
         python: Run python shell
 
         package: Generate an executable artifact
+
+        makedoc: Generate documentation
     "
     ;;
 

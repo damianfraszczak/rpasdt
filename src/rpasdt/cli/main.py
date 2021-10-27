@@ -1,3 +1,4 @@
+"""Entrypoint for CLI operations."""
 import sys
 
 import fire

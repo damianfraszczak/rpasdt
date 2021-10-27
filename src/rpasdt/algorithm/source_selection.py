@@ -1,3 +1,4 @@
+"""Source selection methods."""
 import random
 
 from networkx import Graph

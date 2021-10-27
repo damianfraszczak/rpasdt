@@ -1,3 +1,4 @@
+"""Centrality based source detection methods."""
 from collections import Counter
 from typing import Dict, Optional, Union
 

@@ -1,0 +1,10 @@
+version: "3.3"
+services:
+  rpasdt:
+    environment:
+      - DISPLAY=$DISPLAY # or for Windows user {YOUR_IP}:0.0
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ../src/rpasdt:/app/rpasdt
+      - ../dist:/app/pyinstaller_config/dist
+      - ../docs:/docs

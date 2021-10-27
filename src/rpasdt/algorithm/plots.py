@@ -1,3 +1,4 @@
+"""Plots utilities."""
 from typing import Dict, List, Optional
 
 import matplotlib
