@@ -4,7 +4,9 @@ from typing import Dict, List, Optional
 
 from ndlib.models import DiffusionModel
 from ndlib.models.epidemics import (
+    GeneralisedThresholdModel,
     IndependentCascadesModel,
+    KerteszThresholdModel,
     SEIRModel,
     SIModel,
     SIRModel,
@@ -13,6 +15,12 @@ from ndlib.models.epidemics import (
     ThresholdModel,
 )
 from ndlib.models.ModelConfig import Configuration
+from ndlib.models.opinions import (
+    MajorityRuleModel,
+    QVoterModel,
+    SznajdModel,
+    VoterModel,
+)
 from networkx import Graph
 
 from rpasdt.algorithm.taxonomies import (
@@ -29,7 +37,13 @@ DiffusionTypeToDiffusionModelMap = {
     DiffusionTypeEnum.SEIR: SEIRModel,
     DiffusionTypeEnum.SWIR: SWIRModel,
     DiffusionTypeEnum.THRESHOLD: ThresholdModel,
+    DiffusionTypeEnum.KERTESZ_THRESHOLD: KerteszThresholdModel,
+    DiffusionTypeEnum.GENERALISED_THRESHOLD: GeneralisedThresholdModel,
     DiffusionTypeEnum.INDEPENDENT_CASCADES: IndependentCascadesModel,
+    DiffusionTypeEnum.VOTER: VoterModel,
+    DiffusionTypeEnum.Q_VOTER: QVoterModel,
+    DiffusionTypeEnum.MAJORITY_RULE: MajorityRuleModel,
+    DiffusionTypeEnum.SZNAJD: SznajdModel,
 }
 # ndlib diffusion model configuration kwargs
 NDLIB_MODEL_KWARG = "model"
