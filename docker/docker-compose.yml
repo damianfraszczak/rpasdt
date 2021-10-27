@@ -5,9 +5,3 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     command: run
-    environment:
-      - DISPLAY=192.168.100.7:0.0
-    volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix
-      - ../src/rpasdt:/app/rpasdt
-      - ../dist:/app/pyinstaller_config/dist
