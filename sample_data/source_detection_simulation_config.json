@@ -1,0 +1,36 @@
+{
+  "number_of_experiments": 10,
+  "graph": null,
+  "graph_type": "KARATE_CLUB",
+  "graph_type_properties": {},
+  "source_nodes": null,
+  "source_selection_config": {
+    "number_of_sources": 5,
+    "algorithm": "random"
+  },
+  "iteration_bunch": 20,
+  "diffusion_models": [
+    {
+      "diffusion_model_type": "SI",
+      "diffusion_model_params": {
+        "beta": 0.08784399402913001
+      }
+    }
+  ],
+  "source_detectors": {
+    "NETLSEUTH": {
+      "alg": "net_sleuth",
+      "config": {
+        "number_of_sources": 1,
+        "communities_algorithm": "girvan_newman"
+      }
+    },
+    "RUMOR_CENTER": {
+      "alg": "rumor_center",
+      "config": {
+        "number_of_sources": 1,
+        "communities_algorithm": "girvan_newman"
+      }
+    }
+  }
+}

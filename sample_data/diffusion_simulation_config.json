@@ -1,0 +1,31 @@
+{
+  "number_of_experiments": 10,
+  "graph": null,
+  "graph_type": "WATTS_STROGATZ",
+  "graph_type_properties": {
+    "n": 100,
+    "k": 4,
+    "p": 0.5
+  },
+  "source_nodes": null,
+  "source_selection_config": {
+    "number_of_sources": 5,
+    "algorithm": "random"
+  },
+  "iteration_bunch": 200,
+  "diffusion_models": [
+    {
+      "diffusion_model_type": "SI",
+      "diffusion_model_params": {
+        "beta": 0.088
+      }
+    },
+    {
+      "diffusion_model_type": "SIS",
+      "diffusion_model_params": {
+        "beta": 0.088,
+        "lambda": 0.005
+      }
+    }
+  ]
+}
