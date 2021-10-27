@@ -5,9 +5,8 @@ To run application with Docker you need it installed and configured, please see 
 If you want to have persistent volumes you can:
 
 * use `docker-compose.dev.yml` file for Docker Compose, e.g. `docker-compose -f docker-compose.dev.yml run rpasdt gui`
-* copy `docker-compose.dev.yml` and name it `docker-compose.override.yml`.
-  It is gitignored so you won't add this to repo by accident.
-*
+* copy `docker-compose.dev.yml` and name it `docker-compose.override.yml`. It is gitignored so you won't add this to repo by accident.
+
 ## Run application in GUI mode
 To run application in GUI mode you need to enable a $DISPLAY port forwarding. Based on the system you use it should be done differently.
 
@@ -32,8 +31,8 @@ To do so, run the following command in `docker` directory:
 ```shell
 docker-compose build
 ```
-# Commands
-## Run application with GUI
+## Commands
+### Run application with GUI
 ```
 docker-compose run rpasdt gui
 ```
@@ -41,30 +40,30 @@ or just by
 ```
 docker-compose up
 ```
-## Print help
+### Print help
 ```
 docker-compose run rpasdt help
 ```
-## Run CLI command
+### Run CLI command
 ```
 docker-compose run rpasdt cli <command>
 ```
 For CLI commands list please refer [here](cli.md).
-## Run Python shell
+### Run Python shell
 ```
 docker-compose run rpasdt python
 ```
 
-## Open an interactive shell in the container
+### Open an interactive shell in the container
 ```
 docker-compose run rpasdt shell
 ```
-## Generate a package
+### Generate a package
 ```
 docker-compose run rpasdt package
 ```
 
-# References
+## References
 
 * [Docker-Compose Docs](https://docs.docker.com/compose/)
 * [Docker Docs](https://docs.docker.com/)

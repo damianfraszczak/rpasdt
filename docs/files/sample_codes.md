@@ -1,7 +1,6 @@
-# Sample code for simulation and evaluation rumor diffusion in the network
-
+# Sample codes
+##  Sample code for simulation and evaluation rumor diffusion in the network
 Presented simulation is performed for:
-
 - two diffusion model - `SI` with beta = 0.88 and `SIS` with beta = 0.88 and lambda = 0.005
 - the experiment will be run under Watts-Strogatz topology with n=100, k = 4 and p =0.5
 - there will be 5 randomly selected sources
@@ -43,10 +42,8 @@ The sample result of the above code:
 {'SI': 31.4, 'SIS': 40.4}
 ```
 
-# Sample code for simulation and evaluation for source detection problem
-
+## Sample code for simulation and evaluation for source detection problem
 Presented simulation is performed for:
-
 - one diffusion model - `SI` with beta ~ 0.88
 - random source selection model with the constant number of selected sources - 5
 - sources will be evaluated after 20 simulation iterations

@@ -7,3 +7,4 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ../src/rpasdt:/app/rpasdt
       - ../dist:/app/pyinstaller_config/dist
+      - ../docs:/docs

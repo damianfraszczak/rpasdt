@@ -9,17 +9,16 @@ This document contains instructions to help you contribute to this project.
 
 ## Local development setup
 
-We use Docker to setup the necessary environment and tools to build this
-project. Go to the [docker's README](docker.md) page to get instructions.
+We use Docker to setup the necessary environment and tools to build this project. Go to the [docker's README](docker.md) page to get instructions.
 
 ### Release a version
 
-- Merge your PR into **`master`**
+- Merge your PR into **`main`**
 - Update changelog in CHANGELOG.md
 - Change the version in src/rpasdt/version.py
 - Commit. `git commit -m 'Release version x.y.z'`
 - Tag the commit. `git tag -a x.y.z -m 'Release version x.y.z'`
-- Push (do not forget --tags). `git push origin master --tags`
+- Push (do not forget --tags). `git push origin main --tags`
 
 
 
