@@ -7,14 +7,10 @@ This document contains instructions to help you contribute to this project.
 - [Release a version](#-releasing-a-new-version)
 - [Pre-commit hook](#precommit-hooks)
 
-
 ## Local development setup
 
 We use Docker to setup the necessary environment and tools to build this
-project. Go to the [docker's README](docs/files/docker.md) page to get instructions.
-
-You will have to manually install a database engine and create a database yourself.
-
+project. Go to the [docker's README](docker.md) page to get instructions.
 
 ### Release a version
 
@@ -32,3 +28,12 @@ You will have to manually install a database engine and create a database yourse
 This project supports [**pre-commit**](https://pre-commit.com/). To use it please install it
 in the `pip install pre-commit` and then run `pre-commit install` and you are ready to go.
 Bunch of checks will be executed before commit and files will be formatted correctly.
+
+Pre-commit works on staged files while commiting. To run it without a command one should run `pre-commit run`. Changes has to be staged.
+
+To run pre-commit hooks on all changes in the branch:
+
+1.  Sync branch with main
+1.  Run `git diff --name-only --diff-filter=MA origin/main | xargs pre-commit run --files`
+
+For branches that are not based on `main` you might replace `origin/main` with `origin/{your_branch}`
