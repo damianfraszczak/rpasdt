@@ -1,12 +1,16 @@
 # Configuration
 To run application with Docker you need it installed and configured, please see [this](https://docs.docker.com/engine/install/) for a reference.
 
+
 ## Windows
 To run application in GUI mode you need to enable a $DISPLAY port forwarding to do this you need to install and configure **VcXsrv** server, please use [this](https://dev.to/darksmile92/run-gui-app-in-linux-docker-container-on-windows-host-4kde) for the reference. Then please update `docker-compose.dev.yml` configuration with the correct value for **$DISPLAY**:
 ```
  environment:
       - DISPLAY={YOUR_IP}:0.0
 ```  
+## LINUX
+    environment:
+      - DISPLAY=$DISPLAY
 
 
 ## Build images
