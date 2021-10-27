@@ -1,3 +1,4 @@
+"""Jordan center source detection method."""
 from collections import defaultdict
 
 import networkx as nx

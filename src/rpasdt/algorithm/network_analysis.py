@@ -1,3 +1,4 @@
+"""Network analysis utilities."""
 import networkx as nx
 from networkx import Graph
 

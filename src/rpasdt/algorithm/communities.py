@@ -1,3 +1,4 @@
+"""Community detection methods."""
 from typing import Dict, List, Union
 
 import networkx as nx

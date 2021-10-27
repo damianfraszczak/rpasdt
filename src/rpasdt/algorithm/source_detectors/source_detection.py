@@ -1,3 +1,4 @@
+"""Source detection utility methods."""
 from typing import Optional
 
 from networkx import Graph

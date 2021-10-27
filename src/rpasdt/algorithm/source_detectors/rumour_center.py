@@ -1,3 +1,4 @@
+"""Rumor Center source detection method."""
 from random import shuffle
 from typing import List
 

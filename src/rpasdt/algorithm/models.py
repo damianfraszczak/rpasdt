@@ -1,3 +1,4 @@
+"""Models used to describe algorithms."""
 import statistics
 from dataclasses import dataclass, field
 from functools import cached_property

@@ -1,3 +1,4 @@
+"""Graph loading utilities."""
 from typing import Dict, Union
 
 import networkx as nx

@@ -1,3 +1,4 @@
+"""NetSleuth source detection method."""
 import networkx as nx
 import numpy as np
 from networkx import Graph

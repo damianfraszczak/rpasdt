@@ -1,3 +1,4 @@
+"""Source detection evaluation metrics."""
 from typing import List, Set, Union
 
 import networkx as nx
