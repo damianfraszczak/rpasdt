@@ -8,7 +8,7 @@ Presented simulation is performed for:
 - for each diffusion model tehre will be 10 experiments
 - as a result the average number of required iterations to cover all network is presented
 
-The config described above is stored in [this file](../../sample_data/diffusion_simulation_config.json).
+The config described above is stored in [this file](../sample_data/diffusion_simulation_config.json).
 
 ```python
 from rpasdt.algorithm.models import DiffusionModelSimulationConfig,
@@ -53,13 +53,10 @@ Presented simulation is performed for:
 - the source detection will be evaluated with two algorithms: `Netlseuth` and `Rumor center`
 - then evaluation of the mentioned algorithms will be presented
 
-The config described above is stored in [this file](../../sample_data/source_detection_simulation_config.json).
+The config described above is stored in [this file](../sample_data/source_detection_simulation_config.json).
 
 ```python
-from rpasdt.algorithm.models import DiffusionModelSimulationConfig,
-
-SourceDetectionSimulationConfig, NetworkSourceSelectionConfig,
-SourceDetectorSimulationConfig, CommunitiesBasedSourceDetectionConfig
+from rpasdt.algorithm.models import DiffusionModelSimulationConfig, SourceDetectionSimulationConfig, NetworkSourceSelectionConfig, SourceDetectorSimulationConfig, CommunitiesBasedSourceDetectionConfig
 from rpasdt.algorithm.simulation import perform_source_detection_simulation
 from rpasdt.algorithm.taxonomies import DiffusionTypeEnum, SourceDetectionAlgorithm
 
