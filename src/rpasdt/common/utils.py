@@ -28,7 +28,7 @@ def get_object_type_as_json_exportable(object: Any) -> Type:
     """
     object_type = object if isinstance(object, type) else type(object)
     if not getattr(object_type, "to_json", None):
-        object_type = dataclass_json(object_type)
+        object_type = dataclass_json(object_type, undefined=Undefined.EXCLUDE)
     return object_type
 
 

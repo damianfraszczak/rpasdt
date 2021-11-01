@@ -1,3 +1,4 @@
+"""Main controller."""
 from networkx import Graph
 
 from rpasdt.algorithm.graph_loader import load_graph
@@ -17,9 +18,12 @@ from rpasdt.network.networkx_utils import (
 
 
 class AppController:
+    """Main controller responsible for common interactions."""
+
     window: "MainWindow"
 
     def load_experiment(self, experiment: Experiment, graph: Graph):
+        """Load experiment into toolkit handler."""
         experiment.graph = graph
         self.window.show_experiment_window(
             experiment=experiment,
@@ -29,12 +33,14 @@ class AppController:
         )
 
     def handler_about_dialog(self):
+        """Display about dialog handler."""
         show_alert_dialog(
             title="Author information",
             text="Damian Frąszczak Military University of Technology",
         )
 
     def handler_new_experiment(self):
+        """Show a new experiment dialog handler."""
         experiment = show_dynamic_dialog(
             object=Experiment(), title="Create new experiment"
         )
@@ -59,6 +65,7 @@ class AppController:
                 )
 
     def handler_import_experiment(self):
+        """Import experiment form file into toolkit handler."""
         file_path = show_open_file_dialog()
         if file_path:
             # TODO run in async
