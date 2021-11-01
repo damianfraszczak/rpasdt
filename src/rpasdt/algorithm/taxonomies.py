@@ -302,6 +302,10 @@ class SourceSelectionOptionEnum(StringChoiceEnum):
         "betweenness",
         "Select sources according to betweenness centrality metrics.",
     )
+    PAGE_RANK = (
+        "page_rank",
+        "Select sources according to PageRank centrality metrics.",
+    )
 
 
 class SourceDetectionAlgorithm(StringChoiceEnum):
