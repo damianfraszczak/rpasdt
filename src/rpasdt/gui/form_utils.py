@@ -62,6 +62,22 @@ GraphTypeToFormFieldsConfigMap = {
             type_representation=TypeRepresentation(int),
         ),
     },
+    GraphTypeEnum.BARABASI_ALBERT: {
+        "n": FormFieldConfig(
+            field_name="n",
+            default_value=100,
+            type=FieldInputType.INTEGER,
+            help_text="The number of nodes",
+            type_representation=TypeRepresentation(int),
+        ),
+        "m": FormFieldConfig(
+            field_name="k",
+            default_value=4,
+            type=FieldInputType.INTEGER,
+            help_text="Number of edges to attach from a new node to existing nodes",
+            type_representation=TypeRepresentation(int),
+        ),
+    },
     GraphTypeEnum.BALANCED_TREE: {
         "r": FormFieldConfig(
             field_name="r",

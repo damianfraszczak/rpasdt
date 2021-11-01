@@ -1,5 +1,6 @@
 """Experiment simulation utilities."""
 from dataclasses import dataclass
+from functools import cached_property
 from typing import Dict, List
 
 import networkx as nx
@@ -25,18 +26,19 @@ from rpasdt.algorithm.taxonomies import NodeStatusEnum
 
 @dataclass
 class DiffusionSimulation:
-    """Model for diffusion simulation results."""
-
-    iteration_number: int
+    experiment_number: int
     graph: nx.Graph
     source_nodes: List[int]
     diffusion_model: DiffusionModel
-    diffusion_iterations: Dict
+    diffusion_iterations: List[Dict]
+
+    @cached_property
+    def diffusion_trends(self):
+        return self.diffusion_model.build_trends(self.diffusion_iterations)
 
 
 def _simulate_diffusion(simulation_config: DiffusionSimulationConfig):
-    """Based on provided config perform diffusion simulation."""
-    for iteration_number in range(simulation_config.number_of_experiments):
+    for experiment_number in range(simulation_config.number_of_experiments):
         graph: nx.Graph = simulation_config.graph or load_graph(
             graph_type=simulation_config.graph_type,
             graph_type_properties=simulation_config.graph_type_properties,
@@ -59,7 +61,7 @@ def _simulate_diffusion(simulation_config: DiffusionSimulationConfig):
                 simulation_config.iteration_bunch
             )
             yield DiffusionSimulation(
-                iteration_number=iteration_number,
+                experiment_number=experiment_number,
                 graph=graph,
                 source_nodes=source_nodes,
                 diffusion_model=diffusion_model,
@@ -70,17 +72,13 @@ def _simulate_diffusion(simulation_config: DiffusionSimulationConfig):
 def perform_diffusion_simulation(
     simulation_config: DiffusionSimulationConfig,
 ) -> DiffusionSimulationResult:
-    """Based on provided config perform a set of diffusion simulations."""
     result = DiffusionSimulationResult(simulation_config=simulation_config)
 
     for simulation in _simulate_diffusion(simulation_config):
-        trends = simulation.diffusion_model.build_trends(
-            simulation.diffusion_iterations
-        )
         result.add_result(
             diffusion_model=simulation.diffusion_model,
             iterations=simulation.diffusion_iterations,
-            trends=trends,
+            trends=simulation.diffusion_trends,
         )
     return result
 
@@ -88,7 +86,6 @@ def perform_diffusion_simulation(
 def perform_source_detection_simulation(
     source_detection_config: SourceDetectionSimulationConfig,
 ) -> SourceDetectionSimulationResult:
-    """Based on provided config perform source detection simulation."""
     result = SourceDetectionSimulationResult(
         source_detection_config=source_detection_config
     )

@@ -19,6 +19,8 @@ from rpasdt.algorithm.taxonomies import (
     SourceSelectionOptionEnum,
 )
 
+DIFFUSION_NOT_COVERED = -1
+
 
 class NetworkInformation:
     summary: str
@@ -126,52 +128,62 @@ class DiffusionSimulationConfig(SimulationConfig):
 
 @dataclass
 class DiffusionTrend:
-    node_count: List[int]
-    status_delta: Any
+    node_count: Dict = field(default=dict)  # [int, List]
+    status_delta: Dict = field(default=dict)
 
-    def __init__(self, raw_trends: List[Dict]):
+    @staticmethod
+    def from_raw_trends(raw_trends: List[Dict]):
         parsed_trends = raw_trends[0]["trends"]
-        self.node_count = parsed_trends["node_count"]
-        self.status_delta = parsed_trends["status_delta"]
+        return DiffusionTrend(
+            node_count=parsed_trends["node_count"],
+            status_delta=parsed_trends["status_delta"],
+        )
 
 
 @dataclass
 class DiffusionIteration:
     iteration: int
-    status: Dict[int, int]
-    node_count: Dict[int, List[int]]
-    status_delta: Dict[int, int]
+    status: Dict[int, int] = field(default=dict)
+    node_count: Dict[int, Any] = field(default=dict)  # Dict[int, List[int]]
+    status_delta: Dict[int, int] = field(default=dict)
 
     @staticmethod
     def from_iterations(raw_iterations: List[Dict]):
-        return [DiffusionIteration(iteration) for iteration in raw_iterations]
+        def create_iteration(raw_iteration: Dict):
+            return DiffusionIteration(
+                iteration=raw_iteration["iteration"],
+                status=raw_iteration["status"],
+                node_count=raw_iteration["node_count"],
+                status_delta=raw_iteration["status_delta"],
+            )
 
-    def __init__(self, raw_iteration: Dict):
-        self.iteration: int = raw_iteration["iteration"]
-        self.status: Dict[int, int] = raw_iteration["status"]
-        self.node_count: Dict[int, List[int]] = raw_iteration["node_count"]
-        self.status_delta: Dict[int, int] = raw_iteration["status_delta"]
+        return [create_iteration(iteration) for iteration in raw_iterations]
 
 
 @dataclass
 class DiffusionSimulationModelResult:
-    diffusion_model: DiffusionModel
+    nodes_count: int
+    edges_count: int
     trend: DiffusionTrend
+
     iterations: List[DiffusionIteration] = field(default_factory=list)
 
     def iteration_to_status_in_population(
-        self, node_status: NodeStatusEnum, percentage: float = 100
+        self,
+        node_status: NodeStatusEnum = NodeStatusEnum.INFECTED,
+        percentage: float = 100,
     ) -> int:
-        nodes_count = len(self.diffusion_model.graph.nodes)
-        nodes_count_lookup = floor(nodes_count * percentage / 100)
+        nodes_count_lookup = floor(self.nodes_count * percentage / 100)
         node_status_int = NodeStatusToValueMapping[node_status]
-
-        for index, nodes_count in enumerate(
-            self.trend.node_count.get(node_status_int, [])
-        ):
+        node_counts = (
+            self.trend.node_count.get(node_status_int)
+            or self.trend.node_count.get(str(node_status_int))
+            or []
+        )
+        for index, nodes_count in enumerate(node_counts):
             if nodes_count >= nodes_count_lookup:
                 return index
-        return len(self.trend.node_count)
+        return DIFFUSION_NOT_COVERED
 
 
 @dataclass
@@ -188,18 +200,24 @@ class DiffusionSimulationResult:
         trends: List[Dict],
     ) -> None:
         model_name = diffusion_model.name
+        nodes_count = len(diffusion_model.graph.nodes)
+        edges_count = len(diffusion_model.graph.edges)
         model_results = self.results.get(model_name) or []
+
         model_results.append(
             DiffusionSimulationModelResult(
-                diffusion_model=diffusion_model,
-                trend=DiffusionTrend(trends),
+                nodes_count=nodes_count,
+                edges_count=edges_count,
+                trend=DiffusionTrend.from_raw_trends(trends),
                 iterations=DiffusionIteration.from_iterations(iterations),
             )
         )
         self.results[model_name] = model_results
 
     def avg_iteration_to_status_in_population(
-        self, node_status: NodeStatusEnum, percentage: float = 100
+        self,
+        node_status: NodeStatusEnum = NodeStatusEnum.INFECTED,
+        percentage: float = 100,
     ) -> Dict[str, float]:
         return {
             model_name: statistics.mean(

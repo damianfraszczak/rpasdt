@@ -32,7 +32,7 @@ class GraphTypeEnum(StringChoiceEnum):
     """Available graph types and predefined topologies."""
 
     WATTS_STROGATZ = ("WATTS_STROGATZ", "Watts-Strogatz")
-
+    BARABASI_ALBERT = ("BARABASI_ALBERT", "Barabási–Albert")
     BALANCED_TREE = ("BALANCED_TREE", "Balanced tree")
     COMPLETE = ("COMPLETE", "Complete graph")
     ERDOS_RENYI = ("ERDOS_RENYI", "Erdős-Rényi graph or a binomial graph")

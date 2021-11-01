@@ -24,6 +24,9 @@ GRAPH_TYPE_LOADER = {
     GraphTypeEnum.WATTS_STROGATZ: lambda graph_type_properties: nx.watts_strogatz_graph(
         **graph_type_properties
     ),
+    GraphTypeEnum.BARABASI_ALBERT: lambda graph_type_properties: nx.barabasi_albert_graph(
+        **graph_type_properties
+    ),
     GraphTypeEnum.KARATE_CLUB: lambda graph_type_properties: nx.karate_club_graph(),
     GraphTypeEnum.BALANCED_TREE: lambda graph_type_properties: nx.balanced_tree(
         **graph_type_properties
