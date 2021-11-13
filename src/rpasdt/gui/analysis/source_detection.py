@@ -2,10 +2,12 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
+from rpasdt.algorithm.plots import plot_confusion_matrix
 from rpasdt.gui.analysis.analysis import (
     AnalysisNetworkGraphPanel,
     BaseAnalysisDialog,
 )
+from rpasdt.gui.mathplotlib_components import SimplePlotPanel
 from rpasdt.gui.toolbar.toolbars import SourceDetectionGraphToolbar
 
 matplotlib.use("Qt5Agg")
@@ -67,30 +69,38 @@ class SourceDetectionDialog(BaseAnalysisDialog):
         self.controller = controller
         super().__init__(title)
 
-    def configure_gui(self):
-        super().configure_gui()
-        data = self.controller.data
+    def _create_source_detection_graph_tab(self):
         self.add_tab(
             widget=SourceDetectionGraphPanel(controller=self.controller), title="Graph"
         )
+
+    def _create_confusion_matrix_tab(self):
+        cm = self.controller.data.evaluation
+        self.add_tab(
+            title="Confusion matrix",
+            widget=SimplePlotPanel(
+                title="Confusion matrix",
+                plot_renderer=lambda: plot_confusion_matrix(cm=cm, ax=plt.gca()),
+            ),
+        )
+
+    def _create_metrics_table_tab(self):
+        data = self.controller.data
+        headers = ["Metric", "Value"]
+        table_data = [
+            ["Real sources", f"{data.real_sources}"],
+            ["Detected sources", f"{data.detected_sources}"],
+            ["Error distance", data.evaluation.error_distance],
+        ]
+        table_data.extend(list(data.evaluation.get_classification_report().items()))
         self.add_table(
-            headers=[
-                "Detected sources",
-                "Real sources",
-                "Error distance",
-                "TP",
-                "FP",
-                "FN",
-            ],
-            data=[
-                [
-                    f"{data.detected_sources}",
-                    f"{data.real_sources}",
-                    data.evaluation.error_distance,
-                    data.evaluation.TP,
-                    data.evaluation.FP,
-                    data.evaluation.FN,
-                ]
-            ],
+            headers=headers,
+            data=table_data,
             title="Evaluation",
         )
+
+    def configure_gui(self):
+        super().configure_gui()
+        self._create_source_detection_graph_tab()
+        self._create_metrics_table_tab()
+        self._create_confusion_matrix_tab()

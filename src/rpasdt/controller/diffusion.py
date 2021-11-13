@@ -9,7 +9,10 @@ from rpasdt.algorithm.diffusion import (
     get_nodes_by_diffusion_status,
 )
 from rpasdt.algorithm.graph_drawing import get_diffusion_graph
-from rpasdt.algorithm.plots import plot_diffusion_trends
+from rpasdt.algorithm.plots import (
+    plot_diffusion_prevalence,
+    plot_diffusion_trends,
+)
 from rpasdt.algorithm.source_detectors.source_detection import (
     SourceDetector,
     get_source_detector,
@@ -179,6 +182,16 @@ class DiffusionGraphController(
             SimplePlotAppDialog(
                 title=f"Trends for {self.diffusion_model.name}",
                 plot_renderer=lambda: plot_diffusion_trends(
+                    self.diffusion_model, self.raw_iterations
+                ),
+            )
+        )
+
+    def handler_plot_diffusion_prevalence(self):
+        self.window.add_subwindow(
+            SimplePlotAppDialog(
+                title=f"Prevalence for {self.diffusion_model.name}",
+                plot_renderer=lambda: plot_diffusion_prevalence(
                     self.diffusion_model, self.raw_iterations
                 ),
             )

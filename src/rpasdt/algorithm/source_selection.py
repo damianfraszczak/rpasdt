@@ -32,17 +32,22 @@ SOURCE_SELECTION_OPERATION_MAP = {
     SourceSelectionOptionEnum.RANDOM: __source_selection_random_nodes,
     SourceSelectionOptionEnum.DEGREE: lambda graph, number_of_sources: __source_selection_centrality(
         graph=graph,
-        type=CentralityOptionEnum.DEGREE,
+        centrality=CentralityOptionEnum.DEGREE,
         number_of_sources=number_of_sources,
     ),
     SourceSelectionOptionEnum.BETWEENNESS: lambda graph, number_of_sources: __source_selection_centrality(
         graph=graph,
-        type=CentralityOptionEnum.BETWEENNESS,
+        centrality=CentralityOptionEnum.BETWEENNESS,
         number_of_sources=number_of_sources,
     ),
     SourceSelectionOptionEnum.CLOSENESS: lambda graph, number_of_sources: __source_selection_centrality(
         graph=graph,
-        type=CentralityOptionEnum.CLOSENESS,
+        centrality=CentralityOptionEnum.CLOSENESS,
+        number_of_sources=number_of_sources,
+    ),
+    SourceSelectionOptionEnum.PAGE_RANK: lambda graph, number_of_sources: __source_selection_centrality(
+        graph=graph,
+        centrality=CentralityOptionEnum.PAGE_RANK,
         number_of_sources=number_of_sources,
     ),
 }

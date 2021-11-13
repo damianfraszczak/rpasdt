@@ -62,7 +62,10 @@ docker-compose run rpasdt shell
 ```
 docker-compose run rpasdt package
 ```
-
+### Generate docs
+```
+docker-compose run rpasdt makedoc
+```
 ## References
 
 * [Docker-Compose Docs](https://docs.docker.com/compose/)

@@ -177,7 +177,10 @@ def create_diffusion_plots_action(parent, controller):
     )
     menu = QMenu("Plots", parent=parent)
     action.setMenu(menu)
-    plots = {"Trends": controller.handler_plot_diffusion_trend}
+    plots = {
+        "Trends": controller.handler_plot_diffusion_trend,
+        "Prevalence": controller.handler_plot_diffusion_prevalence,
+    }
     for title, handler in plots.items():
         menu.addAction(
             create_action(
