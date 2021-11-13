@@ -1,6 +1,7 @@
 """Main controller."""
 from networkx import Graph
 
+from rpasdt import version
 from rpasdt.algorithm.graph_loader import load_graph
 from rpasdt.controller.experiment import ExperimentGraphController
 from rpasdt.gui.utils import (
@@ -36,7 +37,8 @@ class AppController:
         """Display about dialog handler."""
         show_alert_dialog(
             title="Author information",
-            text="Damian Frąszczak Military University of Technology",
+            text=f"Damian Frąszczak Military University of Technology.\n"
+            f"RP&SDT {version.__version__} version",
         )
 
     def handler_new_experiment(self):

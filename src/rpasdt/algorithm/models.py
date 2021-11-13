@@ -81,23 +81,128 @@ class UnbiasedCentralityCommunityBasedSourceDetectionConfig(
     r: float = 0.85
 
 
+CLASSIFICATION_REPORT_FIELDS = (
+    "P",
+    "N",
+    "TP",
+    "TN",
+    "FP",
+    "FN",
+    "ACC",
+    "F1",
+    "TPR",
+    "TNR",
+    "PPV",
+    "NPV",
+    "FNR",
+    "FPR",
+    "FDR",
+    "FOR",
+    "TS",
+)
+
+
 @dataclass
-class SingleSourceDetectionEvaluation:
+class ClassificationMetrics:
+    """Confusion matrix representation.
+
+    It is based on https://en.wikipedia.org/wiki/Confusion_matrix.
+
+    """
+
+    TP: int  # true positive
+    TN: int  # true negative (TN)
+    FP: int  # false positive (FP)
+    FN: int  # false negative (FN)
+    P: int  # condition positive (P) - the number of real positive cases in
+    # the data
+    N: int  # condition negative (N) - the number of real negative cases in
+
+    # the data
+    @property
+    def confusion_matrix(self) -> List[List[float]]:
+        """Confusion matrix."""
+        return [[self.TP, self.FP], [self.FN, self.TN]]
+
+    @property
+    def TPR(self):
+        """Sensitivity, recall, hit rate, or true positive rate (TPR)."""
+        return self.TP / self.P
+
+    @property
+    def TNR(self):
+        """Specificity, selectivity or true negative rate (TNR)."""
+        return self.TN / self.N
+
+    @property
+    def PPV(self):
+        """Precision or positive predictive value (PPV)."""
+        return self.TP / (self.TP + self.FP)
+
+    @property
+    def NPV(self):
+        """Negative predictive value (NPV)."""
+        return self.TN / (self.TN + self.FN)
+
+    @property
+    def FNR(self):
+        """
+        Miss rate or false negative rate (FNR).
+        """
+        return self.TN / (self.TN + self.FN)
+
+    @property
+    def FPR(self):
+        """Fall-out or false positive rate (FPR)."""
+        return self.FP / (self.FP + self.TN)
+
+    @property
+    def FDR(self):
+        """False discovery rate (FDR)."""  # noqa
+        return self.FP / (self.FP + self.TP)
+
+    @property
+    def FOR(self):
+        """False omission rate (FOR)."""  # noqa
+        return self.FN / (self.FN + self.TN)
+
+    @property
+    def TS(self):
+        """False omission rate (FOR)."""  # noqa
+        return self.TP / (self.TP + self.FN + self.FP)
+
+    @property
+    def ACC(self):
+        """
+        Accuracy (ACC).
+        """
+        return (self.TP + self.TN) / (self.P + self.N)
+
+    @property
+    def F1(self):
+        """F1 score."""
+        return (
+            0
+            if self.PPV + self.TPR == 0
+            else 2 * self.PPV * self.TPR / (self.PPV + self.TPR)
+        )
+
+    def get_classification_report(self) -> Dict[str, float]:
+        """Classification report as string."""
+        return {attr: getattr(self, attr) for attr in CLASSIFICATION_REPORT_FIELDS}
+
+
+@dataclass
+class SingleSourceDetectionEvaluation(ClassificationMetrics):
     G: Graph
     real_sources: List[int]
     detected_sources: List[int]
     error_distance: int
-    TP: int
-    FP: int
-    FN: int
 
 
 @dataclass
-class ExperimentSourceDetectionEvaluation:
+class ExperimentSourceDetectionEvaluation(ClassificationMetrics):
     avg_error_distance: int
-    recall: float
-    precision: float
-    f1score: float
 
 
 @dataclass

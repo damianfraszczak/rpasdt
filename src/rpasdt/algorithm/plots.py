@@ -2,12 +2,35 @@
 from typing import Dict, List, Optional
 
 import matplotlib
+import numpy as np
 from matplotlib import pyplot as plt
 from ndlib.models.DiffusionModel import DiffusionModel
 from ndlib.viz.mpl.DiffusionPrevalence import DiffusionPrevalence
 from ndlib.viz.mpl.DiffusionTrend import DiffusionTrend
+from sklearn.metrics import ConfusionMatrixDisplay
+
+from rpasdt.algorithm.models import ClassificationMetrics
 
 matplotlib.use("Qt5Agg")
+
+AXIS_FONT_SIZE = 18
+LEGEND_FONT_SIZE = 14
+
+
+def _configure_plot(
+    title: Optional[str] = None,
+    ylabel: Optional[str] = None,
+    xlabel: Optional[str] = None,
+):
+    title = title or plt.gca().get_title()
+    ylabel = ylabel or plt.gca().get_ylabel()
+    xlabel = xlabel or plt.gca().get_xlabel()
+
+    plt.title(title, fontsize=AXIS_FONT_SIZE)
+    plt.xlabel(xlabel, fontsize=AXIS_FONT_SIZE)
+    plt.ylabel(ylabel, fontsize=AXIS_FONT_SIZE)
+    plt.legend(loc="best", fontsize=LEGEND_FONT_SIZE)
+    plt.tight_layout()
 
 
 class NdlibDiffusionPlotMixin:
@@ -62,15 +85,9 @@ class NdlibDiffusionPlotMixin:
                 )  # ,color=cols[i])
 
             i += 1
-
-        plt.grid(axis="y")
-        plt.title(self.title)
-        plt.xlabel("Iterations", fontsize=24)
-        plt.ylabel(self.ylabel, fontsize=24)
-        plt.legend(loc="best", fontsize=18)
         plt.xlim((0, mx))
-
-        plt.tight_layout()
+        plt.grid(axis="y")
+        _configure_plot(title=self.title, xlabel="Iterations", ylabel=self.ylabel)
 
         if filename is not None:
             plt.savefig(filename)
@@ -150,24 +167,15 @@ def plot_diffusion_prevalence(
     viz.plot(filename=filename)
 
 
-# import networkx as nx
-# import ndlib.models.epidemics as ep
-#
-# # Network Definition
-# g = nx.erdos_renyi_graph(1000, 0.1)
-#
-# # Model Selection
-# model = ep.SIRModel(g)
-# import ndlib.models.ModelConfig as mc
-#
-# # Model Configuration
-# config = mc.Configuration()
-# config.add_model_parameter('beta', 0.001)
-# config.add_model_parameter('gamma', 0.01)
-# config.add_model_parameter("fraction_infected", 0.05)
-# model.set_initial_status(config)
-# # Simulation
-# iterations = model.iteration_bunch(200)
-# trends = model.build_trends(iterations)
-# plot_diffusion_trends(diffusion_model=model, raw_iterations=iterations,
-#                       raw_trends=trends)
+def plot_confusion_matrix(
+    cm: ClassificationMetrics,
+    title: str = "Confusion matrix",
+    class_names=("Real", "Fake"),
+    ax=None,
+):
+    matplotlib.use("Qt5Agg")
+    disp = ConfusionMatrixDisplay(
+        confusion_matrix=np.array(cm.confusion_matrix), display_labels=class_names
+    )
+    disp.plot(ax=ax)
+    _configure_plot(title=title, xlabel="Detected sources", ylabel="Real sources")

@@ -27,11 +27,7 @@ class ListTableModel(QtCore.QAbstractTableModel):
                 # Render float to 2 dp
                 return "%.2f" % value
 
-            if isinstance(value, str):
-                # Render strings with quotes
-                return '"%s"' % value
-
-            # Default (anything not captured above: e.g. int)
+            # Default (anything not captured above: e.g. int, str)
             return value
 
     def rowCount(self, index):
