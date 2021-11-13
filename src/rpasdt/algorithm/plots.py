@@ -13,8 +13,8 @@ from rpasdt.algorithm.models import ClassificationMetrics
 
 matplotlib.use("Qt5Agg")
 
-AXIS_FONT_SIZE = 18
-LEGEND_FONT_SIZE = 14
+AXIS_FONT_SIZE = 14
+LEGEND_FONT_SIZE = 10
 
 
 def _configure_plot(
