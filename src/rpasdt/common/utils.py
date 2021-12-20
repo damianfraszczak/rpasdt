@@ -4,6 +4,8 @@ import inspect
 import re
 from collections import defaultdict
 from enum import Enum
+from functools import wraps
+from time import process_time
 from typing import Any, Dict, List, Mapping, Optional, Type, Union
 
 from dataclasses_json import dataclass_json
@@ -138,3 +140,16 @@ def get_function_default_kwargs(func) -> Dict[str, Any]:
         name: get_default_value(type=param.annotation, default=param.default)
         for name, param in get_function_params(func).items()
     }
+
+
+def method_time(func):
+    @wraps(func)
+    def _time_it(*args, **kwargs):
+        start = int(round(process_time() * 1000))
+        try:
+            return func(*args, **kwargs)
+        finally:
+            end_ = int(round(process_time() * 1000)) - start
+            print(f"Total execution time {func.__name__}: {end_ if end_ > 0 else 0} ms")
+
+    return _time_it

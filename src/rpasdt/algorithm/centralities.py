@@ -23,14 +23,16 @@ CENTRALITY_OPERATION_MAP = {
 def compute_centrality(
     type: Union[str, CentralityOptionEnum], graph: Graph, *args, **kwargs
 ) -> Dict[int, float]:
-    return CENTRALITY_OPERATION_MAP.get(get_enum(type, CentralityOptionEnum))(graph)
+    return CENTRALITY_OPERATION_MAP.get(get_enum(type, CentralityOptionEnum))(
+        graph, args=args, kwargs=kwargs
+    )
 
 
 def compute_unbiased_centrality(
     type: Union[str, CentralityOptionEnum], r: float, graph: Graph, *args, **kwargs
 ) -> Dict[int, float]:
     centrality_measure = compute_centrality(
-        type=get_enum(type, CentralityOptionEnum), graph=graph
+        type=get_enum(type, CentralityOptionEnum), graph=graph, args=args, kwargs=kwargs
     )
     return {
         node: centrality / max(graph.degree(node) ** r, 0.0001)

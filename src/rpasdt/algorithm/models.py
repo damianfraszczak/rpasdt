@@ -22,6 +22,10 @@ from rpasdt.algorithm.taxonomies import (
 DIFFUSION_NOT_COVERED = -1
 
 
+class CombinedCentrality:
+    centrality_algs: Dict[CentralityOptionEnum, float] = field(default_factory=dict)
+
+
 class NetworkInformation:
     summary: str
     density: float
