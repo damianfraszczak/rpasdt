@@ -69,10 +69,15 @@ def windmil():
     return nx.windmill_graph(50, 4)
 
 
+def barabasi():
+    return nx.barabasi_albert_graph(50, 5)
+
+
 @method_time
 def df_similarity(G, resolution=0.5):
     return find_communities(
-        graph=G, type=CommunityOptionEnum.NODE_SIMILARITY, resolution=resolution
+        graph=G, type=CommunityOptionEnum.NODE_SIMILARITY,
+        resolution=resolution
     )
 
 
@@ -121,9 +126,9 @@ comm = df_similarity(G, resolution=resolution)
 # draw_communities(G, comm)
 print(f"{resolution}----{len(comm.keys())}")
 print(comm)
-
-# print(len(louvain(G).keys()))
-draw_communities(G, comm)
+L = louvain(G)
+print(len(L))
+# draw_communities(G, L)
 #
 # from matplotlib import pyplot as plt
 #

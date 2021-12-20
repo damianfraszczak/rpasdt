@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import Dict, List, Union
 
 import networkx as nx
+import numpy
 from cdlib import algorithms
 from networkx import Graph
 
@@ -48,14 +49,16 @@ def find_communities(
     alg = getattr(algorithms, alg_function_name, None) or getattr(
         thismodule, alg_function_name
     )
-    kwargs = {**get_function_default_kwargs(alg), **alg_kwargs, **{"g_original": graph}}
+    kwargs = {**get_function_default_kwargs(alg), **alg_kwargs,
+              **{"g_original": graph}}
     _update_communities_kwarg(
         type=type, kwargs=kwargs, number_communities=number_communities
     )
     result = alg(**kwargs)
     return {
         index: community
-        for index, community in enumerate(get_object_value(result, "communities"))
+        for index, community in
+        enumerate(get_object_value(result, "communities"))
     }
 
 
@@ -66,22 +69,44 @@ def merge_communities_based_on_similarity(G, communities, resolution=0.5):
     communities = {**communities}
     small_communities = find_small_communities(communities=communities)
     changed = True
+    sim_threshold = 0.05
     while small_communities and changed:
-        print(communities)
-        print(small_communities)
         changed = False
-        for small_c_number, small_c_nodes in _sorted_communities(small_communities):
+        for small_c_number, small_c_nodes in list(small_communities.items()):
             best_community, best_community_small, best_rank = None, None, 0
+
+            # similarities = defaultdict(list)
+            # for c_number, c_nodes in communities.items():
+            #     if c_number != small_c_number:
+            #         similarities[community_similarity(G, small_c_nodes, c_nodes)].append(c_number)
+            # max_similarity = max(similarities.keys())
+            # max_similarity_communities = similarities.get(max_similarity) or []
+            #
+            # communities[small_c_number] = []
+            # communities[small_c_number].extend(small_c_nodes)
+            # for community_to_join in max_similarity_communities:
+            #     communities[small_c_number].extend(communities[community_to_join])
+            #     delete_communities(
+            #         communities=communities,
+            #         communities_to_delete={
+            #             community_to_join: communities[community_to_join]
+            #         },
+            #     )
+            #     small_communities.pop(small_c_number, None)
+            #     changed = True
+            # print(f"{max_similarity}-{similarities[max_similarity]}")
+
             for c_number, c_nodes in communities.items():
                 if c_number == small_c_number:
                     continue
                 cc_sim = community_similarity(G, small_c_nodes, c_nodes)
-                if cc_sim > best_rank:
+                if cc_sim > best_rank and cc_sim > sim_threshold:
                     best_rank = cc_sim
                     best_community = c_number
                     best_community_small = small_c_number
 
             if best_community:
+                print(f"BEST {best_rank}")
                 communities[best_community].extend(
                     small_communities[best_community_small]
                 )
@@ -105,39 +130,44 @@ def merge_communities_based_on_louvain(G, communities):
     return find_communities(graph=M, type=CommunityOptionEnum.LOUVAIN)
 
 
-def merge_communities_based_on_modularity(G, communities):
+def merge_communities_based_on_modularity(G, communities, resolution):
     communities = {**communities}
     small_communities = find_small_communities(communities=communities)
 
     changed = True
     while small_communities and changed:
         changed = False
-        best_community, best_community_small, best_rank = None, None, -1
-        for small_c_number, small_c_nodes in small_communities.items():
+        for small_c_number, small_c_nodes in list(small_communities.items()):
+            best_community, best_community_small, best_rank = None, None, -1
             for c_number, c_nodes in communities.items():
-                if c_number == small_c_number or c_number:
+                if c_number == small_c_number:
                     continue
                 grouped_nodes = get_grouped_nodes(communities)
                 for node in small_c_nodes:
                     grouped_nodes[node] = c_number
 
-                cc_sim = modularity(partition=grouped_nodes, graph=G)
-                if cc_sim > best_rank:
-                    best_rank = cc_sim
+                cc_modularity = modularity(partition=grouped_nodes, graph=G)
+                if cc_modularity > best_rank:
+                    best_rank = cc_modularity
                     best_community = c_number
                     best_community_small = small_c_number
-        if best_community:
-            communities[best_community].extend(communities[best_community_small])
-            delete_communities(
-                communities=communities,
-                communities_to_delete={
-                    best_community_small: communities[best_community_small]
-                },
-            )
-            small_communities.pop(best_community_small)
-            changed = True
-        if not small_communities:
-            small_communities = find_small_communities(communities=communities)
+            if best_community:
+
+                communities[best_community].extend(
+                    small_communities[best_community_small]
+                )
+                delete_communities(
+                    communities=communities,
+                    communities_to_delete={
+                        best_community_small: communities[best_community_small]
+                    },
+                )
+                small_communities.pop(best_community_small)
+                changed = True
+        small_communities = find_small_communities(
+            communities=communities, resolution=resolution
+        )
+
 
     return communities
 
@@ -147,7 +177,8 @@ def df_merge_communities(G, communities):
     communities = {**communities}
     small_communities = find_small_communities(communities=communities)
     big_communities = {
-        key: value for key, value in communities.items() if key not in small_communities
+        key: value for key, value in communities.items() if
+        key not in small_communities
     }
     while small_communities:
         best_community, best_community_small, best_rank = None, None, 0
@@ -161,7 +192,8 @@ def df_merge_communities(G, communities):
                     best_community = c_number
                     best_community_small = small_c_number
         if best_community:
-            big_communities[best_community].extend(communities[best_community_small])
+            big_communities[best_community].extend(
+                communities[best_community_small])
             small_communities.pop(best_community_small)
 
     small_communities2 = find_small_communities(communities=big_communities)
@@ -186,7 +218,8 @@ def df_node_similarity(g_original: Graph, **kwargs):
 
     nodes_to_process = [node for node, centrality in sorted_by_degree]
 
-    average_degree = sum(centrality for node, centrality in sorted_by_degree) / len(
+    average_degree = sum(
+        centrality for node, centrality in sorted_by_degree) / len(
         sorted_by_degree
     )
     resolution = kwargs.get("resoluion", 1 - average_degree)
@@ -209,5 +242,6 @@ def df_node_similarity(g_original: Graph, **kwargs):
             if similarity >= similarity_threshold:
                 G.nodes[node_n]["community"] = current_community
                 communities[current_community].append(node_n)
-    communities = merge_communities_based_on_similarity(G, communities, resolution)
+    communities = merge_communities_based_on_modularity(G, communities,
+                                                        resolution)
     return {"communities": communities.values()}
