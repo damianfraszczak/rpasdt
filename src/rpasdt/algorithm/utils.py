@@ -50,12 +50,12 @@ def get_community_avg_size(communities):
 
 
 def get_community_weighted_avg_size(communities):
-    communities = {key: value for key, value in communities.items() if len(value) > 1}
-    com_len = len(communities)
     distribution = defaultdict(int)
     for nodes in communities.values():
-        if len(nodes) > 1:
-            distribution[len(nodes)] += 1
+        distribution[len(nodes)] += 1
+
+    com_len = len(communities)
+
     distribution = {key: value / com_len for key, value in distribution.items()}
 
     return (
@@ -69,9 +69,10 @@ def get_community_weighted_avg_size(communities):
     )
 
 
-def find_small_communities(communities):
-    community_avg_size = math.ceil(get_community_avg_size(communities))
-
+def find_small_communities(communities, resolution=0.5):
+    community_avg_size = math.ceil(get_community_avg_size(communities)) * resolution
+    print(community_avg_size)
+    community_avg_size = max(community_avg_size, 2)
     return dict(
         filter(lambda elem: len(elem[1]) < community_avg_size, communities.items())
     )
@@ -80,3 +81,10 @@ def find_small_communities(communities):
 def delete_communities(communities, communities_to_delete):
     for to_delete in communities_to_delete.keys():
         communities.pop(to_delete, None)
+
+
+def get_avg_degree(G):
+    normalized_degree = nx.degree_centrality(G)
+    return sum(centrality for node, centrality in normalized_degree.items()) / len(
+        normalized_degree
+    )

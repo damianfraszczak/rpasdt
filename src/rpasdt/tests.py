@@ -6,6 +6,7 @@ from matplotlib import cm
 
 from rpasdt.algorithm.communities import find_communities
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
+from rpasdt.algorithm.utils import get_avg_degree
 from rpasdt.common.utils import method_time
 from rpasdt.network.networkx_utils import get_grouped_nodes
 
@@ -65,12 +66,14 @@ def cg():
 
 
 def windmil():
-    return nx.windmill_graph(4, 4)
+    return nx.windmill_graph(5, 4)
 
 
 @method_time
-def df_similarity(G):
-    return find_communities(graph=G, type=CommunityOptionEnum.NODE_SIMILARITY)
+def df_similarity(G, resolution=0.5):
+    return find_communities(
+        graph=G, type=CommunityOptionEnum.NODE_SIMILARITY, resolution=resolution
+    )
 
 
 @method_time
@@ -91,15 +94,17 @@ def draw_communities(G, partition):
         G,
         pos,
         grouped_nodes.keys(),
-        node_size=40,
+        node_size=200,
         cmap=cmap,
         node_color=list(grouped_nodes.values()),
     )
     nx.draw_networkx_edges(G, pos, alpha=0.5)
+    nx.draw_networkx_labels(G, pos)
+
     plt.show()
 
 
-G = karate_graph()
+G = windmil()
 
 # G = nx.from_edgelist([
 #     (1, 2),
@@ -109,12 +114,19 @@ G = karate_graph()
 #     (2, 5)
 # ])
 # print(df_similarity(G))
-comm = df_similarity(G)
-print(len(comm.keys()))
+avg_d = get_avg_degree(G)
 
-print(len(louvain(G).keys()))
-# draw_communities(G, df_similarity(G))
-# nx.draw(G, with_labels=True)
+resolution = 0.5
+comm = df_similarity(G, resolution=resolution)
+# draw_communities(G, comm)
+print(f"{resolution}----{len(comm.keys())}")
+print(comm)
+
+# print(len(louvain(G).keys()))
+# draw_communities(G, comm)
+#
 # from matplotlib import pyplot as plt
-
+#
 # plt.show()
+#
+# nx.draw(G, with_labels=True)
