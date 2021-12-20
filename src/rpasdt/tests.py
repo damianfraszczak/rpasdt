@@ -70,7 +70,7 @@ def windmil():
 
 
 def barabasi():
-    return nx.barabasi_albert_graph(50, 5)
+    return nx.barabasi_albert_graph(10, 4)
 
 
 @method_time
@@ -109,7 +109,7 @@ def draw_communities(G, partition):
     plt.show()
 
 
-G = divided_by_edge_community()
+G = barabasi()
 
 # G = nx.from_edgelist([
 #     (1, 2),
@@ -121,13 +121,14 @@ G = divided_by_edge_community()
 # print(df_similarity(G))
 avg_d = get_avg_degree(G)
 
-resolution = avg_d
-comm = df_similarity(G, resolution=resolution)
+resolution = 1 - avg_d
+comm = df_similarity(G)
 # draw_communities(G, comm)
 print(f"{resolution}----{len(comm.keys())}")
 print(comm)
 L = louvain(G)
 print(len(L))
+print(L)
 # draw_communities(G, L)
 #
 # from matplotlib import pyplot as plt

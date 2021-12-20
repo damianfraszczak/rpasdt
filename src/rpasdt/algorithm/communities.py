@@ -4,7 +4,6 @@ from collections import defaultdict
 from typing import Dict, List, Union
 
 import networkx as nx
-import numpy
 from cdlib import algorithms
 from networkx import Graph
 
@@ -62,14 +61,15 @@ def find_communities(
     }
 
 
-def merge_communities_based_on_similarity(G, communities, resolution=0.5):
+def merge_communities_based_on_similarity(G, communities,
+                                          similarity_threshold,
+                                          resolution=0.5):
     def _sorted_communities(c):
         return sorted(c.items(), key=lambda k: len(k[1]), reverse=True)
 
     communities = {**communities}
     small_communities = find_small_communities(communities=communities)
     changed = True
-    sim_threshold = 0.05
     while small_communities and changed:
         changed = False
         for small_c_number, small_c_nodes in list(small_communities.items()):
@@ -100,13 +100,12 @@ def merge_communities_based_on_similarity(G, communities, resolution=0.5):
                 if c_number == small_c_number:
                     continue
                 cc_sim = community_similarity(G, small_c_nodes, c_nodes)
-                if cc_sim > best_rank and cc_sim > sim_threshold:
+                if cc_sim > best_rank and cc_sim > similarity_threshold:
                     best_rank = cc_sim
                     best_community = c_number
                     best_community_small = small_c_number
 
             if best_community:
-                print(f"BEST {best_rank}")
                 communities[best_community].extend(
                     small_communities[best_community_small]
                 )
@@ -122,20 +121,25 @@ def merge_communities_based_on_similarity(G, communities, resolution=0.5):
             communities=communities, resolution=resolution
         )
 
+    if small_communities:
+        communities = merge_communities_based_on_modularity(G, communities, resolution)
     return communities
 
 
-def merge_communities_based_on_louvain(G, communities):
+def merge_communities_based_on_louvain(G, communities, **kwargs):
     M = nx.quotient_graph(G, communities.values())
     return find_communities(graph=M, type=CommunityOptionEnum.LOUVAIN)
 
 
 def merge_communities_based_on_modularity(G, communities, resolution):
     communities = {**communities}
-    small_communities = find_small_communities(communities=communities)
+    small_communities = find_small_communities(communities=communities,
+                                               resolution=resolution)
 
     changed = True
     while small_communities and changed:
+        print(communities)
+        print(small_communities)
         changed = False
         for small_c_number, small_c_nodes in list(small_communities.items()):
             best_community, best_community_small, best_rank = None, None, -1
@@ -152,7 +156,6 @@ def merge_communities_based_on_modularity(G, communities, resolution):
                     best_community = c_number
                     best_community_small = small_c_number
             if best_community:
-
                 communities[best_community].extend(
                     small_communities[best_community_small]
                 )
@@ -167,7 +170,6 @@ def merge_communities_based_on_modularity(G, communities, resolution):
         small_communities = find_small_communities(
             communities=communities, resolution=resolution
         )
-
 
     return communities
 
@@ -207,7 +209,23 @@ def df_merge_communities(G, communities):
     return big_communities
 
 
-def df_node_similarity(g_original: Graph, **kwargs):
+def df_node_similarity_2(g_original: Graph, resolution=None, **kwargs):
+    G = g_original.copy()
+
+    nx.set_node_attributes(G, None, "community")
+    normalized_degree = nx.degree_centrality(G)
+    sorted_by_degree = sorted(
+        normalized_degree.items(), key=lambda x: x[1], reverse=True
+    )
+
+    average_degree = sum(
+        centrality for node, centrality in sorted_by_degree) / len(
+        sorted_by_degree
+    )
+    pass
+
+
+def df_node_similarity(g_original: Graph, resolution=None, **kwargs):
     G = g_original.copy()
 
     nx.set_node_attributes(G, None, "community")
@@ -222,9 +240,10 @@ def df_node_similarity(g_original: Graph, **kwargs):
         centrality for node, centrality in sorted_by_degree) / len(
         sorted_by_degree
     )
-    resolution = kwargs.get("resoluion", 1 - average_degree)
-
+    if not resolution:
+        resolution = 1 - average_degree
     communities = defaultdict(list)
+    resolution = 1 - average_degree
     similarity_threshold = average_degree
 
     for node in nodes_to_process:
@@ -242,6 +261,7 @@ def df_node_similarity(g_original: Graph, **kwargs):
             if similarity >= similarity_threshold:
                 G.nodes[node_n]["community"] = current_community
                 communities[current_community].append(node_n)
-    communities = merge_communities_based_on_modularity(G, communities,
-                                                        resolution)
+    communities = merge_communities_based_on_similarity(G, communities,
+                                                        resolution=resolution,
+                                                        similarity_threshold=similarity_threshold)
     return {"communities": communities.values()}
