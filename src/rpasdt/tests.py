@@ -66,7 +66,7 @@ def cg():
 
 
 def windmil():
-    return nx.windmill_graph(5, 4)
+    return nx.windmill_graph(50, 4)
 
 
 @method_time
@@ -104,7 +104,7 @@ def draw_communities(G, partition):
     plt.show()
 
 
-G = windmil()
+G = divided_by_edge_community()
 
 # G = nx.from_edgelist([
 #     (1, 2),
@@ -116,14 +116,14 @@ G = windmil()
 # print(df_similarity(G))
 avg_d = get_avg_degree(G)
 
-resolution = 0.5
+resolution = avg_d
 comm = df_similarity(G, resolution=resolution)
 # draw_communities(G, comm)
 print(f"{resolution}----{len(comm.keys())}")
 print(comm)
 
 # print(len(louvain(G).keys()))
-# draw_communities(G, comm)
+draw_communities(G, comm)
 #
 # from matplotlib import pyplot as plt
 #
