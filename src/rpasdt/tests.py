@@ -1,14 +1,13 @@
 # do sprawdzenia
 # https://orbifold.net/default/community-detection-using-networkx/
 
-import math
-from collections import defaultdict
-
 import matplotlib
+from matplotlib import cm
 
 from rpasdt.algorithm.communities import find_communities
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.common.utils import method_time
+from rpasdt.network.networkx_utils import get_grouped_nodes
 
 matplotlib.use("Qt5Agg")
 import networkx as nx
@@ -25,18 +24,6 @@ def community_similarity_(G, c1, c2):
     c1_c2_n_product = c1_n.intersection(c2_n)
     c1_c2_sum = c1_n.union(c2_n)
     return len(c1_c2_n_product) / len(c1_c2_sum)
-
-
-def community_similarity(G, c1, c2):
-    jaccard_coefficients = [node_similarity(G, a, b) for a in c1 for b in c2]
-    return sum(jaccard_coefficients) / len(jaccard_coefficients)
-
-
-def node_similarity(G, a, b):
-    union_size = len(set(G[a]) | set(G[b]))
-    if union_size == 0:
-        return 0
-    return len(list(nx.common_neighbors(G, a, b))) / union_size
 
 
 def karate_graph():
@@ -78,95 +65,12 @@ def cg():
 
 
 def windmil():
-    return nx.windmill_graph(50, 4)
-
-
-def merge_communities(G, communities):
-    community_avg_size = math.ceil(
-        sum([len(nodes) for community, nodes in communities.items()]) / len(communities)
-    )
-
-    small_communities = dict(
-        filter(lambda elem: len(elem[1]) < community_avg_size, communities.items())
-    )
-
-    for to_delete in small_communities.keys():
-        communities.pop(to_delete, None)
-
-    for small_c_number, small_c_nodes in sorted(
-        small_communities.items(), key=lambda k: len(k[1]), reverse=True
-    ):
-        best_community, best_rank = -1, -1
-        for c_number, c_nodes in communities.items():
-            cc_sim = community_similarity(G, small_c_nodes, c_nodes)
-            if cc_sim > best_rank:
-                best_rank = cc_sim
-                best_community = c_number
-        communities[best_community].extend(small_c_nodes)
+    return nx.windmill_graph(4, 4)
 
 
 @method_time
-def compute_communities(G):
-    G = G.copy()
-
-    nx.set_node_attributes(G, None, "community")
-    normalized_degree = nx.degree_centrality(G)
-    sorted_by_degree = sorted(
-        normalized_degree.items(), key=lambda x: x[1], reverse=True
-    )
-
-    nodes_to_process = [node for node, centrality in sorted_by_degree]
-
-    average_degree = sum(centrality for node, centrality in sorted_by_degree) / len(
-        sorted_by_degree
-    )
-
-    communities = defaultdict(list)
-    similarity_threshold = average_degree
-
-    for node in nodes_to_process:
-        if G.nodes[node]["community"]:
-            current_community = G.nodes[node]["community"]
-        else:
-            current_community = max(communities.keys() or [0]) + 1
-            G.nodes[node]["community"] = current_community
-            communities[current_community].append(node)
-
-        for node_n in G.neighbors(node):
-            if G.nodes[node_n]["community"]:
-                continue
-            similarity = node_similarity(G, node, node_n)
-            if similarity > similarity_threshold:
-                G.nodes[node_n]["community"] = current_community
-                communities[current_community].append(node_n)
-    merge_communities(G, communities)
-
-    # for small_community, nodes in small_communities.items():
-    #     for community, c_nodes in communities.items():
-    #
-
-    # for community in sorted(small_communities,
-    #                         key=lambda k: len(small_communities[k]),
-    #                         reverse=True):
-    #     pass
-
-    # print(communities)
-    # print(small_communities)
-    # print(communities)
-    # # blackmodel graph
-    # # print(communities)
-    # M = nx.quotient_graph(G, communities.values())
-    # # nx.draw(G, with_labels=True)
-    # # nx.draw(M, with_labels=True)
-    # from matplotlib import pyplot as plt
-    # plt.show()
-    # return find_communities(
-    #     graph=M,
-    #     type=CommunityOptionEnum.LOUVAIN,
-    #
-    # ),
-
-    return communities
+def df_similarity(G):
+    return find_communities(graph=G, type=CommunityOptionEnum.NODE_SIMILARITY)
 
 
 @method_time
@@ -174,7 +78,28 @@ def louvain(G):
     return find_communities(graph=G, type=CommunityOptionEnum.LOUVAIN)
 
 
-G = divided_by_edge_community()
+def draw_communities(G, partition):
+    from matplotlib import pyplot as plt
+
+    # draw the graph
+    pos = nx.spring_layout(G, seed=50)
+    grouped_nodes = get_grouped_nodes(partition)
+    # color the nodes according to their partition
+    cmap = cm.get_cmap("viridis", len(grouped_nodes.keys()))
+
+    nx.draw_networkx_nodes(
+        G,
+        pos,
+        grouped_nodes.keys(),
+        node_size=40,
+        cmap=cmap,
+        node_color=list(grouped_nodes.values()),
+    )
+    nx.draw_networkx_edges(G, pos, alpha=0.5)
+    plt.show()
+
+
+G = karate_graph()
 
 # G = nx.from_edgelist([
 #     (1, 2),
@@ -183,9 +108,12 @@ G = divided_by_edge_community()
 #     (5, 6),
 #     (2, 5)
 # ])
-print(len(compute_communities(G)))
-print(len(louvain(G).keys()))
+# print(df_similarity(G))
+comm = df_similarity(G)
+print(len(comm.keys()))
 
+print(len(louvain(G).keys()))
+# draw_communities(G, df_similarity(G))
 # nx.draw(G, with_labels=True)
 # from matplotlib import pyplot as plt
 

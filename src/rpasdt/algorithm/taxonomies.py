@@ -276,6 +276,7 @@ class CommunityOptionEnum(StringChoiceEnum):
         "threshold_clustering",
         "Developed for semantic similarity networks, this algorithm specifically targets weighted and directed graphs.",
     )
+    NODE_SIMILARITY = ("df_node_similarity", "DF")
 
 
 class NetworkAnalysisOptionEnum(StringChoiceEnum):

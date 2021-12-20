@@ -1,0 +1,82 @@
+import math
+from collections import defaultdict
+
+import networkx as nx
+
+
+def community_similarity(G, c1, c2):
+    jaccard_coefficients = [node_similarity(G, a, b) for a in c1 for b in c2]
+    return sum(jaccard_coefficients) / len(jaccard_coefficients)
+
+
+def node_similarity(G, a, b):
+    union_size = len(set(G[a]) | set(G[b]))
+    if union_size == 0:
+        return 0
+    return len(list(nx.common_neighbors(G, a, b))) / union_size
+
+
+def modularity(partition, graph, weight="weight"):
+    if graph.is_directed():
+        raise TypeError("Bad graph type, use only non directed graph")
+
+    inc = dict([])
+    deg = dict([])
+    links = graph.size(weight=weight)
+    if links == 0:
+        raise ValueError("A graph without link has an undefined modularity")
+
+    for node in graph:
+        com = partition[node]
+        deg[com] = deg.get(com, 0.0) + graph.degree(node, weight=weight)
+        for neighbor, datas in graph[node].items():
+            edge_weight = datas.get(weight, 1)
+            if partition[neighbor] == com:
+                if neighbor == node:
+                    inc[com] = inc.get(com, 0.0) + float(edge_weight)
+                else:
+                    inc[com] = inc.get(com, 0.0) + float(edge_weight) / 2.0
+
+    res = 0.0
+    for com in set(partition.values()):
+        res += (inc.get(com, 0.0) / links) - (deg.get(com, 0.0) / (2.0 * links)) ** 2
+    return res
+
+
+def get_community_avg_size(communities):
+    return sum([len(nodes) for community, nodes in communities.items()]) / len(
+        communities
+    )
+
+
+def get_community_weighted_avg_size(communities):
+    communities = {key: value for key, value in communities.items() if len(value) > 1}
+    com_len = len(communities)
+    distribution = defaultdict(int)
+    for nodes in communities.values():
+        if len(nodes) > 1:
+            distribution[len(nodes)] += 1
+    distribution = {key: value / com_len for key, value in distribution.items()}
+
+    return (
+        sum(
+            [
+                len(nodes) * distribution[len(nodes)]
+                for community, nodes in communities.items()
+            ]
+        )
+        / com_len
+    )
+
+
+def find_small_communities(communities):
+    community_avg_size = math.ceil(get_community_avg_size(communities))
+
+    return dict(
+        filter(lambda elem: len(elem[1]) < community_avg_size, communities.items())
+    )
+
+
+def delete_communities(communities, communities_to_delete):
+    for to_delete in communities_to_delete.keys():
+        communities.pop(to_delete, None)
