@@ -4,16 +4,32 @@ from collections import defaultdict
 import networkx as nx
 
 
-def community_similarity(G, c1, c2):
-    jaccard_coefficients = [node_similarity(G, a, b) for a in c1 for b in c2]
-    return sum(jaccard_coefficients) / len(jaccard_coefficients)
+def community_similarity(G, c1, c2, node_similarity_function):
+    coefficients = [node_similarity_function(G, a, b) for a in c1 for b
+                    in c2]
+    return sum(coefficients) / len(coefficients)
 
 
-def node_similarity(G, a, b):
+def sorensen_node_similarity(G, a, b):
+    union_size = len(set(G[a]) | set(G[b]))
+    if union_size == 0:
+        return 0
+    a_size = G.degree[a]
+    b_size = G.degree[b]
+
+    return 2 * union_size / (a_size + b_size)
+
+
+def jaccard_node_similarity(G, a, b):
     union_size = len(set(G[a]) | set(G[b]))
     if union_size == 0:
         return 0
     return len(list(nx.common_neighbors(G, a, b))) / union_size
+
+
+def academic_adar_node_similarity(G, a, b):
+    result = nx.adamic_adar_index(G, [(a, b)])
+    return next(result)[2]
 
 
 def modularity(partition, graph, weight="weight"):
@@ -40,7 +56,7 @@ def modularity(partition, graph, weight="weight"):
     res = 0.0
     for com in set(partition.values()):
         res += (inc.get(com, 0.0) / links) - (
-                deg.get(com, 0.0) / (2.0 * links)) ** 2
+            deg.get(com, 0.0) / (2.0 * links)) ** 2
     return res
 
 
@@ -74,7 +90,6 @@ def get_community_weighted_avg_size(communities):
 def find_small_communities(communities, resolution=0.5):
     community_avg_size = math.floor(
         get_community_avg_size(communities)) * resolution
-    print(community_avg_size)
     community_avg_size = max(community_avg_size, 2)
 
     # <= dla modularity, < dla similarity

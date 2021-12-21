@@ -1,7 +1,7 @@
 """Community detection methods."""
 import sys
 from collections import defaultdict
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Union, Optional, Callable
 
 import networkx as nx
 from cdlib import algorithms
@@ -9,11 +9,11 @@ from networkx import Graph
 
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.algorithm.utils import (
-    community_similarity,
     delete_communities,
     find_small_communities,
     modularity,
-    node_similarity,
+    jaccard_node_similarity,
+    community_similarity,
 )
 from rpasdt.common.utils import (
     get_enum,
@@ -62,6 +62,7 @@ def find_communities(
 
 
 def merge_communities_based_on_similarity(G: Graph, communities,
+                                          node_similarity_function,
                                           similarity_threshold,
                                           resolution=0.5):
     def _sorted_communities(c):
@@ -69,8 +70,10 @@ def merge_communities_based_on_similarity(G: Graph, communities,
 
     communities = {**communities}
     small_communities = find_small_communities(communities=communities)
+
     changed = True
     while small_communities and changed:
+
         changed = False
         for small_c_number, small_c_nodes in list(small_communities.items()):
             best_community, best_community_small, best_rank = None, None, 0
@@ -99,7 +102,9 @@ def merge_communities_based_on_similarity(G: Graph, communities,
             for c_number, c_nodes in communities.items():
                 if c_number == small_c_number:
                     continue
-                cc_sim = community_similarity(G, small_c_nodes, c_nodes)
+                cc_sim = community_similarity(G, small_c_nodes,
+                                              c_nodes,
+                                              node_similarity_function=node_similarity_function)
                 if cc_sim > best_rank and cc_sim > similarity_threshold:
                     best_rank = cc_sim
                     best_community = c_number
@@ -139,8 +144,6 @@ def merge_communities_based_on_modularity(G, communities, resolution):
 
     changed = True
     while small_communities and changed:
-        print(communities)
-        print(small_communities)
         changed = False
         for small_c_number, small_c_nodes in list(small_communities.items()):
             best_community, best_community_small, best_rank = None, None, -1
@@ -189,7 +192,8 @@ def df_merge_communities(G, communities):
             for c_number, c_nodes in big_communities.items():
                 if c_number == small_c_number:
                     continue
-                cc_sim = community_similarity(G, small_c_nodes, c_nodes)
+                cc_sim = sorensen_community_similarity(G, small_c_nodes,
+                                                       c_nodes)
                 if cc_sim > best_rank:
                     best_rank = cc_sim
                     best_community = c_number
@@ -227,6 +231,7 @@ def df_node_similarity_2(g_original: Graph, resolution=None, **kwargs):
 
 
 def df_node_similarity(g_original: Graph,
+                       node_similarity_function: Optional[Callable] = None,
                        similarity_threshold: Optional[float] = None,
                        resolution: Optional[float] = None, **kwargs):
     G = g_original.copy()
@@ -249,6 +254,9 @@ def df_node_similarity(g_original: Graph,
     if not similarity_threshold:
         similarity_threshold = average_degree
 
+    if not node_similarity_function:
+        node_similarity_function = jaccard_node_similarity
+
     communities = defaultdict(list)
     for node in nodes_to_process:
         if G.nodes[node]["community"]:
@@ -261,11 +269,12 @@ def df_node_similarity(g_original: Graph,
         for node_n in G.neighbors(node):
             if G.nodes[node_n]["community"]:
                 continue
-            similarity = node_similarity(G, node, node_n)
+            similarity = node_similarity_function(G, node, node_n)
             if similarity >= similarity_threshold:
                 G.nodes[node_n]["community"] = current_community
                 communities[current_community].append(node_n)
     communities = merge_communities_based_on_similarity(G, communities,
+                                                        node_similarity_function=node_similarity_function,
                                                         resolution=resolution,
                                                         similarity_threshold=similarity_threshold)
     return {"communities": communities.values()}
