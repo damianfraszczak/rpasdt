@@ -6,12 +6,10 @@ import matplotlib
 from matplotlib import cm
 
 from rpasdt.algorithm.communities import find_communities
-from rpasdt.algorithm.taxonomies import CommunityOptionEnum
-from rpasdt.algorithm.utils import (
-    get_avg_degree,
-    jaccard_node_similarity,
-    sorensen_node_similarity,
+from rpasdt.algorithm.similarity import (
+    sorensen_node_similarity, jaccard_node_similarity,
 )
+from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.common.utils import method_time, get_project_root
 from rpasdt.network.networkx_utils import get_grouped_nodes
 
@@ -63,14 +61,20 @@ def divided_by_edge_community():
 
 
 def footbal():
-    return nx.read_adjlist(os.path.join(get_project_root(), "data","community","football.txt"))
+    return nx.read_adjlist(
+        os.path.join(get_project_root(), "data", "community", "football.txt"))
+
 
 def dolphin():
-    return nx.read_adjlist(os.path.join(get_project_root(), "data","community","dolphin.txt"))
+    return nx.read_adjlist(
+        os.path.join(get_project_root(), "data", "community", "dolphin.txt"))
+
 
 def club():
     return nx.read_adjlist(
         os.path.join(get_project_root(), "data", "community", "club.txt"))
+
+
 def z2014():
     return nx.connected_caveman_graph(4, 3)
 
@@ -85,7 +89,8 @@ def windmil():
 
 def barabasi():
     return nx.barabasi_albert_graph(30, 4)
-
+def watts_strogatz_graph():
+    return nx.watts_strogatz_graph(n = 50, k = 8, p = 0.5)
 
 @method_time
 def df_similarity(G, **kwargs):
@@ -102,7 +107,7 @@ def draw_communities(G, partition):
     from matplotlib import pyplot as plt
 
     # draw the graph
-    pos = nx.spring_layout(G, seed=50)
+    pos = nx.kamada_kawai_layout(G)
     grouped_nodes = get_grouped_nodes(partition)
     # color the nodes according to their partition
     cmap = cm.get_cmap("viridis", len(grouped_nodes.keys()))
@@ -121,18 +126,7 @@ def draw_communities(G, partition):
     plt.show()
 
 
-G = karate_graph()
-
-# G = nx.from_edgelist([
-#     (1, 2),
-#     (2, 3),
-#     (4, 5),
-#     (5, 6),
-#     (2, 5)
-# ])
-# print(df_similarity(G))
-avg_d = get_avg_degree(G)
-
+G = divided_by_edge_community()
 similarity_functions = [
     # jaccard_node_similarity,
     sorensen_node_similarity,
@@ -148,10 +142,10 @@ for sim_f in similarity_functions:
     # print(comm)
     draw_communities(G, comm)
 
-# L = louvain(G)
-# print(len(L))
-# print(L)
-# draw_communities(G, L)
+L = louvain(G)
+print(len(L))
+print(L)
+draw_communities(G, L)
 #
 # from matplotlib import pyplot as plt
 #
