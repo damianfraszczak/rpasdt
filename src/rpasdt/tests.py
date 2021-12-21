@@ -66,18 +66,18 @@ def cg():
 
 
 def windmil():
-    return nx.windmill_graph(50, 4)
+    return nx.windmill_graph(500, 4)
 
 
 def barabasi():
-    return nx.barabasi_albert_graph(10, 4)
+    return nx.barabasi_albert_graph(100, 20)
 
 
 @method_time
-def df_similarity(G, resolution=0.5):
+def df_similarity(G, **kwargs):
     return find_communities(
         graph=G, type=CommunityOptionEnum.NODE_SIMILARITY,
-        resolution=resolution
+        **kwargs
     )
 
 
@@ -121,10 +121,10 @@ G = barabasi()
 # print(df_similarity(G))
 avg_d = get_avg_degree(G)
 
-resolution = 1 - avg_d
+
 comm = df_similarity(G)
 # draw_communities(G, comm)
-print(f"{resolution}----{len(comm.keys())}")
+print(f"{len(comm.keys())}")
 print(comm)
 L = louvain(G)
 print(len(L))

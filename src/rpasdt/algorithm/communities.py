@@ -1,7 +1,7 @@
 """Community detection methods."""
 import sys
 from collections import defaultdict
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional
 
 import networkx as nx
 from cdlib import algorithms
@@ -61,7 +61,7 @@ def find_communities(
     }
 
 
-def merge_communities_based_on_similarity(G, communities,
+def merge_communities_based_on_similarity(G: Graph, communities,
                                           similarity_threshold,
                                           resolution=0.5):
     def _sorted_communities(c):
@@ -122,7 +122,8 @@ def merge_communities_based_on_similarity(G, communities,
         )
 
     if small_communities:
-        communities = merge_communities_based_on_modularity(G, communities, resolution)
+        communities = merge_communities_based_on_modularity(G, communities,
+                                                            resolution)
     return communities
 
 
@@ -225,7 +226,9 @@ def df_node_similarity_2(g_original: Graph, resolution=None, **kwargs):
     pass
 
 
-def df_node_similarity(g_original: Graph, resolution=None, **kwargs):
+def df_node_similarity(g_original: Graph,
+                       similarity_threshold: Optional[float] = None,
+                       resolution: Optional[float] = None, **kwargs):
     G = g_original.copy()
 
     nx.set_node_attributes(G, None, "community")
@@ -242,10 +245,11 @@ def df_node_similarity(g_original: Graph, resolution=None, **kwargs):
     )
     if not resolution:
         resolution = 1 - average_degree
-    communities = defaultdict(list)
-    resolution = 1 - average_degree
-    similarity_threshold = average_degree
 
+    if not similarity_threshold:
+        similarity_threshold = average_degree
+
+    communities = defaultdict(list)
     for node in nodes_to_process:
         if G.nodes[node]["community"]:
             current_community = G.nodes[node]["community"]

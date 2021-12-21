@@ -74,8 +74,9 @@ def get_community_weighted_avg_size(communities):
 def find_small_communities(communities, resolution=0.5):
     community_avg_size = math.floor(
         get_community_avg_size(communities)) * resolution
-
+    print(community_avg_size)
     community_avg_size = max(community_avg_size, 2)
+
     # <= dla modularity, < dla similarity
     return dict(
         filter(lambda elem: len(elem[1]) <= community_avg_size,
