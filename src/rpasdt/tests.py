@@ -7,7 +7,9 @@ from matplotlib import cm
 from rpasdt.algorithm.communities import find_communities
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.algorithm.utils import get_avg_degree, jaccard_node_similarity, \
-    sorensen_node_similarity, academic_adar_node_similarity
+    sorensen_node_similarity, academic_adar_node_similarity, \
+    hub_promoted_index_node_similarity, hub_depressed_index_node_similarity, \
+    leicht_holme_node_similarity, resource_allocation_index_node_similarity
 from rpasdt.common.utils import method_time
 from rpasdt.network.networkx_utils import get_grouped_nodes
 
@@ -67,7 +69,7 @@ def cg():
 
 
 def windmil():
-    return nx.windmill_graph(500, 4)
+    return nx.windmill_graph(50, 4)
 
 
 def barabasi():
@@ -110,7 +112,7 @@ def draw_communities(G, partition):
     plt.show()
 
 
-G = divided_by_edge_community()
+G = barabasi()
 
 # G = nx.from_edgelist([
 #     (1, 2),
@@ -122,17 +124,22 @@ G = divided_by_edge_community()
 # print(df_similarity(G))
 avg_d = get_avg_degree(G)
 
-similarity_functions = [jaccard_node_similarity, sorensen_node_similarity,
-                        academic_adar_node_similarity]
+similarity_functions = [jaccard_node_similarity,
+                        sorensen_node_similarity,
+                        academic_adar_node_similarity,
+                        hub_promoted_index_node_similarity,
+                        hub_depressed_index_node_similarity,
+                        leicht_holme_node_similarity,
+                        resource_allocation_index_node_similarity]
 for sim_f in similarity_functions:
     comm = df_similarity(G, node_similarity_function=sim_f)
-    print(f"{len(comm.keys())}")
-    print(comm)
+    print(f"{sim_f.__name__}-{len(comm.keys())}: {comm}")
+    # print(comm)
 # draw_communities(G, comm)
 
-L = louvain(G)
-print(len(L))
-print(L)
+# L = louvain(G)
+# print(len(L))
+# print(L)
 # draw_communities(G, L)
 #
 # from matplotlib import pyplot as plt
