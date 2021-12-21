@@ -1,5 +1,6 @@
 # do sprawdzenia
 # https://orbifold.net/default/community-detection-using-networkx/
+import os
 
 import matplotlib
 from matplotlib import cm
@@ -7,16 +8,11 @@ from matplotlib import cm
 from rpasdt.algorithm.communities import find_communities
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.algorithm.utils import (
-    academic_adar_node_similarity,
     get_avg_degree,
-    hub_depressed_index_node_similarity,
-    hub_promoted_index_node_similarity,
     jaccard_node_similarity,
-    leicht_holme_node_similarity,
-    resource_allocation_index_node_similarity,
     sorensen_node_similarity,
 )
-from rpasdt.common.utils import method_time
+from rpasdt.common.utils import method_time, get_project_root
 from rpasdt.network.networkx_utils import get_grouped_nodes
 
 matplotlib.use("Qt5Agg")
@@ -66,6 +62,15 @@ def divided_by_edge_community():
     )
 
 
+def footbal():
+    return nx.read_adjlist(os.path.join(get_project_root(), "data","community","football.txt"))
+
+def dolphin():
+    return nx.read_adjlist(os.path.join(get_project_root(), "data","community","dolphin.txt"))
+
+def club():
+    return nx.read_adjlist(
+        os.path.join(get_project_root(), "data", "community", "club.txt"))
 def z2014():
     return nx.connected_caveman_graph(4, 3)
 
@@ -84,7 +89,8 @@ def barabasi():
 
 @method_time
 def df_similarity(G, **kwargs):
-    return find_communities(graph=G, type=CommunityOptionEnum.NODE_SIMILARITY, **kwargs)
+    return find_communities(graph=G, type=CommunityOptionEnum.NODE_SIMILARITY,
+                            **kwargs)
 
 
 @method_time
@@ -115,7 +121,7 @@ def draw_communities(G, partition):
     plt.show()
 
 
-G = cg()
+G = karate_graph()
 
 # G = nx.from_edgelist([
 #     (1, 2),
@@ -128,7 +134,7 @@ G = cg()
 avg_d = get_avg_degree(G)
 
 similarity_functions = [
-    jaccard_node_similarity,
+    # jaccard_node_similarity,
     sorensen_node_similarity,
     # academic_adar_node_similarity,
     # hub_promoted_index_node_similarity,
@@ -140,7 +146,7 @@ for sim_f in similarity_functions:
     comm = df_similarity(G, node_similarity_function=sim_f)
     print(f"{sim_f.__name__}-{len(comm.keys())}: {comm}")
     # print(comm)
-    # draw_communities(G, comm)
+    draw_communities(G, comm)
 
 # L = louvain(G)
 # print(len(L))

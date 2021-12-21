@@ -5,6 +5,7 @@ import re
 from collections import defaultdict
 from enum import Enum
 from functools import wraps
+from pathlib import Path
 from time import process_time
 from typing import Any, Dict, List, Mapping, Optional, Type, Union
 
@@ -153,3 +154,6 @@ def method_time(func):
             print(f"Total execution time {func.__name__}: {end_ if end_ > 0 else 0} ms")
 
     return _time_it
+
+def get_project_root() -> Path:
+    return Path(__file__).parent.parent.parent.parent
