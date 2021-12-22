@@ -33,10 +33,15 @@ def modularity(partition, graph, weight="weight"):
     return res
 
 
+def get_communities_size(communities):
+    return [len(nodes) for community, nodes in communities.items()]
+
+
 def get_community_avg_size(communities, alg="tmean", remove_outliers=True):
-    count_nodes = [len(nodes) for community, nodes in communities.items()]
+    count_nodes = get_communities_size(communities)
     if remove_outliers:
         count_nodes = reject_outliers(count_nodes)
+
     return getattr(stats, alg)(count_nodes)
 
 
@@ -60,16 +65,23 @@ def get_community_weighted_avg_size(communities):
     )
 
 
-def find_small_communities(communities, resolution=0.5, alg="tmean",remove_outliers=True):
-    community_avg_size = get_community_avg_size(communities, alg=alg, remove_outliers=remove_outliers)
+def find_small_communities(
+    communities, resolution=0.5, alg="tmean", remove_outliers=True, iteration=1
+):
+    community_avg_size = get_community_avg_size(
+        communities, alg=alg, remove_outliers=remove_outliers
+    )
     # community_avg_size = max(community_avg_size, 2)
 
     # community_avg_size = (community_avg_size) / max(count_nodes)
-    community_avg_size *= resolution
-    community_avg_size = math.floor(community_avg_size)
+
     # print(f"{community_avg_size}-{resolution}")
+
+    community_avg_size *= resolution
+    community_avg_size /= 2 ** (iteration - 1)
+    community_avg_size = math.floor(community_avg_size)
     community_avg_size = max(community_avg_size, 2)
-    print(f"{alg} {community_avg_size}")
+
     # <= dla modularity, < dla similarity
     return dict(
         filter(lambda elem: len(elem[1]) <= community_avg_size, communities.items())
