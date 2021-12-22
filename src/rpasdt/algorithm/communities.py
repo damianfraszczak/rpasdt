@@ -266,13 +266,17 @@ def merge_communities_based_on_louvain(G, communities, **kwargs):
 def merge_communities_based_on_modularity(
     G, communities, resolution, modularity_threshold, max_iterations
 ):
+    alg = 'tmean'
     communities = {**communities}
+
     small_communities = find_small_communities(
-        communities=communities, resolution=resolution
+        communities=communities, resolution=resolution, alg=alg
     )
+
     current_iteration = 1
     changed = True
     while small_communities and changed and current_iteration <= max_iterations:
+        print(small_communities)
         changed = False
         current_iteration += 1
         for small_c_number, small_c_nodes in list(small_communities.items()):
@@ -288,6 +292,7 @@ def merge_communities_based_on_modularity(
                     grouped_nodes[node] = c_number
 
                 cc_modularity = modularity(partition=grouped_nodes, graph=G)
+                print(f"{cc_modularity}-{modularity_threshold}")
                 if cc_modularity > best_rank and cc_modularity >= modularity_threshold:
                     best_rank = cc_modularity
                     best_community = c_number
@@ -305,7 +310,7 @@ def merge_communities_based_on_modularity(
                 small_communities.pop(best_community_small)
                 changed = True
         small_communities = find_small_communities(
-            communities=communities, resolution=resolution
+            communities=communities, resolution=resolution, alg=alg
         )
 
     return communities
@@ -371,7 +376,7 @@ def df_node_similarity(
         communities=communities,
         modularity_threshold=similarity_threshold,
         resolution=resolution,
-        max_iterations=1,
+        max_iterations=max_iterations,
     )
 
     return {"communities": communities.values()}
