@@ -16,7 +16,9 @@ from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.algorithm.utils import (
     delete_communities,
     find_small_communities,
-    modularity, get_communities_size, reject_outliers,
+    get_communities_size,
+    modularity,
+    reject_outliers,
 )
 from rpasdt.common.utils import (
     get_enum,
@@ -51,16 +53,14 @@ def find_communities(
     alg = getattr(algorithms, alg_function_name, None) or getattr(
         thismodule, alg_function_name
     )
-    kwargs = {**get_function_default_kwargs(alg), **alg_kwargs,
-              **{"g_original": graph}}
+    kwargs = {**get_function_default_kwargs(alg), **alg_kwargs, **{"g_original": graph}}
     _update_communities_kwarg(
         type=type, kwargs=kwargs, number_communities=number_communities
     )
     result = alg(**kwargs)
     return {
         index: community
-        for index, community in
-        enumerate(get_object_value(result, "communities"))
+        for index, community in enumerate(get_object_value(result, "communities"))
     }
 
 
@@ -131,22 +131,19 @@ def merge_communities(
                         )
                     ].add(c_number)
             best_match = max(communities_evaluation.keys())
-            best_match_communities = communities_evaluation.get(
-                best_match) or []
+            best_match_communities = communities_evaluation.get(best_match) or []
             # ignore if it is hyb
             communities_number_without_compared = len(communities) - 1
             if (
                 best_match <= similarity_threshold
-                or len(
-                best_match_communities) == communities_number_without_compared
+                or len(best_match_communities) == communities_number_without_compared
             ):
                 continue
 
             communities[small_c_number] = set()
             communities[small_c_number].update(small_c_nodes)
             for community_to_join in best_match_communities:
-                communities[small_c_number].update(
-                    communities[community_to_join])
+                communities[small_c_number].update(communities[community_to_join])
                 delete_communities(
                     communities=communities,
                     communities_to_delete={
@@ -179,9 +176,9 @@ def merge_communities_based_on_similarity(
 
     def sm(communities, iteration=1):
         return find_small_communities(
-            communities=communities, resolution=resolution,
-            iteration=iteration
+            communities=communities, resolution=resolution, iteration=iteration
         )
+
     current_iteration = 1
     communities = {**communities}
     small_communities = sm(communities, current_iteration)
@@ -192,7 +189,7 @@ def merge_communities_based_on_similarity(
         #     f"C - {[len(com) for c, com in communities.items()]} - {communities}")
         # print(f"SM - {small_communities}")
         changed = False
-        current_iteration +=1
+        current_iteration += 1
         for small_c_number, small_c_nodes in list(small_communities.items()):
             best_community, best_community_small, best_rank = None, None, 0
 
@@ -229,8 +226,7 @@ def merge_communities_based_on_similarity(
             communities[small_c_number].update(small_c_nodes)
 
             for community_to_join in max_similarity_communities:
-                communities[small_c_number].update(
-                    communities[community_to_join])
+                communities[small_c_number].update(communities[community_to_join])
                 delete_communities(
                     communities=communities,
                     communities_to_delete={
@@ -281,8 +277,10 @@ def merge_communities_based_on_modularity(
 
     def sm(communities, iteration):
         return find_small_communities(
-            communities=communities, resolution=resolution,
-            iteration=iteration, remove_outliers=False
+            communities=communities,
+            resolution=resolution,
+            iteration=iteration,
+            remove_outliers=True,
         )
 
     current_iteration = 1
@@ -347,8 +345,7 @@ def df_node_similarity(
 
     nodes_to_process = [node for node, centrality in sorted_by_degree]
 
-    average_degree = sum(
-        centrality for node, centrality in sorted_by_degree) / len(
+    average_degree = sum(centrality for node, centrality in sorted_by_degree) / len(
         sorted_by_degree
     )
 
