@@ -104,7 +104,7 @@ def windmil():
 
 
 def barabasi():
-    return nx.barabasi_albert_graph(30, 4)
+    return nx.barabasi_albert_graph(100, 5)
 
 
 def watts_strogatz_graph():
@@ -124,13 +124,12 @@ def louvain(G):
 def draw_communities(G, partition):
     from matplotlib import pyplot as plt
 
-    pos = nx.spring_layout(G, iterations=15, seed=1721)
-    fig, ax = plt.subplots(figsize=(15, 9))
-    ax.axis("off")
+    # pos = nx.spring_layout(G, iterations=15, seed=1721)
+    # fig, ax = plt.subplots(figsize=(15, 9))
+    # ax.axis("off")
     # nx.draw_networkx(G, pos=pos, ax=ax, **plot_options)
-
     # draw the graph
-    # pos = nx.kamada_kawai_layout(G)
+    pos = nx.kamada_kawai_layout(G)
     grouped_nodes = get_grouped_nodes(partition)
     # color the nodes according to their partition
     cmap = cm.get_cmap("viridis", len(grouped_nodes.keys()))
@@ -149,7 +148,7 @@ def draw_communities(G, partition):
     plt.show()
 
 
-G = facebook()
+G = dolphin()
 similarity_functions = [
     # jaccard_node_similarity,
     sorensen_node_similarity,
@@ -161,8 +160,8 @@ similarity_functions = [
 ]
 
 L = louvain(G)
-print(len(L))
-print(L)
+# print(len(L))
+# print(L)
 # draw_communities(G, L)
 for sim_f in similarity_functions:
     comm = df_similarity(G, node_similarity_function=sim_f)
@@ -170,7 +169,7 @@ for sim_f in similarity_functions:
         f"{sim_f.__name__}-{len(comm.keys())}-{[len(nodes) for nodes in comm.values()]}: {comm}"
     )
     # print(comm)
-    draw_communities(G, comm)
+    # draw_communities(G, comm)
 
 
 # draw_communities(G, L)

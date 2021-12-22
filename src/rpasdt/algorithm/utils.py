@@ -2,6 +2,7 @@ import math
 from collections import defaultdict
 
 import networkx as nx
+import numpy as np
 from scipy import stats
 
 
@@ -34,6 +35,7 @@ def modularity(partition, graph, weight="weight"):
 
 def get_community_avg_size(communities, alg="tmean"):
     count_nodes = [len(nodes) for community, nodes in communities.items()]
+    count_nodes = reject_outliers(count_nodes)
     return getattr(stats, alg)(count_nodes)
 
 
@@ -58,7 +60,7 @@ def get_community_weighted_avg_size(communities):
 
 
 def find_small_communities(communities, resolution=0.5):
-    community_avg_size = get_community_avg_size(communities, alg="gmean")
+    community_avg_size = get_community_avg_size(communities, alg="tmean")
     # community_avg_size = max(community_avg_size, 2)
 
     # community_avg_size = (community_avg_size) / max(count_nodes)
@@ -82,3 +84,11 @@ def get_avg_degree(G):
     return sum(centrality for node, centrality in normalized_degree.items()) / len(
         normalized_degree
     )
+
+
+def reject_outliers(data, m=2.0):
+    data = np.array(data)
+    d = np.abs(data - np.median(data))
+    mdev = np.median(d)
+    s = d / (mdev if mdev else 1.0)
+    return data[s < m]

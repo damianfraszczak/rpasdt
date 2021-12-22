@@ -215,6 +215,7 @@ def merge_communities_based_on_similarity(
 
             communities[small_c_number] = set()
             communities[small_c_number].update(small_c_nodes)
+
             for community_to_join in max_similarity_communities:
                 communities[small_c_number].update(communities[community_to_join])
                 delete_communities(
@@ -364,12 +365,13 @@ def df_node_similarity(
         resolution=resolution,
         # max_iterations=max_iterations
     )
+    # poprawic by te wybrane duze klastry zostaly i podpinal male do nich ciagel
     communities = merge_communities_based_on_modularity(
         G=G,
         communities=communities,
         modularity_threshold=similarity_threshold,
         resolution=resolution,
-        max_iterations=0,
+        max_iterations=1,
     )
 
     return {"communities": communities.values()}
