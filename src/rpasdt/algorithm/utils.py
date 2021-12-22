@@ -28,12 +28,11 @@ def modularity(partition, graph, weight="weight"):
 
     res = 0.0
     for com in set(partition.values()):
-        res += (inc.get(com, 0.0) / links) - (
-            deg.get(com, 0.0) / (2.0 * links)) ** 2
+        res += (inc.get(com, 0.0) / links) - (deg.get(com, 0.0) / (2.0 * links)) ** 2
     return res
 
 
-def get_community_avg_size(communities, alg='tmean'):
+def get_community_avg_size(communities, alg="tmean"):
     count_nodes = [len(nodes) for community, nodes in communities.items()]
     return getattr(stats, alg)(count_nodes)
 
@@ -45,8 +44,7 @@ def get_community_weighted_avg_size(communities):
 
     com_len = len(communities)
 
-    distribution = {key: value / com_len for key, value in
-                    distribution.items()}
+    distribution = {key: value / com_len for key, value in distribution.items()}
 
     return (
         sum(
@@ -63,16 +61,14 @@ def find_small_communities(communities, resolution=0.5):
     community_avg_size = get_community_avg_size(communities, alg="gmean")
     # community_avg_size = max(community_avg_size, 2)
 
-    count_nodes = [len(nodes) for community, nodes in communities.items()]
     # community_avg_size = (community_avg_size) / max(count_nodes)
     community_avg_size *= resolution
     community_avg_size = math.floor(community_avg_size)
-    print(f"{community_avg_size}-{resolution}")
-    community_avg_size = max(community_avg_size,2)
+    # print(f"{community_avg_size}-{resolution}")
+    community_avg_size = max(community_avg_size, 2)
     # <= dla modularity, < dla similarity
     return dict(
-        filter(lambda elem: len(elem[1]) <= community_avg_size,
-               communities.items())
+        filter(lambda elem: len(elem[1]) <= community_avg_size, communities.items())
     )
 
 
@@ -83,7 +79,6 @@ def delete_communities(communities, communities_to_delete):
 
 def get_avg_degree(G):
     normalized_degree = nx.degree_centrality(G)
-    return sum(
-        centrality for node, centrality in normalized_degree.items()) / len(
+    return sum(centrality for node, centrality in normalized_degree.items()) / len(
         normalized_degree
     )

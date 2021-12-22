@@ -7,10 +7,11 @@ from matplotlib import cm
 
 from rpasdt.algorithm.communities import find_communities
 from rpasdt.algorithm.similarity import (
-    sorensen_node_similarity, jaccard_node_similarity,
+    jaccard_node_similarity,
+    sorensen_node_similarity,
 )
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
-from rpasdt.common.utils import method_time, get_project_root
+from rpasdt.common.utils import get_project_root, method_time
 from rpasdt.network.networkx_utils import get_grouped_nodes
 
 matplotlib.use("Qt5Agg")
@@ -62,17 +63,32 @@ def divided_by_edge_community():
 
 def footbal():
     return nx.read_adjlist(
-        os.path.join(get_project_root(), "data", "community", "football.txt"))
+        os.path.join(get_project_root(), "data", "community", "football.txt")
+    )
 
 
 def dolphin():
     return nx.read_adjlist(
-        os.path.join(get_project_root(), "data", "community", "dolphin.txt"))
+        os.path.join(get_project_root(), "data", "community", "dolphin.txt")
+    )
 
 
 def club():
     return nx.read_adjlist(
-        os.path.join(get_project_root(), "data", "community", "club.txt"))
+        os.path.join(get_project_root(), "data", "community", "club.txt")
+    )
+
+
+def facebook():
+    return nx.read_adjlist(
+        os.path.join(get_project_root(), "data", "community", "facebook_combined.txt")
+    )
+
+
+def emailucore():
+    return nx.read_adjlist(
+        os.path.join(get_project_root(), "data", "community", "emailucore.txt")
+    )
 
 
 def z2014():
@@ -89,13 +105,15 @@ def windmil():
 
 def barabasi():
     return nx.barabasi_albert_graph(30, 4)
+
+
 def watts_strogatz_graph():
-    return nx.watts_strogatz_graph(n = 50, k = 8, p = 0.5)
+    return nx.watts_strogatz_graph(n=50, k=8, p=0.5)
+
 
 @method_time
 def df_similarity(G, **kwargs):
-    return find_communities(graph=G, type=CommunityOptionEnum.NODE_SIMILARITY,
-                            **kwargs)
+    return find_communities(graph=G, type=CommunityOptionEnum.NODE_SIMILARITY, **kwargs)
 
 
 @method_time
@@ -106,8 +124,13 @@ def louvain(G):
 def draw_communities(G, partition):
     from matplotlib import pyplot as plt
 
+    pos = nx.spring_layout(G, iterations=15, seed=1721)
+    fig, ax = plt.subplots(figsize=(15, 9))
+    ax.axis("off")
+    # nx.draw_networkx(G, pos=pos, ax=ax, **plot_options)
+
     # draw the graph
-    pos = nx.kamada_kawai_layout(G)
+    # pos = nx.kamada_kawai_layout(G)
     grouped_nodes = get_grouped_nodes(partition)
     # color the nodes according to their partition
     cmap = cm.get_cmap("viridis", len(grouped_nodes.keys()))
@@ -126,7 +149,7 @@ def draw_communities(G, partition):
     plt.show()
 
 
-G = divided_by_edge_community()
+G = facebook()
 similarity_functions = [
     # jaccard_node_similarity,
     sorensen_node_similarity,
@@ -136,16 +159,21 @@ similarity_functions = [
     # leicht_holme_node_similarity,
     # resource_allocation_index_node_similarity
 ]
-for sim_f in similarity_functions:
-    comm = df_similarity(G, node_similarity_function=sim_f)
-    print(f"{sim_f.__name__}-{len(comm.keys())}: {comm}")
-    # print(comm)
-    draw_communities(G, comm)
 
 L = louvain(G)
 print(len(L))
 print(L)
-draw_communities(G, L)
+# draw_communities(G, L)
+for sim_f in similarity_functions:
+    comm = df_similarity(G, node_similarity_function=sim_f)
+    print(
+        f"{sim_f.__name__}-{len(comm.keys())}-{[len(nodes) for nodes in comm.values()]}: {comm}"
+    )
+    # print(comm)
+    draw_communities(G, comm)
+
+
+# draw_communities(G, L)
 #
 # from matplotlib import pyplot as plt
 #
