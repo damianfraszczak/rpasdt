@@ -16,7 +16,6 @@ from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.algorithm.utils import (
     delete_communities,
     find_small_communities,
-    get_communities_size,
     modularity,
     reject_outliers,
 )
@@ -176,7 +175,7 @@ def merge_communities_based_on_similarity(
 
     def sm(communities, iteration=1):
         return find_small_communities(
-            communities=communities, resolution=resolution, iteration=iteration
+            communities=communities, resolution=resolution, remove_outliers=False
         )
 
     current_iteration = 1
@@ -327,14 +326,45 @@ def merge_communities_based_on_modularity(
     return communities
 
 
-def df_node_similarity(
-    g_original: Graph,
-    node_similarity_function: Optional[Callable] = None,
-    similarity_threshold: Optional[float] = None,
-    resolution: Optional[float] = None,
-    max_iterations: Optional[int] = math.inf,
-    **kwargs
+def initial_communities_improved(
+    g_original, similarity_threshold, node_similarity_function
 ):
+    G = g_original.copy()
+
+    nx.set_node_attributes(G, None, "community")
+    normalized_degree = nx.degree_centrality(G)
+    sorted_by_degree = sorted(
+        normalized_degree.items(), key=lambda x: x[1], reverse=True
+    )
+    centralitites = [centrality for node, centrality in normalized_degree.items()]
+
+    average_degree = sum(centralitites) / len(normalized_degree)
+
+    if not node_similarity_function:
+        node_similarity_function = jaccard_node_similarity
+    communities = defaultdict(set)
+
+    biggest = defaultdict(set)
+    for node, centrality in sorted_by_degree:
+        if centrality > average_degree:
+            new_c = max(biggest.keys() or [0]) + 1
+            biggest[new_c] = {node}
+            G.nodes[node]["community"] = new_c
+
+    for node, centrality in sorted_by_degree:
+        if G.nodes[node]["community"]:
+            continue
+
+        for c, nodes in biggest.items():
+            similarity = node_similarity_function(G, node, node_n)
+            if similarity >= similarity_threshold:
+                G.nodes[node_n]["community"] = current_community
+                communities[current_community].add(node_n)
+
+    return communities
+
+
+def initial_communities(g_original, similarity_threshold, node_similarity_function):
     G = g_original.copy()
 
     nx.set_node_attributes(G, None, "community")
@@ -344,16 +374,6 @@ def df_node_similarity(
     )
 
     nodes_to_process = [node for node, centrality in sorted_by_degree]
-
-    average_degree = sum(centrality for node, centrality in sorted_by_degree) / len(
-        sorted_by_degree
-    )
-
-    if not similarity_threshold:
-        similarity_threshold = average_degree
-
-    if not resolution:
-        resolution = 1 - similarity_threshold
 
     if not node_similarity_function:
         node_similarity_function = jaccard_node_similarity
@@ -373,6 +393,39 @@ def df_node_similarity(
             if similarity >= similarity_threshold:
                 G.nodes[node_n]["community"] = current_community
                 communities[current_community].add(node_n)
+    return communities
+
+
+def df_node_similarity(
+    g_original: Graph,
+    node_similarity_function: Optional[Callable] = None,
+    similarity_threshold: Optional[float] = None,
+    resolution: Optional[float] = None,
+    max_iterations: Optional[int] = math.inf,
+    **kwargs
+):
+    G = g_original.copy()
+
+    nx.set_node_attributes(G, None, "community")
+    normalized_degree = nx.degree_centrality(G)
+
+    average_degree = sum(
+        centrality for node, centrality in normalized_degree.items()
+    ) / len(normalized_degree)
+
+    if not similarity_threshold:
+        similarity_threshold = average_degree
+
+    if not resolution:
+        resolution = 1 - similarity_threshold
+
+    if not node_similarity_function:
+        node_similarity_function = jaccard_node_similarity
+
+    # communities = initial_communities_improved(g_original,
+    #                                   similarity_threshold=similarity_threshold,
+    #                                   node_similarity_function=node_similarity_function)
+    communities = {node: {node} for node in G}
     communities = merge_communities_based_on_similarity(
         G=G,
         communities=communities,
@@ -381,7 +434,7 @@ def df_node_similarity(
         resolution=resolution,
         # max_iterations=max_iterations
     )
-    # poprawic by te wybrane duze klastry zostaly i podpinal male do nich ciagel
+    # # poprawic by te wybrane duze klastry zostaly i podpinal male do nich ciagel
     communities = merge_communities_based_on_modularity(
         G=G,
         communities=communities,
