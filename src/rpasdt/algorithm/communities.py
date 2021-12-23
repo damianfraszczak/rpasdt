@@ -7,6 +7,7 @@ from typing import Callable, Dict, List, Optional, Tuple, Union
 import networkx as nx
 from cdlib import algorithms
 from networkx import Graph
+from scipy.stats import tmean
 
 from rpasdt.algorithm.similarity import (
     community_similarity,
@@ -310,7 +311,7 @@ def merge_communities_based_on_modularity(
 
                 cc_modularity = modularity(partition=grouped_nodes, graph=G)
 
-                if cc_modularity > best_rank and cc_modularity > modularity_threshold:
+                if cc_modularity > best_rank and cc_modularity > 0:
                     best_rank = cc_modularity
                     best_community = c_number
                     best_community_small = small_c_number
@@ -332,6 +333,8 @@ def merge_communities_based_on_modularity(
 
 
 def assign_community(G, communities, node, community=None):
+    if G.nodes[node]["community"]:
+        return G.nodes[node]["community"]
     current_community = community or max(communities.keys() or [0]) + 1
     G.nodes[node]["community"] = current_community
     communities[current_community].add(node)
@@ -410,6 +413,36 @@ def initial_communities_improved(
     return communities
 
 
+def initial_communities2(g_original, similarity_threshold, node_similarity_function):
+    G = g_original.copy()
+
+    nx.set_node_attributes(G, None, "community")
+    normalized_degree = nx.degree_centrality(G)
+    sorted_by_degree = sorted(
+        normalized_degree.items(), key=lambda x: x[1], reverse=True
+    )
+    centralitites = [centrality for node, centrality in normalized_degree.items()]
+
+    average_degree = tmean(centralitites)
+
+    nodes_to_process = [node for node, centrality in sorted_by_degree]
+
+    if not node_similarity_function:
+        node_similarity_function = jaccard_node_similarity
+    communities = defaultdict(set)
+    for node in nodes_to_process:
+        current_community = assign_community(G, communities, node)
+        for node_n in G.neighbors(node):
+            if G.nodes[node_n]["community"]:
+                continue
+            if normalized_degree[node] > average_degree:
+
+                similarity = node_similarity_function(G, node, node_n)
+                if similarity >= similarity_threshold:
+                    assign_community(G, communities, node_n, current_community)
+    return communities
+
+
 def initial_communities(g_original, similarity_threshold, node_similarity_function):
     G = g_original.copy()
 
@@ -474,7 +507,7 @@ def df_node_similarity(
     if not node_similarity_function:
         node_similarity_function = jaccard_node_similarity
 
-    communities = initial_communities_improved(
+    communities = initial_communities(
         g_original,
         similarity_threshold=similarity_threshold,
         node_similarity_function=node_similarity_function,
@@ -490,12 +523,12 @@ def df_node_similarity(
     # )
     # print("SIM DONE")
     # # # poprawic by te wybrane duze klastry zostaly i podpinal male do nich ciagel
-    # communities = merge_communities_based_on_modularity(
-    #     G=G,
-    #     communities=communities,
-    #     modularity_threshold=similarity_threshold,
-    #     resolution=resolution,
-    #     max_iterations=max_iterations,
-    # )
+    communities = merge_communities_based_on_modularity(
+        G=G,
+        communities=communities,
+        modularity_threshold=similarity_threshold,
+        resolution=resolution,
+        max_iterations=max_iterations,
+    )
     print("MOD DONE")
     return {"communities": communities.values()}

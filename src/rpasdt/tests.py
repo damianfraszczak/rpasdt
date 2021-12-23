@@ -6,15 +6,7 @@ import matplotlib
 from matplotlib import cm
 
 from rpasdt.algorithm.communities import find_communities
-from rpasdt.algorithm.similarity import (
-    academic_adar_node_similarity,
-    hub_depressed_index_node_similarity,
-    hub_promoted_index_node_similarity,
-    jaccard_node_similarity,
-    leicht_holme_node_similarity,
-    resource_allocation_index_node_similarity,
-    sorensen_node_similarity,
-)
+from rpasdt.algorithm.similarity import sorensen_node_similarity
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.common.utils import get_project_root, method_time
 from rpasdt.network.networkx_utils import get_grouped_nodes
@@ -122,8 +114,10 @@ def df_similarity(G, **kwargs):
 
 
 @method_time
-def louvain(G):
-    return find_communities(graph=G, type=CommunityOptionEnum.LOUVAIN)
+def louvain(G, resolution=1.0):
+    return find_communities(
+        graph=G, type=CommunityOptionEnum.LOUVAIN, resolution=resolution
+    )
 
 
 def draw_communities(G, partition):
@@ -158,6 +152,7 @@ def draw_communities(G, partition):
 
 
 GRAPHS = {
+    # "divided": divided_by_edge_community,
     # "karate": karate_graph,
     # "windmil": windmil,
     # "football": footbal,
@@ -179,14 +174,15 @@ similarity_functions = [
 for G_name in GRAPHS:
     G = GRAPHS[G_name]()
     for sim_f in similarity_functions:
-        comm = df_similarity(G, node_similarity_function=sim_f)
+        # comm = df_similarity(G, node_similarity_function=sim_f)
+        comm = louvain(G, resolution=2)
         print(
             f"{G_name}-{len(comm.keys())}-{[len(nodes) for nodes in comm.values()]}: {comm}"
         )
         # print(comm)
         draw_communities(G, comm)
 
-# L = louvain(G)
+L = louvain(G)
 # print(len(L))
 # print(L)
 # draw_communities(G, L)
