@@ -104,65 +104,6 @@ def merge_communities_df(
     return communities
 
 
-def merge_communities(
-    G: Graph,
-    communities: Dict,
-    community_eval_function: Callable,
-    community_eval_threshold: float = 0.5,
-    resolution: float = 0.5,
-    max_iterations: [int] = math.inf,
-) -> Tuple[Dict, Dict]:
-    communities = {**communities}
-    small_communities = find_small_communities(
-        communities=communities, resolution=resolution
-    )
-
-    current_iteration = 1
-    changed = True
-    while small_communities and changed and current_iteration <= max_iterations:
-        current_iteration += 1
-        changed = False
-        for small_c_number, small_c_nodes in list(small_communities.items()):
-            communities_evaluation = defaultdict(set)
-            for c_number, c_nodes in communities.items():
-                if c_number != small_c_number:
-                    communities_evaluation[
-                        community_eval_function(
-                            G,
-                            small_c_nodes,
-                            c_nodes,
-                        )
-                    ].add(c_number)
-            best_match = max(communities_evaluation.keys())
-            best_match_communities = communities_evaluation.get(
-                best_match) or []
-            # ignore if it is hyb
-            communities_number_without_compared = len(communities) - 1
-            if (
-                best_match <= similarity_threshold
-                or len(
-                best_match_communities) == communities_number_without_compared
-            ):
-                continue
-
-            communities[small_c_number] = set()
-            communities[small_c_number].update(small_c_nodes)
-            for community_to_join in best_match_communities:
-                communities[small_c_number].update(
-                    communities[community_to_join])
-                delete_communities(
-                    communities=communities,
-                    communities_to_delete={
-                        community_to_join: communities[community_to_join]
-                    },
-                )
-                small_communities.pop(small_c_number, None)
-                changed = True
-        small_communities = find_small_communities(
-            communities=communities, resolution=resolution
-        )
-    return communities, small_communities
-
 
 def get_neighbour_communities(G, communities, community):
     partition = get_grouped_nodes(communities)
@@ -184,8 +125,8 @@ def merge_communities_based_on_similarity(
         return find_small_communities(
             communities=communities,
             resolution=resolution,
-            remove_outliers=False,
-            iteration=1,
+            remove_outliers=True,
+            iteration=iteration
         )
 
     current_iteration = 1
@@ -293,6 +234,7 @@ def merge_communities_based_on_modularity(
             communities=communities,
             resolution=resolution,
             iteration=iteration,
+            remove_outliers=False
         )
 
     current_iteration = 1
@@ -537,7 +479,7 @@ def df_node_similarity(
         # max_iterations=max_iterations
     )
     # print("SIM DONE")
-    # # # poprawic by te wybrane duze klastry zostaly i podpinal male do nich ciagel
+    # # poprawic by te wybrane duze klastry zostaly i podpinal male do nich ciagel
     communities = merge_communities_based_on_modularity(
         G=G,
         communities=communities,

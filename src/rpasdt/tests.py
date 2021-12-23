@@ -167,7 +167,7 @@ GRAPHS = {
     # "strogats": watts_strogatz_graph,
     # "barabasi": barabasi,
     # # "cg": cg,
-    "radnom_partition": random_partition,
+    # "radnom_partition": random_partition,
     # "facebook": facebook
 }
 similarity_functions = [
