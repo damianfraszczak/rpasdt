@@ -153,14 +153,14 @@ def draw_communities(G, partition):
 
 GRAPHS = {
     # "divided": divided_by_edge_community,
-    # "karate": karate_graph,
+    "karate": karate_graph,
     # "windmil": windmil,
     # "football": footbal,
     # "dolphin": dolphin,
     # "strogats": watts_strogatz_graph,
     # "barabasi": barabasi,
     # # "cg": cg,
-    "facebook": facebook
+    # "facebook": facebook
 }
 similarity_functions = [
     # jaccard_node_similarity,
@@ -174,8 +174,8 @@ similarity_functions = [
 for G_name in GRAPHS:
     G = GRAPHS[G_name]()
     for sim_f in similarity_functions:
-        # comm = df_similarity(G, node_similarity_function=sim_f)
-        comm = louvain(G, resolution=2)
+        comm = df_similarity(G, node_similarity_function=sim_f)
+        # comm = louvain(G, resolution=2)
         print(
             f"{G_name}-{len(comm.keys())}-{[len(nodes) for nodes in comm.values()]}: {comm}"
         )

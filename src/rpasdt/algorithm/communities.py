@@ -179,7 +179,7 @@ def merge_communities_based_on_similarity(
             communities=communities,
             resolution=resolution,
             remove_outliers=False,
-            iteration=iteration,
+            iteration=1,
         )
 
     current_iteration = 0
@@ -293,7 +293,7 @@ def merge_communities_based_on_modularity(
 
     small_communities = sm(communities, iteration=current_iteration)
 
-    while small_communities and changed and current_iteration <= max_iterations:
+    while small_communities and changed and current_iteration < max_iterations:
         changed = False
         current_iteration += 1
         # print(small_communities)
@@ -367,7 +367,7 @@ def initial_communities_improved(
         if centrality > average_degree
     ]
     biggest_ratio = max(2, math.ceil(len(biggest) / 10))
-    biggest = biggest[:biggest_ratio]
+    # biggest = biggest[:biggest_ratio]
     print(f"NEIGBHOURS {len(biggest)}")
     neighbours_of_biggest = defaultdict(set)
     for node in biggest:
@@ -379,11 +379,11 @@ def initial_communities_improved(
             else:
                 neighbours_of_biggest[small_node].add(node)
     print(f"BIG NEIG {len(neighbours_of_biggest)}")
-    neighbours_of_biggest = {
-        key: value
-        for key, value in neighbours_of_biggest.items()
-        if sorted_by_degree[key] < average_degree
-    }
+    # neighbours_of_biggest = {
+    #     key: value
+    #     for key, value in neighbours_of_biggest.items()
+    #     if sorted_by_degree[key] < average_degree
+    # }
     print(f"AFTER BIG NEIG {len(neighbours_of_biggest)}")
     # dzialam od najmniejszych
     for small_node, big_neighbours in sorted(
@@ -458,20 +458,19 @@ def initial_communities(g_original, similarity_threshold, node_similarity_functi
         node_similarity_function = jaccard_node_similarity
     communities = defaultdict(set)
     for node in nodes_to_process:
-        if G.nodes[node]["community"]:
-            current_community = G.nodes[node]["community"]
-        else:
-            current_community = max(communities.keys() or [0]) + 1
-            G.nodes[node]["community"] = current_community
-            communities[current_community].add(node)
+        current_community = assign_community(G, communities, node)
 
         for node_n in G.neighbors(node):
             if G.nodes[node_n]["community"]:
                 continue
+            if G.degree[node_n] == 1:
+                assign_community(G, communities, node_n, current_community)
+                continue
             similarity = node_similarity_function(G, node, node_n)
+            print(f"{node}-{node_n}-{similarity}")
             if similarity >= similarity_threshold:
-                G.nodes[node_n]["community"] = current_community
-                communities[current_community].add(node_n)
+                assign_community(G, communities, node_n, current_community)
+
     return communities
 
 
@@ -528,7 +527,7 @@ def df_node_similarity(
         communities=communities,
         modularity_threshold=similarity_threshold,
         resolution=resolution,
-        max_iterations=max_iterations,
+        max_iterations=0,
     )
     print("MOD DONE")
     return {"communities": communities.values()}

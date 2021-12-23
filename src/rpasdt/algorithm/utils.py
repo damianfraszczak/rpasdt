@@ -29,7 +29,8 @@ def modularity(partition, graph, weight="weight"):
 
     res = 0.0
     for com in set(partition.values()):
-        res += (inc.get(com, 0.0) / links) - (deg.get(com, 0.0) / (2.0 * links)) ** 2
+        res += (inc.get(com, 0.0) / links) - (
+                deg.get(com, 0.0) / (2.0 * links)) ** 2
     return res
 
 
@@ -40,8 +41,9 @@ def get_communities_size(communities):
 def get_community_avg_size(communities, alg="tmean", remove_outliers=True):
     count_nodes = get_communities_size(communities)
     if remove_outliers:
-        count_nodes = reject_outliers(count_nodes)
-
+        count_nodes = remove_min_max(count_nodes)
+    print(
+        f"{getattr(stats, alg)(count_nodes)}-{getattr(stats, 'gmean')(count_nodes)}")
     return getattr(stats, alg)(count_nodes)
 
 
@@ -52,7 +54,8 @@ def get_community_weighted_avg_size(communities):
 
     com_len = len(communities)
 
-    distribution = {key: value / com_len for key, value in distribution.items()}
+    distribution = {key: value / com_len for key, value in
+                    distribution.items()}
 
     return (
         sum(
@@ -69,7 +72,7 @@ def find_small_communities(
     communities, resolution=0.5, alg="tmean", remove_outliers=True, iteration=1
 ):
     community_avg_size = get_community_avg_size(
-        communities, alg=alg, remove_outliers=True
+        communities, alg='tmean', remove_outliers=True
     )
     # community_avg_size = max(community_avg_size, 2)
 
@@ -84,7 +87,8 @@ def find_small_communities(
 
     # <= dla modularity, < dla similarity
     return dict(
-        filter(lambda elem: len(elem[1]) <= community_avg_size, communities.items())
+        filter(lambda elem: len(elem[1]) <= community_avg_size,
+               communities.items())
     )
 
 
@@ -95,9 +99,19 @@ def delete_communities(communities, communities_to_delete):
 
 def get_avg_degree(G):
     normalized_degree = nx.degree_centrality(G)
-    return sum(centrality for node, centrality in normalized_degree.items()) / len(
+    return sum(
+        centrality for node, centrality in normalized_degree.items()) / len(
         normalized_degree
     )
+
+
+def remove_min_max(data):
+    min_d = min(data)
+    max_d = max(data)
+    removed = [val for val in data if val != min_d and val != max_d]
+    if len(removed):
+        return removed
+    return data
 
 
 def reject_outliers(data, m=2.0):
