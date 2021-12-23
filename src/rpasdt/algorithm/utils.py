@@ -69,7 +69,7 @@ def find_small_communities(
     communities, resolution=0.5, alg="tmean", remove_outliers=True, iteration=1
 ):
     community_avg_size = get_community_avg_size(
-        communities, alg=alg, remove_outliers=remove_outliers
+        communities, alg=alg, remove_outliers=True
     )
     # community_avg_size = max(community_avg_size, 2)
 

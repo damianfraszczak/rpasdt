@@ -164,7 +164,7 @@ GRAPHS = {
     # "dolphin": dolphin,
     # "strogats": watts_strogatz_graph,
     # "barabasi": barabasi,
-    # "cg": cg,
+    # # "cg": cg,
     "facebook": facebook
 }
 similarity_functions = [
