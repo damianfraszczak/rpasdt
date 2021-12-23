@@ -126,6 +126,7 @@ def merge_communities_based_on_similarity(
             communities=communities,
             resolution=resolution,
             remove_outliers=True,
+            alg='gmean',
             iteration=iteration
         )
 
@@ -234,13 +235,15 @@ def merge_communities_based_on_modularity(
             communities=communities,
             resolution=resolution,
             iteration=iteration,
-            remove_outliers=False
+            remove_outliers=False,
+            hard=False
         )
 
     current_iteration = 1
     changed = True
-
+    print([len(n) for c, n in communities.items()])
     small_communities = sm(communities, iteration=current_iteration)
+    print([len (n) for c,n in small_communities.items()])
 
     while small_communities and changed and current_iteration <= max_iterations:
         changed = False
