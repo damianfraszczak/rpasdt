@@ -11,7 +11,8 @@ from scipy.stats import tmean
 
 from rpasdt.algorithm.similarity import (
     community_similarity,
-    jaccard_node_similarity,
+    jaccard_node_similarity, academic_adar_node_similarity,
+    resource_allocation_index_node_similarity,
 )
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.algorithm.utils import (
@@ -53,14 +54,16 @@ def find_communities(
     alg = getattr(algorithms, alg_function_name, None) or getattr(
         thismodule, alg_function_name
     )
-    kwargs = {**get_function_default_kwargs(alg), **alg_kwargs, **{"g_original": graph}}
+    kwargs = {**get_function_default_kwargs(alg), **alg_kwargs,
+              **{"g_original": graph}}
     _update_communities_kwarg(
         type=type, kwargs=kwargs, number_communities=number_communities
     )
     result = alg(**kwargs)
     return {
         index: community
-        for index, community in enumerate(get_object_value(result, "communities"))
+        for index, community in
+        enumerate(get_object_value(result, "communities"))
     }
 
 
@@ -131,19 +134,22 @@ def merge_communities(
                         )
                     ].add(c_number)
             best_match = max(communities_evaluation.keys())
-            best_match_communities = communities_evaluation.get(best_match) or []
+            best_match_communities = communities_evaluation.get(
+                best_match) or []
             # ignore if it is hyb
             communities_number_without_compared = len(communities) - 1
             if (
                 best_match <= similarity_threshold
-                or len(best_match_communities) == communities_number_without_compared
+                or len(
+                best_match_communities) == communities_number_without_compared
             ):
                 continue
 
             communities[small_c_number] = set()
             communities[small_c_number].update(small_c_nodes)
             for community_to_join in best_match_communities:
-                communities[small_c_number].update(communities[community_to_join])
+                communities[small_c_number].update(
+                    communities[community_to_join])
                 delete_communities(
                     communities=communities,
                     communities_to_delete={
@@ -182,7 +188,7 @@ def merge_communities_based_on_similarity(
             iteration=1,
         )
 
-    current_iteration = 0
+    current_iteration = 1
     communities = {**communities}
     small_communities = sm(communities, current_iteration)
 
@@ -193,9 +199,9 @@ def merge_communities_based_on_similarity(
         # print(f"SM - {small_communities}")
         changed = False
         current_iteration += 1
-        print(
-            f"{current_iteration}-{len(small_communities)}-{get_communities_size(small_communities)}"
-        )
+        # print(
+        #     f"{current_iteration}-{len(small_communities)}-{get_communities_size(small_communities)}"
+        # )
         for small_c_number, small_c_nodes in list(small_communities.items()):
             best_community, best_community_small, best_rank = None, None, 0
 
@@ -232,7 +238,8 @@ def merge_communities_based_on_similarity(
             communities[small_c_number].update(small_c_nodes)
 
             for community_to_join in max_similarity_communities:
-                communities[small_c_number].update(communities[community_to_join])
+                communities[small_c_number].update(
+                    communities[community_to_join])
                 delete_communities(
                     communities=communities,
                     communities_to_delete={
@@ -288,12 +295,12 @@ def merge_communities_based_on_modularity(
             iteration=iteration,
         )
 
-    current_iteration = 0
+    current_iteration = 1
     changed = True
 
     small_communities = sm(communities, iteration=current_iteration)
 
-    while small_communities and changed and current_iteration < max_iterations:
+    while small_communities and changed and current_iteration <= max_iterations:
         changed = False
         current_iteration += 1
         # print(small_communities)
@@ -332,9 +339,14 @@ def merge_communities_based_on_modularity(
     return communities
 
 
+def get_community(G, node):
+    return G.nodes[node]["community"]
+
+
 def assign_community(G, communities, node, community=None):
-    if G.nodes[node]["community"]:
-        return G.nodes[node]["community"]
+    current_community = get_community(G, node)
+    if current_community:
+        return current_community
     current_community = community or max(communities.keys() or [0]) + 1
     G.nodes[node]["community"] = current_community
     communities[current_community].add(node)
@@ -353,7 +365,8 @@ def initial_communities_improved(
     sorted_by_degree = dict(
         sorted(normalized_degree.items(), key=lambda x: x[1], reverse=True)
     )
-    centralitites = [centrality for node, centrality in normalized_degree.items()]
+    centralitites = [centrality for node, centrality in
+                     normalized_degree.items()]
 
     average_degree = tmean(centralitites)
 
@@ -405,7 +418,7 @@ def initial_communities_improved(
                 best_community = community
         if best_community > -1:
             assign_community(G, communities, small_node, best_community)
-    print("PRZUPISAYWANIE")
+
     for node in G:
         if not G.nodes[node]["community"]:
             assign_community(G, communities, node)
@@ -413,7 +426,8 @@ def initial_communities_improved(
     return communities
 
 
-def initial_communities2(g_original, similarity_threshold, node_similarity_function):
+def initial_communities2(g_original, similarity_threshold,
+                         node_similarity_function):
     G = g_original.copy()
 
     nx.set_node_attributes(G, None, "community")
@@ -421,7 +435,8 @@ def initial_communities2(g_original, similarity_threshold, node_similarity_funct
     sorted_by_degree = sorted(
         normalized_degree.items(), key=lambda x: x[1], reverse=True
     )
-    centralitites = [centrality for node, centrality in normalized_degree.items()]
+    centralitites = [centrality for node, centrality in
+                     normalized_degree.items()]
 
     average_degree = tmean(centralitites)
 
@@ -443,7 +458,8 @@ def initial_communities2(g_original, similarity_threshold, node_similarity_funct
     return communities
 
 
-def initial_communities(g_original, similarity_threshold, node_similarity_function):
+def initial_communities(g_original, similarity_threshold,
+                        node_similarity_function):
     G = g_original.copy()
 
     nx.set_node_attributes(G, None, "community")
@@ -467,7 +483,7 @@ def initial_communities(g_original, similarity_threshold, node_similarity_functi
                 assign_community(G, communities, node_n, current_community)
                 continue
             similarity = node_similarity_function(G, node, node_n)
-            print(f"{node}-{node_n}-{similarity}")
+            # print(f"{node}-{node_n}-{similarity}")
             if similarity >= similarity_threshold:
                 assign_community(G, communities, node_n, current_community)
 
@@ -511,15 +527,15 @@ def df_node_similarity(
         similarity_threshold=similarity_threshold,
         node_similarity_function=node_similarity_function,
     )
-    print("INITAL DONE")
-    # communities = merge_communities_based_on_similarity(
-    #     G=G,
-    #     communities=communities,
-    #     node_similarity_function=node_similarity_function,
-    #     similarity_threshold=similarity_threshold,
-    #     resolution=resolution,
-    #     # max_iterations=max_iterations
-    # )
+
+    communities = merge_communities_based_on_similarity(
+        G=G,
+        communities=communities,
+        node_similarity_function=node_similarity_function,
+        similarity_threshold=similarity_threshold,
+        resolution=resolution,
+        # max_iterations=max_iterations
+    )
     # print("SIM DONE")
     # # # poprawic by te wybrane duze klastry zostaly i podpinal male do nich ciagel
     communities = merge_communities_based_on_modularity(
@@ -527,7 +543,7 @@ def df_node_similarity(
         communities=communities,
         modularity_threshold=similarity_threshold,
         resolution=resolution,
-        max_iterations=0,
+        max_iterations=1,
     )
-    print("MOD DONE")
+
     return {"communities": communities.values()}
