@@ -73,7 +73,7 @@ def find_small_communities(
     iteration=1,
     hard=True,
 ):
-    hard = False
+    # hard = False
 
     community_avg_size = get_community_avg_size(
         communities, alg=alg, remove_outliers=remove_outliers
@@ -117,7 +117,7 @@ def remove_min_max(data):
     min_d = min(data)
     max_d = max(data)
     removed = [val for val in data if val != min_d and val != max_d]
-    if len(removed):
+    if len(removed)>1:
         print(f"{data}-{removed}")
         return removed
     return data

@@ -165,11 +165,11 @@ def draw_communities(G, partition):
 
 
 GRAPHS = {
-    # "divided": divided_by_edge_community,
-    # "karate": karate_graph,
-    # "windmil": windmil,
+    "divided": divided_by_edge_community,
+    "karate": karate_graph,
+    "windmil": windmil,
     "football": footbal,
-    # "dolphin": dolphin,
+    "dolphin": dolphin,
     # "strogats": watts_strogatz_graph,
     # "barabasi": barabasi,
     # # "cg": cg,

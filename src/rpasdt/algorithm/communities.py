@@ -234,7 +234,7 @@ def merge_communities_based_on_modularity(
             resolution=resolution,
             iteration=iteration,
             remove_outliers=False,
-            hard=False,
+            hard=True,
         )
 
     current_iteration = 1
