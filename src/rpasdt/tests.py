@@ -7,8 +7,11 @@ from matplotlib import cm
 
 from rpasdt.algorithm.communities import find_communities
 from rpasdt.algorithm.community_draw import community_layout
-from rpasdt.algorithm.similarity import sorensen_node_similarity, \
-    academic_adar_node_similarity
+from rpasdt.algorithm.similarity import (
+    academic_adar_node_similarity,
+    jaccard_node_similarity,
+    sorensen_node_similarity,
+)
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.common.utils import get_project_root, method_time
 from rpasdt.network.networkx_utils import get_grouped_nodes
@@ -105,10 +108,12 @@ def windmil():
 def barabasi():
     return nx.barabasi_albert_graph(100, 5)
 
+
 def random_partition():
     # create a modular graph
     partition_sizes = [10, 20, 30, 40]
     return nx.random_partition_graph(partition_sizes, 0.5, 0.1)
+
 
 def watts_strogatz_graph():
     return nx.watts_strogatz_graph(n=50, k=8, p=0.5)
@@ -128,6 +133,7 @@ def louvain(G, resolution=1.0):
 
 def draw_communities(G, partition):
     from matplotlib import pyplot as plt
+
     grouped_nodes = get_grouped_nodes(partition)
     if len(G) > 500:
         pos = nx.spring_layout(G, iterations=15, seed=1721)
@@ -162,13 +168,13 @@ GRAPHS = {
     # "divided": divided_by_edge_community,
     # "karate": karate_graph,
     # "windmil": windmil,
-    # "football": footbal,
+    "football": footbal,
     # "dolphin": dolphin,
     # "strogats": watts_strogatz_graph,
     # "barabasi": barabasi,
     # # "cg": cg,
     # "radnom_partition": random_partition,
-    "facebook": facebook
+    # "facebook": facebook
 }
 similarity_functions = [
     # jaccard_node_similarity,
