@@ -196,7 +196,7 @@ for G_name in GRAPHS:
         # print(comm)
         draw_communities(G, comm)
 
-L = louvain(G)
+# L = louvain(G)
 # print(len(L))
 # print(L)
 # draw_communities(G, L)

@@ -6,7 +6,7 @@ import numpy as np
 from scipy import stats
 
 
-def modularity(partition, graph, weight="weight"):
+def modularity(partition, graph, weight="weight", resolution=1.):
     if graph.is_directed():
         raise TypeError("Bad graph type, use only non directed graph")
 
@@ -29,7 +29,8 @@ def modularity(partition, graph, weight="weight"):
 
     res = 0.0
     for com in set(partition.values()):
-        res += (inc.get(com, 0.0) / links) - (deg.get(com, 0.0) / (2.0 * links)) ** 2
+        res += (inc.get(com, 0.0) / links) - resolution*(
+                deg.get(com, 0.0) / (2.0 * links)) ** 2
     return res
 
 
@@ -52,7 +53,8 @@ def get_community_weighted_avg_size(communities):
 
     com_len = len(communities)
 
-    distribution = {key: value / com_len for key, value in distribution.items()}
+    distribution = {key: value / com_len for key, value in
+                    distribution.items()}
 
     return (
         sum(
@@ -62,6 +64,33 @@ def get_community_weighted_avg_size(communities):
             ]
         )
         / com_len
+    )
+
+
+def find_small_communities_modularity(
+    communities,
+    resolution=0.5,
+    alg="tmean",
+    remove_outliers=True,
+    iteration=1,
+    hard=True,
+):
+    # hard = False
+
+    community_avg_size = get_community_avg_size(
+        communities, alg='tmean', remove_outliers=True
+    )
+
+    community_avg_size = math.ceil(community_avg_size)
+    community_avg_size /= 2 ** (iteration - 1)
+    community_avg_size = max(community_avg_size, 2)
+
+    # <= dla modularity, < dla similarity
+    return dict(
+        filter(
+            lambda elem: len(elem[1]) <= community_avg_size,
+            communities.items(),
+        )
     )
 
 
@@ -78,7 +107,7 @@ def find_small_communities(
     community_avg_size = get_community_avg_size(
         communities, alg=alg, remove_outliers=remove_outliers
     )
-    # community_avg_size = max(community_avg_size, 2)
+    community_avg_size = max(community_avg_size, 2)
 
     # community_avg_size = (community_avg_size) / max(count_nodes)
 
@@ -87,7 +116,7 @@ def find_small_communities(
     community_avg_size *= resolution
     # community_avg_size /= math.sqrt(iteration)
 
-    community_avg_size = math.ceil(community_avg_size) if iteration > 1 else math.floor(community_avg_size)
+    community_avg_size = math.ceil( community_avg_size)
     community_avg_size = max(community_avg_size, 2)
 
     # <= dla modularity, < dla similarity
@@ -108,7 +137,8 @@ def delete_communities(communities, communities_to_delete):
 
 def get_avg_degree(G):
     normalized_degree = nx.degree_centrality(G)
-    return sum(centrality for node, centrality in normalized_degree.items()) / len(
+    return sum(
+        centrality for node, centrality in normalized_degree.items()) / len(
         normalized_degree
     )
 
@@ -117,21 +147,22 @@ def remove_min_max(data):
     min_d = min(data)
     max_d = max(data)
     removed = [val for val in data if val != min_d and val != max_d]
-    if len(removed)>1:
+    if len(removed) > 1:
         print(f"{data}-{removed}")
         return removed
     return data
 
 
-def reject_outliers2(data, m=2.0):
+def reject_outliers(data, m=2.0):
     data = np.array(data)
     d = np.abs(data - np.median(data))
     mdev = np.median(d)
     s = d / (mdev if mdev else 1.0)
-    print(f"{data}\n{data[s < m]}")
+
     return data[s < m]
 
-def reject_outliers(data, m=2.0):
+
+def reject_outliers2(data, m=2.0):
     an_array = np.array(data)
     mean = np.mean(an_array)
     standard_deviation = np.std(an_array)

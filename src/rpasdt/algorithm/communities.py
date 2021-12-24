@@ -13,14 +13,14 @@ from rpasdt.algorithm.similarity import (
     academic_adar_node_similarity,
     community_similarity,
     jaccard_node_similarity,
-    resource_allocation_index_node_similarity,
+    resource_allocation_index_node_similarity, sorensen_node_similarity,
 )
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.algorithm.utils import (
     delete_communities,
     find_small_communities,
     get_communities_size,
-    modularity,
+    modularity, find_small_communities_modularity,
 )
 from rpasdt.common.utils import (
     get_enum,
@@ -233,15 +233,15 @@ def merge_communities_based_on_modularity(
             communities=communities,
             resolution=resolution,
             iteration=iteration,
-            remove_outliers=False,
+            remove_outliers=True,
             hard=True,
         )
 
     current_iteration = 1
     changed = True
-    print([len(n) for c, n in communities.items()])
+    # print([len(n) for c, n in communities.items()])
     small_communities = sm(communities, iteration=current_iteration)
-    print([len(n) for c, n in small_communities.items()])
+    # print([len(n) for c, n in small_communities.items()])
 
     while small_communities and changed and current_iteration <= max_iterations:
         changed = False
@@ -252,7 +252,6 @@ def merge_communities_based_on_modularity(
             for c_number in get_neighbour_communities(
                 G=G, communities=communities, community=small_c_nodes
             ):
-
                 if c_number == small_c_number:
                     continue
                 grouped_nodes = get_grouped_nodes(communities)
@@ -464,13 +463,13 @@ def df_node_similarity(
     communities = initial_communities(
         g_original,
         similarity_threshold=similarity_threshold,
-        node_similarity_function=node_similarity_function,
+        node_similarity_function=jaccard_node_similarity,
     )
 
     communities = merge_communities_based_on_similarity(
         G=G,
         communities=communities,
-        node_similarity_function=node_similarity_function,
+        node_similarity_function=sorensen_node_similarity,
         similarity_threshold=similarity_threshold,
         resolution=resolution,
         # max_iterations=max_iterations
@@ -482,7 +481,7 @@ def df_node_similarity(
         communities=communities,
         modularity_threshold=similarity_threshold,
         resolution=resolution,
-        max_iterations=2,
+        max_iterations=max_iterations,
     )
 
     return {"communities": communities.values()}

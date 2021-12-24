@@ -8,3 +8,4 @@ services:
       - ../src/rpasdt:/app/rpasdt
       - ../dist:/app/pyinstaller_config/dist
       - ../docs:/app/docs
+

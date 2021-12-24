@@ -1,9 +1,12 @@
 import networkx as nx
 
+from rpasdt.algorithm.utils import reject_outliers
+
 
 def community_similarity(G, c1, c2, node_similarity_function):
     coefficients = [node_similarity_function(G, a, b) for a in c1 for b
                     in c2]
+    coefficients = reject_outliers(coefficients)
     return sum(coefficients) / len(coefficients)
 
 
