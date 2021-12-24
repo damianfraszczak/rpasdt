@@ -40,7 +40,7 @@ def get_communities_size(communities):
 def get_community_avg_size(communities, alg="tmean", remove_outliers=True):
     count_nodes = get_communities_size(communities)
     if remove_outliers:
-        count_nodes = reject_outliers(count_nodes)
+        count_nodes = remove_min_max(count_nodes)
 
     return getattr(stats, alg)(count_nodes)
 
@@ -85,8 +85,9 @@ def find_small_communities(
     # print(f"{community_avg_size}-{resolution}")
 
     community_avg_size *= resolution
-    # community_avg_size /= iteration
-    community_avg_size = math.floor(community_avg_size)
+    # community_avg_size /= math.sqrt(iteration)
+
+    community_avg_size = math.ceil(community_avg_size) if iteration > 1 else math.floor(community_avg_size)
     community_avg_size = max(community_avg_size, 2)
 
     # <= dla modularity, < dla similarity
@@ -117,13 +118,26 @@ def remove_min_max(data):
     max_d = max(data)
     removed = [val for val in data if val != min_d and val != max_d]
     if len(removed):
+        print(f"{data}-{removed}")
         return removed
     return data
 
 
-def reject_outliers(data, m=2.0):
+def reject_outliers2(data, m=2.0):
     data = np.array(data)
     d = np.abs(data - np.median(data))
     mdev = np.median(d)
     s = d / (mdev if mdev else 1.0)
+    print(f"{data}\n{data[s < m]}")
     return data[s < m]
+
+def reject_outliers(data, m=2.0):
+    an_array = np.array(data)
+    mean = np.mean(an_array)
+    standard_deviation = np.std(an_array)
+    distance_from_mean = abs(an_array - mean)
+    max_deviations = 2
+    not_outlier = distance_from_mean < max_deviations * standard_deviation
+    no_outliers = an_array[not_outlier]
+    print(f"{data}\n{no_outliers}")
+    return no_outliers
