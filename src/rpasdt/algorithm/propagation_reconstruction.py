@@ -1,7 +1,8 @@
+import math
 import operator
 import random
-from functools import reduce
-from typing import List
+from functools import reduce, lru_cache
+from typing import List, Set
 
 import networkx as nx
 from networkx import Graph
@@ -43,7 +44,8 @@ def _get_nodes_to_process(EG: Graph, threshold: float) -> List[int]:
     ]
 
 
-def _check_node_in_external_network(node: int, infected_nodes: List[int]) -> bool:
+def _check_node_in_external_network(node: int,
+                                    infected_nodes: Set[int]) -> bool:
     """
     Return True if node is detected to send a rumor in other site
     False otherwise.
@@ -54,34 +56,73 @@ def _check_node_in_external_network(node: int, infected_nodes: List[int]) -> boo
     return False
 
 
+def _compute_neighbors_probability(node: int, G: Graph) -> float:
+    neighbors_probability = [
+        G.nodes[node][NODE_INFECTION_PROBABILITY_ATTR]
+        for node in nx.neighbors(G, node)
+    ]
+    return reduce(
+        operator.mul, neighbors_probability,
+        1,
+    )
+
+
+@lru_cache
+def _get_shortest_path(G: Graph, source: int, target: int) -> List[int]:
+    return nx.shortest_path(G, source=source, target=target)
+
+
+def _check_if_node_is_on_path_between_infected_nodes(node: int,
+                                                     G: Graph) -> bool:
+    neighbors = nx.neighbors(G, node)
+    for n1 in neighbors:
+        for n2 in neighbors:
+            if n1 == n2:
+                continue
+            sp = _get_shortest_path(G, source=n1, target=n2)
+            if node in sp:
+                return True
+    return False
+
+
 def _compute_node_recovery(
     EG: Graph, node: int, config: PropagationReconstructionConfig
 ) -> float:
-    m1 = config.m1 * reduce(
-        operator.mul,
-        [
-            EG.nodes[node][NODE_INFECTION_PROBABILITY_ATTR]
-            for node in nx.neighbors(EG, node)
-        ],
-        1,
-    )
-    m2 = config.m2
-    m3 = config.m3 * _check_node_in_external_network(
+    neighbors_probability = _compute_neighbors_probability(node=node, G=EG)
+    node_on_path = int(
+        _check_if_node_is_on_path_between_infected_nodes(node=node, G=EG))
+    node_in_external_network = int(_check_node_in_external_network(
         node=node, infected_nodes=config.real_infected_nodes
-    )
+    ))
+
+    m1 = config.m1 * neighbors_probability
+    m2 = config.m2 * node_on_path
+    m3 = config.m3 * node_in_external_network
     return m1 + m2 + m3
+
+
+def _remove_invalid_edges_and_nodes(EG, threshold):
+    edges_to_remove = []
+    for edge in EG.edges(data=True):
+        data = edge[2]
+        weight = data[WEIGHT_ATTR]
+        if weight < threshold:
+            edges_to_remove.append(edge)
+    EG.remove_edges_from(edges_to_remove)
+    EG.remove_nodes_from(list(nx.isolates(EG)))
 
 
 def reconstruct_propagation(config: PropagationReconstructionConfig) -> Graph:
     EG = _init_extended_network(config)
 
     nodes = _get_nodes_to_process(EG, config.threshold)
-    current_iteration = 1
-    changed = True
-    while nodes and current_iteration < config.max_iterations and changed:
-        current_iteration += 1
-
+    for node in nodes:
+        EG.nodes[node][
+            NODE_INFECTION_PROBABILITY_ATTR] = _compute_node_recovery(EG=EG,
+                                                                      node=node,
+                                                                      config=config)
     _compute_edges_weights(EG)
+    _remove_invalid_edges_and_nodes(EG, config.threshold)
     return EG
 
 
@@ -90,15 +131,18 @@ def plt_with_weight(G):
     import matplotlib.pyplot as plt
 
     matplotlib.use("Qt5Agg")
-    pos = nx.spring_layout(G, seed=500)  # pos = nx.nx_agraph.graphviz_layout(G)
+    pos = nx.spring_layout(G,
+                           seed=500)  # pos = nx.nx_agraph.graphviz_layout(G)
     nx.draw_networkx(G, pos)
     labels = nx.get_edge_attributes(G, "weight")
     nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
     plt.show()
 
 
-def create_sample_IG(G, number_to_remove=10):
+def create_sample_IG(G, number_to_remove=None):
     IG = G.copy()
+    if not number_to_remove:
+        number_to_remove = math.ceil(len(G.nodes) / 10)
     IG.remove_nodes_from(random.choices(list(G.nodes), k=number_to_remove))
     return IG
 
