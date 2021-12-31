@@ -3,7 +3,7 @@ import statistics
 from dataclasses import dataclass, field
 from functools import cached_property
 from math import floor
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from ndlib.models.DiffusionModel import DiffusionModel
 from networkx import Graph
@@ -379,3 +379,23 @@ class SourceDetectionSimulationResult:
             config: compute_source_detection_experiment_evaluation(results)
             for config, results in self.raw_results.items()
         }
+
+
+@dataclass
+class PropagationReconstructionConfig:
+    G: Graph
+    IG: Graph
+    real_IG: Graph
+    m1: float = 0.6
+    m2: float = 0.3
+    m3: float = 0.1
+    max_iterations: int = 100
+    threshold: float = 0.6
+
+    @cached_property
+    def observed_infected_nodes(self) -> Set:
+        return set(self.IG)
+
+    @cached_property
+    def real_infected_nodes(self) -> Set:
+        return set(self.real_IG)
