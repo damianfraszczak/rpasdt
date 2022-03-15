@@ -193,7 +193,7 @@ class CommunityOptionEnum(StringChoiceEnum):
     LOUVAIN = ("louvain", "Louvain maximizes a modularity score for each community.")
     LSWL = (
         "lswl",
-        "LSWL locally discovers networksâ€™ the communities precisely, deterministically, and quickly.",
+        "LSWL locally discovers networks the communities precisely, deterministically, and quickly.",
     )
     LSWL_PLUS = (
         "lswl_plus",

@@ -64,7 +64,15 @@ class UnbiasedCentralityBasedSourceDetectionConfig(
 
 @dataclass
 class CommunitiesBasedSourceDetectionConfig(SourceDetectionConfig):
-    communities_algorithm: CommunityOptionEnum = CommunityOptionEnum.GIRVAN_NEWMAN
+    communities_algorithm: CommunityOptionEnum = CommunityOptionEnum.LOUVAIN
+
+
+@dataclass
+class IterationsToCoverNetworkConfig(CommunitiesBasedSourceDetectionConfig):
+    node_selection_algorithm: SourceSelectionOptionEnum = (
+        SourceSelectionOptionEnum.DEGREE
+    )
+    neighbors_hops: int = 3
 
 
 @dataclass

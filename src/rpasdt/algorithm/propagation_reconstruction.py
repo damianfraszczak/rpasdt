@@ -13,7 +13,6 @@ from rpasdt.algorithm.models import PropagationReconstructionConfig
 
 matplotlib.use("Qt5Agg")
 
-
 NODE_INFECTION_PROBABILITY_ATTR = "INFECTION_PROBABILITY"
 WEIGHT_ATTR = "weight"
 
@@ -164,21 +163,31 @@ def create_sample_IG(G, number_to_remove=None):
 
 def draw_results(G, RealIG, IG, EG, removed, extended):
     fig, axes = plt.subplots(nrows=1, ncols=3)
-    axes[0].set_title("Full infection")
+    axes[0].set_title("Propagacja w sieci")
     pos = nx.spring_layout(RealIG, seed=100)
     nx.draw_networkx(
         RealIG,
         pos,
-        node_color=["red" if node in removed else "#1f78b4" for node in G],
+        node_color=["red" if node in [0, 33] else "#1f78b4" for node in G],
         ax=axes[0],
     )
-    axes[1].set_title("Infection with loss")
-    nx.draw_networkx(IG, pos, ax=axes[1])
-    axes[2].set_title("Reconstructed infection")
+    axes[1].set_title("Zaobserwowana propagacja")
     nx.draw_networkx(
-        EG,
+        RealIG,
         pos,
-        node_color=["green" if node in extended else "#1f78b4" for node in EG],
+        node_color=["yellow" if node in removed else "#1f78b4" for node in RealIG],
+        ax=axes[1],
+    )
+    axes[2].set_title("Rekonstrukcja propagacji")
+    nx.draw_networkx(
+        RealIG,
+        pos,
+        node_color=[
+            "green"
+            if node in extended
+            else ("yellow" if node in removed else "#1f78b4")
+            for node in RealIG
+        ],
         ax=axes[2],
     )
 
@@ -189,7 +198,7 @@ def draw_results(G, RealIG, IG, EG, removed, extended):
 def main():
     G = nx.karate_club_graph()
     RealIG = G
-    IG, removed = create_sample_IG(RealIG, number_to_remove=6)
+    IG, removed = create_sample_IG(RealIG, number_to_remove=10)
     EG = reconstruct_propagation(
         PropagationReconstructionConfig(G=G, IG=IG, real_IG=RealIG)
     )

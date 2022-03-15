@@ -1,7 +1,6 @@
 """Community detection methods."""
-from typing import Dict, List, Union
+from typing import Collection, Dict, List, Union
 
-import networkx as nx
 from cdlib import algorithms
 from networkx import Graph
 
@@ -14,6 +13,7 @@ NUMBER_OF_COMMUNITIES_KWARG_NAMES = ["k", "number_communities", "level"]
 def _update_communities_kwarg(
     type: CommunityOptionEnum, kwargs: Dict, number_communities: int
 ):
+    # correctly set the desired number of communities for given alg
     for name in NUMBER_OF_COMMUNITIES_KWARG_NAMES:
         if name in kwargs:
             kwargs[name] = (
@@ -21,6 +21,11 @@ def _update_communities_kwarg(
                 if type == CommunityOptionEnum.GIRVAN_NEWMAN
                 else number_communities
             )
+    # remove empty collections from kwargs
+    for key in set(kwargs.keys()):
+        value = kwargs[key]
+        if isinstance(value, Collection) and not value:
+            kwargs.pop(key)
 
 
 def find_communities(
@@ -36,6 +41,3 @@ def find_communities(
     )
     result = alg(**kwargs)
     return {index: community for index, community in enumerate(result.communities)}
-
-
-G = nx.karate_club_graph()
