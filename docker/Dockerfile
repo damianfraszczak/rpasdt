@@ -10,12 +10,19 @@ ENV PYTHONPATH "${PYTHONPATH}:/app/"
 
 RUN adduser --quiet --disabled-password qtuser && usermod -a -G audio qtuser
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && \
+    apt-get install -y \
     python3-pip \
     python3-pyqt5 \
     pyqt5-dev-tools \
     && cd /usr/local/bin \
     && ln -s /usr/bin/python3 python
+
+
+# python3-graph-tool config
+RUN  echo "deb https://downloads.skewed.de/apt focal main" >> /etc/apt/sources.list && \
+     apt-key adv --keyserver keyserver.ubuntu.com --recv-key 612DEFB798507F25 && \
+     apt-get update && apt-get install -y  python3-graph-tool
 
 RUN mkdir -p /app/rpasdt && chown -R qtuser /app/
 WORKDIR /app/

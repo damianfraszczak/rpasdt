@@ -8,10 +8,11 @@ from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.common.utils import get_enum, get_function_default_kwargs
 
 NUMBER_OF_COMMUNITIES_KWARG_NAMES = ["k", "number_communities", "level"]
+MAX_NUMBER_OF_COMMUNITIES_KWARG_NAMES = ["kmax"]
 
 
 def _update_communities_kwarg(
-    type: CommunityOptionEnum, kwargs: Dict, number_communities: int
+    graph: Graph, type: CommunityOptionEnum, kwargs: Dict, number_communities: int
 ):
     # correctly set the desired number of communities for given alg
     for name in NUMBER_OF_COMMUNITIES_KWARG_NAMES:
@@ -21,6 +22,11 @@ def _update_communities_kwarg(
                 if type == CommunityOptionEnum.GIRVAN_NEWMAN
                 else number_communities
             )
+    for name in MAX_NUMBER_OF_COMMUNITIES_KWARG_NAMES:
+        if name in kwargs:
+            current_val = kwargs[name]
+            if current_val == 0:
+                kwargs[name] = len(graph.nodes) - 1
     # remove empty collections from kwargs
     for key in set(kwargs.keys()):
         value = kwargs[key]
@@ -37,7 +43,7 @@ def find_communities(
     alg = getattr(algorithms, get_enum(type, CommunityOptionEnum).value)
     kwargs = {**get_function_default_kwargs(alg), **alg_kwargs, **{"g_original": graph}}
     _update_communities_kwarg(
-        type=type, kwargs=kwargs, number_communities=number_communities
+        graph=graph, type=type, kwargs=kwargs, number_communities=number_communities
     )
     result = alg(**kwargs)
     return {index: community for index, community in enumerate(result.communities)}

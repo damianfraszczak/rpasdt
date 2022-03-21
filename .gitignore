@@ -146,3 +146,4 @@ cython_debug/
 # ide
 .idea
 .vscode
+/data/
