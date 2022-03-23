@@ -1,7 +1,7 @@
 isort==5.9.3
 matplotlib==3.4.3
 ndlib==5.1.1
-networkx==2.6.2
+networkx==2.7.1
 PyQt5==5.15.4
 PyQt5-stubs==5.15.2.0
 typing-extensions==3.10.0.2
