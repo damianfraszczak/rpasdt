@@ -25,3 +25,25 @@ def neighbors_of_k_hops(G: Graph, node: int, k: int = 1) -> Set:
     return _neighbors_of_k_hops(
         G=G, node=node, neighbors=set(), current_level=1, max_level=k
     )
+
+
+def nmi(partition1, partition2):
+    def _prepare_partition(partition):
+        return [
+            x[1]
+            for x in sorted(
+                [
+                    (node, nid)
+                    for nid, cluster in enumerate(partition)
+                    for node in partition[cluster]
+                ],
+                key=lambda x: x[0],
+            )
+        ]
+
+    first_partition_c = _prepare_partition(partition1)
+    second_partition_c = _prepare_partition(partition2)
+
+    from sklearn.metrics import normalized_mutual_info_score
+
+    return normalized_mutual_info_score(first_partition_c, second_partition_c)
