@@ -90,9 +90,13 @@ def perform_source_detection_simulation(
         source_detection_config=source_detection_config
     )
     for simulation in _simulate_diffusion(source_detection_config):
-        infected_nodes = get_nodes_by_diffusion_status(
-            simulation.diffusion_model, NodeStatusEnum.INFECTED
+        infected_nodes = set(
+            get_nodes_by_diffusion_status(
+                simulation.diffusion_model, NodeStatusEnum.INFECTED
+            )
         )
+        # append source nodes even if they are recovered
+        infected_nodes.update(simulation.source_nodes)
         IG = simulation.graph.subgraph(infected_nodes)
         number_of_sources = len(simulation.source_nodes)
         for (
