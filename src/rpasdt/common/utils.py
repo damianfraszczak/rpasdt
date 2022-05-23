@@ -4,6 +4,7 @@ import inspect
 import re
 from collections import defaultdict
 from enum import Enum
+from functools import wraps
 from typing import Any, Dict, List, Mapping, Optional, Type, Union
 
 from dataclasses_json import dataclass_json
@@ -138,3 +139,17 @@ def get_function_default_kwargs(func) -> Dict[str, Any]:
         name: get_default_value(type=param.annotation, default=param.default)
         for name, param in get_function_params(func).items()
     }
+
+
+def default_on_error(def_val=0):
+    def decorator(func):
+        @wraps(func)
+        def inner(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception:
+                return def_val
+
+        return inner
+
+    return decorator

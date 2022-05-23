@@ -18,6 +18,7 @@ from rpasdt.algorithm.taxonomies import (
     SourceDetectionAlgorithm,
     SourceSelectionOptionEnum,
 )
+from rpasdt.common.utils import default_on_error
 
 DIFFUSION_NOT_COVERED = -1
 
@@ -133,26 +134,31 @@ class ClassificationMetrics:
         return [[self.TP, self.FP], [self.FN, self.TN]]
 
     @property
+    @default_on_error()
     def TPR(self):
         """Sensitivity, recall, hit rate, or true positive rate (TPR)."""
         return self.TP / self.P
 
     @property
+    @default_on_error()
     def TNR(self):
         """Specificity, selectivity or true negative rate (TNR)."""
         return self.TN / self.N
 
     @property
+    @default_on_error()
     def PPV(self):
         """Precision or positive predictive value (PPV)."""
         return self.TP / (self.TP + self.FP)
 
     @property
+    @default_on_error()
     def NPV(self):
         """Negative predictive value (NPV)."""
         return self.TN / (self.TN + self.FN)
 
     @property
+    @default_on_error()
     def FNR(self):
         """
         Miss rate or false negative rate (FNR).
@@ -160,26 +166,31 @@ class ClassificationMetrics:
         return self.TN / (self.TN + self.FN)
 
     @property
+    @default_on_error()
     def FPR(self):
         """Fall-out or false positive rate (FPR)."""
         return self.FP / (self.FP + self.TN)
 
     @property
+    @default_on_error()
     def FDR(self):
         """False discovery rate (FDR)."""  # noqa
         return self.FP / (self.FP + self.TP)
 
     @property
+    @default_on_error()
     def FOR(self):
         """False omission rate (FOR)."""  # noqa
         return self.FN / (self.FN + self.TN)
 
     @property
+    @default_on_error()
     def TS(self):
         """False omission rate (FOR)."""  # noqa
         return self.TP / (self.TP + self.FN + self.FP)
 
     @property
+    @default_on_error()
     def ACC(self):
         """
         Accuracy (ACC).
@@ -187,6 +198,7 @@ class ClassificationMetrics:
         return (self.TP + self.TN) / (self.P + self.N)
 
     @property
+    @default_on_error()
     def F1(self):
         """F1 score."""
         return (

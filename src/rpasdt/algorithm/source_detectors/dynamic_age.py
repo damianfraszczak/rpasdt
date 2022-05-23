@@ -13,12 +13,13 @@ class DynamicAgeSourceDetector(SourceDetector):
         graph = self.IG
         A = nx.adjacency_matrix(graph).todense().A
         dynamicAges = {node: 0 for node in graph.nodes}
+        node_position = {node: index for index, node in enumerate(graph.nodes)}
         lamda_max = max(np.linalg.eigvals(A)).real
 
         for node in graph.nodes:
             A_new = copy.deepcopy(A)
-            A_new = np.delete(A_new, node, axis=0)
-            A_new = np.delete(A_new, node, axis=1)
+            A_new = np.delete(A_new, node_position[node], axis=0)
+            A_new = np.delete(A_new, node_position[node], axis=1)
             lamda_new = max(np.linalg.eigvals(A_new)).real
             dynamicAges[node] = (lamda_max - lamda_new) / lamda_max
 

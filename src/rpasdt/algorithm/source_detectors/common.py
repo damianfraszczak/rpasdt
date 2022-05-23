@@ -60,7 +60,8 @@ class SourceDetector(ABC):
         )
 
     def __str__(self) -> str:
-        return " ".join(camel_case_split(self.__class__.__name__))
+        name: str = " ".join(camel_case_split(self.__class__.__name__))
+        return f"{name}-{self.config}"
 
 
 class CommunityBasedSourceDetector(SourceDetector, ABC):
