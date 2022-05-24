@@ -3,28 +3,28 @@ from random import shuffle
 from typing import List
 
 import networkx as nx
-from networkx import Graph
+from networkx import DiGraph, Graph
 
 from rpasdt.algorithm.source_detectors.common import (
     CommunityBasedSourceDetector,
 )
 
 
-def get_root(tree: Graph, node: int):
+def get_root(tree: DiGraph, node: int):
     return tree.in_edges(node)[0][0] if tree.in_edges(node) else None
 
 
-def get_children(tree: Graph, node: int):
-    return [out_edge[1] for out_edge in tree.out_edges(node)]
+def get_children(tree: DiGraph, node: int):
+    return [out_edge[1] for out_edge in tree.out_edges([node])]
 
 
-def get_leaves(tree: Graph):
+def get_leaves(tree: DiGraph):
     return [
         x for x in tree.nodes() if tree.out_degree(x) == 0 and tree.in_degree(x) == 1
     ]
 
 
-def children_processed(tree: Graph, node: int, processed_nodes: List[int]) -> bool:
+def children_processed(tree: DiGraph, node: int, processed_nodes: List[int]) -> bool:
     children = get_children(tree, node)
     return len(children) == 0 or all(child in processed_nodes for child in children)
 
