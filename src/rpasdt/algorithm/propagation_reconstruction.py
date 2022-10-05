@@ -134,12 +134,15 @@ def _remove_invalid_edges_and_nodes(EG, threshold):
 
 def reconstruct_propagation(config: PropagationReconstructionConfig) -> Graph:
     EG = _init_extended_network(config)
-
-    nodes = _get_nodes_to_process(EG, config.threshold)
-    for node in nodes:
-        EG.nodes[node][NODE_INFECTION_PROBABILITY_ATTR] = _compute_node_recovery(
-            EG=EG, node=node, config=config
-        )
+    iter = 1
+    nodes = [1]
+    while iter < config.max_iterations and nodes:
+        iter += 1
+        nodes = _get_nodes_to_process(EG, config.threshold)
+        for node in nodes:
+            EG.nodes[node][NODE_INFECTION_PROBABILITY_ATTR] = _compute_node_recovery(
+                EG=EG, node=node, config=config
+            )
     _compute_edges_weights(EG)
     _remove_invalid_edges_and_nodes(EG, config.threshold)
     return EG
@@ -209,6 +212,73 @@ def main():
     draw_results(G, RealIG, IG, EG, removed, extended)
 
 
+def divided_by_edge_community():
+    # 2 communities
+    return nx.from_edgelist(
+        [
+            (1, 2),
+            (1, 3),
+            (2, 3),
+            (3, 7),
+            (4, 5),
+            (4, 6),
+            (5, 6),
+            (6, 3),
+            (3, 8),
+            (8, 9),
+            (7, 5),
+            (7, 9),
+        ]
+    )
+
+
+def hub_example():
+    network = divided_by_edge_community()
+    color_map = ["grey" for _ in network]
+
+    color_map[0] = "red"
+    color_map[3] = "red"
+    color_map[8] = "red"
+    color_map[5] = "red"
+    color_map[4] = "red"
+
+    color_map[2] = "yellow"
+    nx.draw_networkx(network, node_color=color_map, with_labels=True)  # node lables
+    plt.title("Wizualizacja wykorzystania informacji dot. bycia mostem")
+    plt.tight_layout()
+    legend_elements = [
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            label="Zainfekowany - I",
+            markerfacecolor="red",
+            markersize=15,
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            label="Zrekonstruowany - R",
+            markerfacecolor="yellow",
+            markersize=15,
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            label="Podejrzany - S",
+            markerfacecolor="grey",
+            markersize=15,
+        ),
+    ]
+    plt.legend(loc="best", handles=legend_elements)
+    plt.show()
+
+
 def star_graph_example():
     network = star_graph(10)
     color_map = ["red" if node == 0 else "grey" for node in network]
@@ -253,4 +323,4 @@ def star_graph_example():
 
 
 if __name__ == "__main__":
-    star_graph_example()
+    main()
