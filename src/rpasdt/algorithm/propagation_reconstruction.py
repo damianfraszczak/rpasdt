@@ -7,7 +7,8 @@ from typing import List, Set
 import matplotlib
 import matplotlib.pyplot as plt
 import networkx as nx
-from networkx import Graph
+from matplotlib.lines import Line2D
+from networkx import Graph, star_graph
 
 from rpasdt.algorithm.models import PropagationReconstructionConfig
 
@@ -208,5 +209,48 @@ def main():
     draw_results(G, RealIG, IG, EG, removed, extended)
 
 
+def star_graph_example():
+    network = star_graph(10)
+    color_map = ["red" if node == 0 else "grey" for node in network]
+
+    color_map[1] = "yellow"
+    color_map[2] = "yellow"
+    color_map[3] = "yellow"
+    nx.draw_networkx(network, node_color=color_map, with_labels=True)  # node lables
+    plt.title("Wizualizacja wykorzystania informacji dot. bycia mostem")
+    plt.tight_layout()
+    legend_elements = [
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            label="Zainfekowany - I",
+            markerfacecolor="red",
+            markersize=15,
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            label="Zrekonstruowany - R",
+            markerfacecolor="yellow",
+            markersize=15,
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            label="Podejrzany - S",
+            markerfacecolor="grey",
+            markersize=15,
+        ),
+    ]
+    plt.legend(loc="best", handles=legend_elements)
+    plt.show()
+
+
 if __name__ == "__main__":
-    main()
+    star_graph_example()

@@ -1,5 +1,6 @@
 """Models used to describe algorithms."""
 import statistics
+import sys
 from dataclasses import dataclass, field
 from functools import cached_property
 from math import floor
@@ -368,6 +369,7 @@ class SourceDetectionSimulationConfig(DiffusionSimulationConfig):
     source_detectors: Dict[str, SourceDetectorSimulationConfig] = field(
         default_factory=dict
     )
+    timeout: int = sys.maxsize
 
 
 @dataclass

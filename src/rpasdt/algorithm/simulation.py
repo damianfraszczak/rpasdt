@@ -4,6 +4,7 @@ from functools import cached_property
 from typing import Dict, List
 
 import networkx as nx
+import stopit
 from ndlib.models import DiffusionModel
 
 from rpasdt.algorithm.diffusion import (
@@ -22,6 +23,7 @@ from rpasdt.algorithm.source_detectors.source_detection import (
 )
 from rpasdt.algorithm.source_selection import select_sources
 from rpasdt.algorithm.taxonomies import NodeStatusEnum
+from rpasdt.common.exceptions import log_error
 
 
 @dataclass
@@ -95,9 +97,15 @@ def perform_source_detection_simulation(
                 simulation.diffusion_model, NodeStatusEnum.INFECTED
             )
         )
-        # append source nodes even if they are recovered
-        infected_nodes.update(simulation.source_nodes)
-        IG = simulation.graph.subgraph(infected_nodes)
+
+        infected_nodes.update(
+            set(
+                get_nodes_by_diffusion_status(
+                    simulation.diffusion_model, NodeStatusEnum.RECOVERED
+                )
+            )
+        )
+        IG = nx.Graph(simulation.graph.subgraph(infected_nodes))
         number_of_sources = len(simulation.source_nodes)
         for (
             name,
@@ -110,8 +118,16 @@ def perform_source_detection_simulation(
                 config=source_detector_config.config,
                 number_of_sources=number_of_sources,
             )
-            sd_evaluation = source_detector.evaluate_sources(simulation.source_nodes)
-            result.add_result(name, source_detector_config, sd_evaluation)
+            print(source_detector)
+            try:
+                with stopit.ThreadingTimeout(source_detection_config.timeout):
+                    sd_evaluation = source_detector.evaluate_sources(
+                        simulation.source_nodes
+                    )
+                    result.add_result(name, source_detector_config, sd_evaluation)
+            except Exception as e:
+                log_error(exc=e, show_error_dialog=False)
+
     return result
 
 
