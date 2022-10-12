@@ -11,8 +11,8 @@
 #
 # coverages = [40, 60, 80]
 # removal_ratio = [5, 10, 15, 20]
-
-
+#
+#
 # def evaluation():
 #     for graph_function in graphs:
 #         graph = graph_function()

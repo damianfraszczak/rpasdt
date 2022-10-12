@@ -1,6 +1,7 @@
 from typing import Set
 
 import networkx as nx
+import powerlaw
 from networkx import Graph
 
 
@@ -47,3 +48,15 @@ def nmi(partition1, partition2):
     from sklearn.metrics import normalized_mutual_info_score
 
     return normalized_mutual_info_score(first_partition_c, second_partition_c)
+
+
+def get_power_law(G):
+    deg_dist = sorted([deg for node, deg in G.degree()], reverse=True)
+    fit = powerlaw.Fit(deg_dist, discrete=True)
+    alpha = fit.power_law.alpha
+    xmin = fit.power_law.xmin
+    return alpha, xmin
+
+
+graph = nx.karate_club_graph()
+print(get_power_law(graph))
