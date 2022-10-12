@@ -45,6 +45,16 @@ def soc_anybeat():
     return nx.read_edgelist(path)
 
 
+def foursqaure():
+    path = os.path.join(get_project_root(), "data", "community", "soc-FourSquare.edges")
+    return nx.read_edgelist(path)
+
+
+def buzznet():
+    path = os.path.join(get_project_root(), "data", "community", "soc-buzznet.edges")
+    return nx.read_edgelist(path)
+
+
 def soc_wiki_elec():
     # return nx.from_scipy_sparse_matrix(sp.io.mmread(fh))
     path = os.path.join(get_project_root(), "data", "community", "soc-anybeat.edges")

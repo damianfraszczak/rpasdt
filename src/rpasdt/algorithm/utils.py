@@ -56,7 +56,3 @@ def get_power_law(G):
     alpha = fit.power_law.alpha
     xmin = fit.power_law.xmin
     return alpha, xmin
-
-
-graph = nx.karate_club_graph()
-print(get_power_law(graph))

@@ -287,6 +287,14 @@ class NetworkAnalysisOptionEnum(StringChoiceEnum):
         "summary",
         "The summary includes the number of nodes and edges, or neighbours for a single node.",
     )
+    AVERAGE_SHORTEST_PATH = (
+        "average_shortest_path",
+        "The average shortest path in a graph.",
+    )
+    ASSORTAVITY = (
+        "assortativity",
+        "Degree assortativity of graph..",
+    )
 
 
 class SourceSelectionOptionEnum(StringChoiceEnum):
