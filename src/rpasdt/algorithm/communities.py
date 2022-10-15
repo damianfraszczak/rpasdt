@@ -119,10 +119,10 @@ def merge_communities_based_on_similarity(
     def sm(communities, iteration=1):
         return find_small_communities(
             communities=communities,
-            remove_outliers=True,
-            alg="median",
+            # remove_outliers=True,
+            # alg="median",
             iteration=iteration,
-            hard=False,
+            # hard=False,
         )
 
     current_iteration = 1
