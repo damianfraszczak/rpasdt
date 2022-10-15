@@ -112,7 +112,6 @@ def merge_communities_based_on_similarity(
     communities,
     node_similarity_function,
     similarity_threshold,
-    resolution=0.5,
 ):
     def _sorted_communities(c):
         return sorted(c.items(), key=lambda k: len(k[1]), reverse=True)
@@ -120,7 +119,6 @@ def merge_communities_based_on_similarity(
     def sm(communities, iteration=1):
         return find_small_communities(
             communities=communities,
-            resolution=resolution,
             remove_outliers=True,
             alg="median",
             iteration=iteration,
@@ -220,18 +218,13 @@ def merge_communities_based_on_louvain(G, communities, **kwargs):
     return find_communities(graph=M, type=CommunityOptionEnum.LOUVAIN)
 
 
-def merge_communities_based_on_modularity(
-    G, communities, resolution, modularity_threshold, max_iterations
-):
+def merge_communities_based_on_modularity(G, communities, max_iterations):
     communities = {**communities}
 
     def sm(communities, iteration):
         return find_small_communities(
             communities=communities,
-            resolution=resolution,
             iteration=iteration,
-            remove_outliers=True,
-            hard=True,
         )
 
     current_iteration = 1
@@ -454,11 +447,6 @@ def df_node_similarity(
 
     if not similarity_threshold:
         similarity_threshold = average_degree
-
-    if not resolution:
-        resolution = 1 - similarity_threshold
-    resolution = 1 - nx.density(G)
-    print(resolution)
     if not node_similarity_function:
         node_similarity_function = jaccard_node_similarity
 
@@ -473,7 +461,6 @@ def df_node_similarity(
         communities=communities,
         node_similarity_function=node_similarity_function,
         similarity_threshold=similarity_threshold,
-        resolution=resolution,
         # max_iterations=max_iterations
     )
     # print("SIM DONE")
@@ -481,8 +468,6 @@ def df_node_similarity(
     communities = merge_communities_based_on_modularity(
         G=G,
         communities=communities,
-        modularity_threshold=similarity_threshold,
-        resolution=resolution,
         max_iterations=max_iterations,
     )
 

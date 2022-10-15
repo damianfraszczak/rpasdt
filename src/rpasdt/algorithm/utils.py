@@ -68,7 +68,6 @@ def get_community_weighted_avg_size(communities):
 
 def find_small_communities(
     communities,
-    resolution=0.5,
     alg="median",
     remove_outliers=True,
     iteration=1,
