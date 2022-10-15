@@ -1,8 +1,9 @@
 """Community detection methods."""
 import math
+import statistics
 import sys
 from collections import defaultdict
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Union
 
 import networkx as nx
 from cdlib import algorithms
@@ -10,17 +11,14 @@ from networkx import Graph
 from scipy.stats import tmean
 
 from rpasdt.algorithm.similarity import (
-    academic_adar_node_similarity,
     community_similarity,
     jaccard_node_similarity,
-    resource_allocation_index_node_similarity, sorensen_node_similarity,
 )
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.algorithm.utils import (
     delete_communities,
     find_small_communities,
-    get_communities_size,
-    modularity, find_small_communities_modularity,
+    modularity,
 )
 from rpasdt.common.utils import (
     get_enum,
@@ -124,7 +122,7 @@ def merge_communities_based_on_similarity(
             communities=communities,
             resolution=resolution,
             remove_outliers=True,
-            alg="tmean",
+            alg="median",
             iteration=iteration,
             hard=False,
         )
@@ -132,7 +130,6 @@ def merge_communities_based_on_similarity(
     current_iteration = 1
     communities = {**communities}
     small_communities = sm(communities, current_iteration)
-
     changed = True
     while small_communities and changed:
         # print(
@@ -144,7 +141,7 @@ def merge_communities_based_on_similarity(
         #     f"{current_iteration}-{len(small_communities)}-{get_communities_size(small_communities)}"
         # )
         for small_c_number, small_c_nodes in list(small_communities.items()):
-            best_community, best_community_small, best_rank = None, None, 0
+            # best_community, best_community_small, best_rank = None, None, 0
 
             similarities = defaultdict(list)
             for c_number in get_neighbour_communities(
@@ -320,9 +317,9 @@ def initial_communities_improved(
         for node, centrality in sorted_by_degree.items()
         if centrality > average_degree
     ]
-    biggest_ratio = max(2, math.ceil(len(biggest) / 10))
+    # biggest_ratio = max(2, math.ceil(len(biggest) / 10))
     # biggest = biggest[:biggest_ratio]
-    print(f"NEIGBHOURS {len(biggest)}")
+
     neighbours_of_biggest = defaultdict(set)
     for node in biggest:
         # tworze spolecznosci wokol najwiekszych plus doklejam do nich najmniejszego
@@ -332,7 +329,7 @@ def initial_communities_improved(
                 assign_community(G, communities, small_node, community)
             else:
                 neighbours_of_biggest[small_node].add(node)
-    print(f"BIG NEIG {len(neighbours_of_biggest)}")
+
     # neighbours_of_biggest = {
     #     key: value
     #     for key, value in neighbours_of_biggest.items()
@@ -451,31 +448,36 @@ def df_node_similarity(
         centrality for node, centrality in normalized_degree.items()
     ) / len(normalized_degree)
 
+    average_degree = statistics.median(
+        [centrality for node, centrality in normalized_degree.items()]
+    )
+
     if not similarity_threshold:
         similarity_threshold = average_degree
 
     if not resolution:
         resolution = 1 - similarity_threshold
-
+    resolution = 1 - nx.density(G)
+    print(resolution)
     if not node_similarity_function:
         node_similarity_function = jaccard_node_similarity
 
     communities = initial_communities(
         g_original,
         similarity_threshold=similarity_threshold,
-        node_similarity_function=jaccard_node_similarity,
+        node_similarity_function=node_similarity_function,
     )
 
     communities = merge_communities_based_on_similarity(
         G=G,
         communities=communities,
-        node_similarity_function=sorensen_node_similarity,
+        node_similarity_function=node_similarity_function,
         similarity_threshold=similarity_threshold,
         resolution=resolution,
         # max_iterations=max_iterations
     )
     # print("SIM DONE")
-    # # poprawic by te wybrane duze klastry zostaly i podpinal male do nich ciagel
+    # poprawic by te wybrane duze klastry zostaly i podpinal male do nich ciagel
     communities = merge_communities_based_on_modularity(
         G=G,
         communities=communities,

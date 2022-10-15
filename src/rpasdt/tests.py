@@ -3,21 +3,17 @@
 import os
 
 import matplotlib
+import networkx as nx
 from matplotlib import cm
 
 from rpasdt.algorithm.communities import find_communities
 from rpasdt.algorithm.community_draw import community_layout
-from rpasdt.algorithm.similarity import (
-    academic_adar_node_similarity,
-    jaccard_node_similarity,
-    sorensen_node_similarity,
-)
+from rpasdt.algorithm.similarity import jaccard_node_similarity
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.common.utils import get_project_root, method_time
 from rpasdt.network.networkx_utils import get_grouped_nodes
 
 matplotlib.use("Qt5Agg")
-import networkx as nx
 
 
 def community_similarity_(G, c1, c2):
@@ -165,20 +161,20 @@ def draw_communities(G, partition):
 
 
 GRAPHS = {
-    "divided": divided_by_edge_community,
-    "karate": karate_graph,
-    "windmil": windmil,
-    "football": footbal,
-    "dolphin": dolphin,
+    # "divided": divided_by_edge_community,
+    # "karate": karate_graph,
+    # "windmil": windmil,
+    # "football": footbal,
+    # "dolphin": dolphin,
     # "strogats": watts_strogatz_graph,
     # "barabasi": barabasi,
-    # # "cg": cg,
-    # "radnom_partition": random_partition,
+    # "cg": cg,
+    "radnom_partition": random_partition,
     # "facebook": facebook
 }
 similarity_functions = [
-    # jaccard_node_similarity,
-    sorensen_node_similarity,
+    jaccard_node_similarity,
+    # sorensen_node_similarity,
     # academic_adar_node_similarity,
     # hub_promoted_index_node_similarity,
     # hub_depressed_index_node_similarity,
