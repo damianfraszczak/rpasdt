@@ -6,10 +6,10 @@ import matplotlib
 import networkx as nx
 from matplotlib import cm
 
-from rpasdt.algorithm.communities import find_communities
+from rpasdt.algorithm.communities import df_node_similarity, find_communities
 from rpasdt.algorithm.similarity import jaccard_node_similarity
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
-from rpasdt.common.utils import get_project_root, method_time
+from rpasdt.common.utils import get_object_value, get_project_root, method_time
 from rpasdt.network.networkx_utils import get_grouped_nodes
 
 matplotlib.use("Qt5Agg")
@@ -160,16 +160,16 @@ def draw_communities(G, partition):
 
 
 GRAPHS = {
-    # "divided": divided_by_edge_community,
-    # "karate": karate_graph,
-    # "windmil": windmil,
-    # "football": footbal,
+    "divided": divided_by_edge_community,
+    "karate": karate_graph,
+    "windmil": windmil,
+    "football": footbal,
     "dolphin": dolphin,
     # # "strogats": watts_strogatz_graph,
     # # "barabasi": barabasi,
     # "cg": cg,
     "radnom_partition": random_partition,
-    "facebook": facebook,
+    # "facebook": facebook,
 }
 similarity_functions = [
     jaccard_node_similarity,
@@ -183,7 +183,13 @@ similarity_functions = [
 for G_name in GRAPHS:
     G = GRAPHS[G_name]()
     for sim_f in similarity_functions:
-        comm = df_similarity(G, node_similarity_function=sim_f)
+        # comm = df_similarity(G, node_similarity_function=sim_f)
+        comm = df_node_similarity(G, node_similarity_function=sim_f)
+        # resultat jak z METODY
+        comm = {
+            index: community
+            for index, community in enumerate(get_object_value(comm, "communities"))
+        }
         # comm = louvain(G, resolution=2)
         print(
             f"{G_name}-{len(comm.keys())}-{[len(nodes) for nodes in comm.values()]}: {comm}"

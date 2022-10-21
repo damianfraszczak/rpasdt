@@ -32,6 +32,8 @@ from rpasdt.network.networkx_utils import get_grouped_nodes
 thismodule = sys.modules[__name__]
 NUMBER_OF_COMMUNITIES_KWARG_NAMES = ["k", "number_communities", "level"]
 
+DEBUG = False
+
 
 def _update_communities_kwarg(
     type: CommunityOptionEnum, kwargs: Dict, number_communities: int
@@ -67,40 +69,6 @@ def find_communities(
 
 
 # chwilowo zawsze sorensen
-def merge_communities_similarity():
-    pass
-
-
-def merge_communities_modularity():
-    pass
-
-
-def merge_communities_df(
-    G: Graph,
-    communities: Dict,
-    community_eval_threshold: float = 0.5,
-    resolution: float = 0.5,
-    max_iterations: [int] = math.inf,
-):
-    communities, small_communities = merge_communities(
-        G=G,
-        communities=communities,
-        community_eval_function=merge_communities_similarity,
-        community_eval_threshold=community_eval_threshold,
-        resolution=resolution,
-        max_iterations=max_iterations,
-    )
-    if small_communities:
-        communities, small_communities = merge_communities(
-            G=G,
-            communities=communities,
-            community_eval_function=merge_communities_modularity,
-            community_eval_threshold=community_eval_threshold,
-            resolution=resolution,
-            max_iterations=max_iterations,
-        )
-
-    return communities
 
 
 def get_neighbour_communities(G, communities, community):
@@ -121,10 +89,7 @@ def merge_communities_based_on_similarity(
     def sm(communities, iteration=1):
         return find_small_communities(
             communities=communities,
-            # remove_outliers=True,
-            # alg="median",
             iteration=iteration,
-            # hard=False,
         )
 
     current_iteration = 1
@@ -238,10 +203,7 @@ def merge_communities_based_on_modularity(G, communities, max_iterations):
     def sm(communities, iteration=1):
         return find_small_communities(
             communities=communities,
-            # remove_outliers=True,
-            # alg="median",
             iteration=iteration,
-            # hard=False,
         )
 
     current_iteration = 1
@@ -251,19 +213,18 @@ def merge_communities_based_on_modularity(G, communities, max_iterations):
     # print([len(n) for c, n in small_communities.items()])
     # powiazac to z rozmiarem obecnej spolecznosci
     modularity_threshold = 0.001
-
-    print(get_communities_size(communities))
-    print(community_avg_size)
-    print(get_communities_size(small_communities))
+    if DEBUG:
+        print(get_communities_size(communities))
+        print(community_avg_size)
+        print(get_communities_size(small_communities))
     while small_communities and changed and current_iteration <= max_iterations:
         changed = False
         current_iteration += 1
         # print(small_communities)
         for small_c_number, small_c_nodes in list(small_communities.items()):
-            best_community, best_community_small, best_rank, best_weighted = (
+            best_community, best_community_small, best_rank = (
                 None,
                 None,
-                -1,
                 -1,
             )
             current_m = modularity(partition=get_grouped_nodes(communities), graph=G)
@@ -279,22 +240,23 @@ def merge_communities_based_on_modularity(G, communities, max_iterations):
                 cc_modularity = modularity(partition=grouped_nodes, graph=G)
                 difference = cc_modularity - current_m
                 dynamic_threshold = modularity_threshold * max_size / len(small_c_nodes)
-                dynamic_threshold = modularity_threshold
+                # dynamic_threshold = modularity_threshold
 
-                weighted = cc_modularity * max_size / len(communities[c_number])
-                print(
-                    f"{len(small_c_nodes)}-{len(communities[c_number])}-{cc_modularity}-{difference}-{max_size}-{best_rank}"
-                )
+                # weighted = cc_modularity * max_size / len(communities[c_number])
+                if DEBUG:
+                    print(
+                        f"{len(small_c_nodes)}-{len(communities[c_number])}-{cc_modularity}-{difference}-{max_size}-{best_rank}"
+                    )
                 if (
                     cc_modularity > best_rank
                     and cc_modularity > 0
-                    and weighted > best_weighted
+                    # and weighted > best_weighted
                     and (difference >= 0 or abs(difference) <= dynamic_threshold)
                 ):
                     # if cc_modularity > best_rank and (difference > 0):  # or abs(difference) <= dynamic_threshold
 
                     best_rank = cc_modularity
-                    best_weighted = weighted
+                    # best_weighted = weighted
                     best_community = c_number
                     best_community_small = small_c_number
             if best_community:
@@ -471,7 +433,6 @@ def df_node_similarity(
     g_original: Graph,
     node_similarity_function: Optional[Callable] = None,
     similarity_threshold: Optional[float] = None,
-    resolution: Optional[float] = None,
     max_iterations: Optional[int] = math.inf,
     **kwargs,
 ):
