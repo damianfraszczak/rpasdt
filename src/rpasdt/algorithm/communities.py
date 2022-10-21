@@ -212,7 +212,7 @@ def merge_communities_based_on_modularity(G, communities, max_iterations):
     small_communities = sm(communities, iteration=current_iteration)
     # print([len(n) for c, n in small_communities.items()])
     # powiazac to z rozmiarem obecnej spolecznosci
-    modularity_threshold = 0.005
+    modularity_threshold = 0.001
     if DEBUG:
         print(get_communities_size(communities))
         print(community_avg_size)
@@ -222,9 +222,10 @@ def merge_communities_based_on_modularity(G, communities, max_iterations):
         current_iteration += 1
         # print(small_communities)
         for small_c_number, small_c_nodes in list(small_communities.items()):
-            best_community, best_community_small, best_rank = (
+            best_community, best_community_small, best_rank, best_weighted = (
                 None,
                 None,
+                -1,
                 -1,
             )
             current_m = modularity(partition=get_grouped_nodes(communities), graph=G)
@@ -237,26 +238,34 @@ def merge_communities_based_on_modularity(G, communities, max_iterations):
                 for node in small_c_nodes:
                     grouped_nodes[node] = c_number
 
+                current_community_size = len(
+                    [node for node in grouped_nodes if grouped_nodes[node] == c_number]
+                )
+
                 cc_modularity = modularity(partition=grouped_nodes, graph=G)
+
                 difference = cc_modularity - current_m
-                dynamic_threshold = modularity_threshold * max_size / len(small_c_nodes)
+                # dynamic_threshold = modularity_threshold * max_size / len(small_c_nodes)
                 dynamic_threshold = modularity_threshold
 
-                # weighted = cc_modularity * max_size / len(communities[c_number])
+                weighted = cc_modularity * max_size / current_community_size
                 if DEBUG:
                     print(
-                        f"{len(small_c_nodes)}-{len(communities[c_number])}-{cc_modularity}-{difference}-{max_size}-{best_rank}"
+                        f"{len(current_community_size)}-{len(communities[c_number])}-{cc_modularity}-{difference}-{max_size}-{best_rank}"
                     )
                 if (
-                    cc_modularity > best_rank
-                    and cc_modularity > 0
-                    # and weighted > best_weighted
-                    and (difference >= 0 or abs(difference) <= dynamic_threshold)
+                    # cc_modularity > best_rank # and
+                    weighted > best_weighted
+                    and (
+                        difference >= 0
+                        or abs(difference / max_size * current_community_size)
+                        <= dynamic_threshold
+                    )
                 ):
                     # if cc_modularity > best_rank and (difference > 0):  # or abs(difference) <= dynamic_threshold
 
                     best_rank = cc_modularity
-                    # best_weighted = weighted
+                    best_weighted = weighted
                     best_community = c_number
                     best_community_small = small_c_number
             if best_community:
@@ -469,7 +478,7 @@ def df_node_similarity(
     communities = merge_communities_based_on_modularity(
         G=G,
         communities=communities,
-        max_iterations=1,
+        max_iterations=max_iterations,
     )
 
     return {"communities": communities.values()}

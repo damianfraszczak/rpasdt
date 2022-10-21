@@ -195,7 +195,7 @@ for G_name in GRAPHS:
             f"{G_name}-{len(comm.keys())}-{[len(nodes) for nodes in comm.values()]}: {comm}"
         )
         # print(comm)
-        # draw_communities(G, comm)
+        draw_communities(G, comm)
 
 # L = louvain(G)
 # print(len(L))
