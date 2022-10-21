@@ -212,7 +212,7 @@ def merge_communities_based_on_modularity(G, communities, max_iterations):
     small_communities = sm(communities, iteration=current_iteration)
     # print([len(n) for c, n in small_communities.items()])
     # powiazac to z rozmiarem obecnej spolecznosci
-    modularity_threshold = 0.001
+    modularity_threshold = 0.005
     if DEBUG:
         print(get_communities_size(communities))
         print(community_avg_size)
@@ -240,7 +240,7 @@ def merge_communities_based_on_modularity(G, communities, max_iterations):
                 cc_modularity = modularity(partition=grouped_nodes, graph=G)
                 difference = cc_modularity - current_m
                 dynamic_threshold = modularity_threshold * max_size / len(small_c_nodes)
-                # dynamic_threshold = modularity_threshold
+                dynamic_threshold = modularity_threshold
 
                 # weighted = cc_modularity * max_size / len(communities[c_number])
                 if DEBUG:
@@ -440,14 +440,11 @@ def df_node_similarity(
 
     nx.set_node_attributes(G, None, "community")
     normalized_degree = nx.degree_centrality(G)
+    centralities = [centrality for node, centrality in normalized_degree.items()]
+    # average_degree = sum(centralities) / len(centralities)
 
-    average_degree = sum(
-        centrality for node, centrality in normalized_degree.items()
-    ) / len(normalized_degree)
-
-    average_degree = statistics.median(
-        [centrality for node, centrality in normalized_degree.items()]
-    )
+    average_degree = statistics.median(centralities)
+    # average_degree = statistics.mean(remove_min_max(centralities))
 
     if not similarity_threshold:
         similarity_threshold = average_degree
@@ -472,7 +469,7 @@ def df_node_similarity(
     communities = merge_communities_based_on_modularity(
         G=G,
         communities=communities,
-        max_iterations=max_iterations,
+        max_iterations=1,
     )
 
     return {"communities": communities.values()}

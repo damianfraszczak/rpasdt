@@ -169,7 +169,7 @@ GRAPHS = {
     # # "barabasi": barabasi,
     # "cg": cg,
     "radnom_partition": random_partition,
-    # "facebook": facebook,
+    "facebook": facebook,
 }
 similarity_functions = [
     jaccard_node_similarity,
