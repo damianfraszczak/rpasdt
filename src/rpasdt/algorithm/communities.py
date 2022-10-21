@@ -18,6 +18,8 @@ from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.algorithm.utils import (
     delete_communities,
     find_small_communities,
+    get_communities_size,
+    get_community_avg_size,
     modularity,
 )
 from rpasdt.common.utils import (
@@ -220,11 +222,26 @@ def merge_communities_based_on_louvain(G, communities, **kwargs):
 
 def merge_communities_based_on_modularity(G, communities, max_iterations):
     communities = {**communities}
+    community_avg_size = get_community_avg_size(
+        communities,
+    )
+    community_avg_size = math.floor(community_avg_size)
+    community_avg_size = max(community_avg_size, 2)
 
-    def sm(communities, iteration):
+    # def sm(communities, iteration):
+    #     return filter_communities_by_size(
+    #         communities=communities,
+    #         size=community_avg_size,
+    #         hard=False,
+    #     )
+
+    def sm(communities, iteration=1):
         return find_small_communities(
             communities=communities,
+            # remove_outliers=True,
+            # alg="median",
             iteration=iteration,
+            # hard=False,
         )
 
     current_iteration = 1
@@ -232,16 +249,27 @@ def merge_communities_based_on_modularity(G, communities, max_iterations):
     # print([len(n) for c, n in communities.items()])
     small_communities = sm(communities, iteration=current_iteration)
     # print([len(n) for c, n in small_communities.items()])
+    # powiazac to z rozmiarem obecnej spolecznosci
+    modularity_threshold = 0.001
 
+    print(get_communities_size(communities))
+    print(community_avg_size)
+    print(get_communities_size(small_communities))
     while small_communities and changed and current_iteration <= max_iterations:
         changed = False
         current_iteration += 1
         # print(small_communities)
         for small_c_number, small_c_nodes in list(small_communities.items()):
-            best_community, best_community_small, best_rank = None, None, -1
-            for c_number in get_neighbour_communities(
-                G=G, communities=communities, community=small_c_nodes
-            ):
+            best_community, best_community_small, best_rank, best_weighted = (
+                None,
+                None,
+                -1,
+                -1,
+            )
+            current_m = modularity(partition=get_grouped_nodes(communities), graph=G)
+            count_nodes = get_communities_size(communities)
+            max_size = max(count_nodes)
+            for c_number in communities.keys():
                 if c_number == small_c_number:
                     continue
                 grouped_nodes = get_grouped_nodes(communities)
@@ -249,9 +277,24 @@ def merge_communities_based_on_modularity(G, communities, max_iterations):
                     grouped_nodes[node] = c_number
 
                 cc_modularity = modularity(partition=grouped_nodes, graph=G)
+                difference = cc_modularity - current_m
+                dynamic_threshold = modularity_threshold * max_size / len(small_c_nodes)
+                dynamic_threshold = modularity_threshold
 
-                if cc_modularity > best_rank and cc_modularity > 0:
+                weighted = cc_modularity * max_size / len(communities[c_number])
+                print(
+                    f"{len(small_c_nodes)}-{len(communities[c_number])}-{cc_modularity}-{difference}-{max_size}-{best_rank}"
+                )
+                if (
+                    cc_modularity > best_rank
+                    and cc_modularity > 0
+                    and weighted > best_weighted
+                    and (difference >= 0 or abs(difference) <= dynamic_threshold)
+                ):
+                    # if cc_modularity > best_rank and (difference > 0):  # or abs(difference) <= dynamic_threshold
+
                     best_rank = cc_modularity
+                    best_weighted = weighted
                     best_community = c_number
                     best_community_small = small_c_number
             if best_community:

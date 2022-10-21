@@ -40,7 +40,7 @@ def get_communities_size(communities):
     return [len(nodes) for community, nodes in communities.items()]
 
 
-def get_community_avg_size(communities, alg="tmean", remove_outliers=True):
+def get_community_avg_size(communities, alg="mean", remove_outliers=True):
     count_nodes = get_communities_size(communities)
     if remove_outliers:
         count_nodes = remove_min_max(count_nodes)
@@ -67,6 +67,16 @@ def get_community_weighted_avg_size(communities):
     )
 
 
+def filter_communities_by_size(communities, size, hard=True):
+    small_c = dict(
+        filter(
+            lambda elem: len(elem[1]) < size if hard else len(elem[1]) <= size,
+            communities.items(),
+        )
+    )
+    return small_c
+
+
 def find_small_communities(
     communities,
     alg="mean",
@@ -82,15 +92,9 @@ def find_small_communities(
     community_avg_size = math.floor(community_avg_size)
     community_avg_size = max(community_avg_size, 2)
 
-    small_c = dict(
-        filter(
-            lambda elem: len(elem[1]) < community_avg_size
-            if hard
-            else len(elem[1]) <= community_avg_size,
-            communities.items(),
-        )
+    return filter_communities_by_size(
+        communities=communities, size=community_avg_size, hard=hard
     )
-    return small_c
 
 
 def delete_communities(communities, communities_to_delete):

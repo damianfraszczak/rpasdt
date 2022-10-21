@@ -7,7 +7,6 @@ import networkx as nx
 from matplotlib import cm
 
 from rpasdt.algorithm.communities import find_communities
-from rpasdt.algorithm.community_draw import community_layout
 from rpasdt.algorithm.similarity import jaccard_node_similarity
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.common.utils import get_project_root, method_time
@@ -134,7 +133,7 @@ def draw_communities(G, partition):
     if len(G) > 500:
         pos = nx.spring_layout(G, iterations=15, seed=1721)
     else:
-        pos = community_layout(G, grouped_nodes)
+        # pos = community_layout(G, grouped_nodes)
         pos = nx.kamada_kawai_layout(G)
 
     # fig, ax = plt.subplots(figsize=(15, 9))
@@ -161,16 +160,16 @@ def draw_communities(G, partition):
 
 
 GRAPHS = {
-    "divided": divided_by_edge_community,
-    "karate": karate_graph,
-    "windmil": windmil,
-    "football": footbal,
+    # "divided": divided_by_edge_community,
+    # "karate": karate_graph,
+    # "windmil": windmil,
+    # "football": footbal,
     "dolphin": dolphin,
-    # "strogats": watts_strogatz_graph,
-    # "barabasi": barabasi,
+    # # "strogats": watts_strogatz_graph,
+    # # "barabasi": barabasi,
     # "cg": cg,
     "radnom_partition": random_partition,
-    # "facebook": facebook
+    "facebook": facebook,
 }
 similarity_functions = [
     jaccard_node_similarity,
@@ -190,7 +189,7 @@ for G_name in GRAPHS:
             f"{G_name}-{len(comm.keys())}-{[len(nodes) for nodes in comm.values()]}: {comm}"
         )
         # print(comm)
-        draw_communities(G, comm)
+        # draw_communities(G, comm)
 
 # L = louvain(G)
 # print(len(L))
