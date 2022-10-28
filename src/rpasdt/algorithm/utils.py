@@ -40,11 +40,14 @@ def get_communities_size(communities):
     return [len(nodes) for community, nodes in communities.items()]
 
 
-def get_community_avg_size(communities, alg="mean", remove_outliers=True):
+def get_community_avg_size(communities, alg="median", remove_outliers=False):
     count_nodes = get_communities_size(communities)
     if remove_outliers:
         count_nodes = remove_min_max(count_nodes)
-    return getattr(statistics, alg)(count_nodes)
+    community_avg_size = getattr(statistics, alg)(count_nodes)
+    community_avg_size = math.ceil(community_avg_size)
+    community_avg_size = max(community_avg_size, 2)
+    return community_avg_size
 
 
 def get_community_weighted_avg_size(communities):
@@ -89,8 +92,6 @@ def find_small_communities(
     community_avg_size = get_community_avg_size(
         communities, alg=alg, remove_outliers=remove_outliers
     )
-    community_avg_size = math.floor(community_avg_size)
-    community_avg_size = max(community_avg_size, 2)
 
     return filter_communities_by_size(
         communities=communities, size=community_avg_size, hard=hard

@@ -82,21 +82,25 @@ def merge_communities_based_on_similarity(
     communities,
     node_similarity_function,
     similarity_threshold,
+    max_iterations=9999,
+    sm=None,
 ):
     def _sorted_communities(c):
         return sorted(c.items(), key=lambda k: len(k[1]), reverse=True)
 
-    def sm(communities, iteration=1):
+    def default_sm(communities, iteration=1):
         return find_small_communities(
             communities=communities,
             iteration=iteration,
         )
 
+    sm = sm or default_sm
+
     current_iteration = 1
     communities = {**communities}
     small_communities = sm(communities, current_iteration)
     changed = True
-    while small_communities and changed:
+    while small_communities and changed and current_iteration <= max_iterations:
         # print(
         #     f"C - {[len(com) for c, com in communities.items()]} - {communities}")
         # print(f"SM - {small_communities}")
@@ -185,27 +189,22 @@ def merge_communities_based_on_louvain(G, communities, **kwargs):
     return find_communities(graph=M, type=CommunityOptionEnum.LOUVAIN)
 
 
-def merge_communities_based_on_modularity(G, communities, max_iterations):
+def merge_communities_based_on_modularity(G, communities, max_iterations, sm=None):
     communities = {**communities}
     community_avg_size = get_community_avg_size(
         communities,
     )
-    community_avg_size = math.floor(community_avg_size)
-    community_avg_size = max(community_avg_size, 2)
 
-    # def sm(communities, iteration):
-    #     return filter_communities_by_size(
-    #         communities=communities,
-    #         size=community_avg_size,
-    #         hard=False,
-    #     )
-
-    def sm(communities, iteration=1):
+    def default_sm(communities, iteration=1):
         return find_small_communities(
             communities=communities,
             iteration=iteration,
+            # hard=False,
+            # alg="median",
+            # remove_outliers=True,
         )
 
+    sm = sm or default_sm
     current_iteration = 1
     changed = True
     # print([len(n) for c, n in communities.items()])
@@ -217,22 +216,27 @@ def merge_communities_based_on_modularity(G, communities, max_iterations):
         print(get_communities_size(communities))
         print(community_avg_size)
         print(get_communities_size(small_communities))
+    print(get_communities_size(small_communities))
     while small_communities and changed and current_iteration <= max_iterations:
         changed = False
         current_iteration += 1
         # print(small_communities)
         for small_c_number, small_c_nodes in list(small_communities.items()):
-            best_community, best_community_small, best_rank, best_weighted = (
+            best_community, best_community_small, best_rank(
                 None,
                 None,
-                -1,
                 -1,
             )
             current_m = modularity(partition=get_grouped_nodes(communities), graph=G)
             count_nodes = get_communities_size(communities)
             max_size = max(count_nodes)
-            for c_number in communities.keys():
+            for c_number in get_neighbour_communities(
+                G=G, communities=communities, community=small_c_nodes
+            ):
                 if c_number == small_c_number:
+                    continue
+                # ignorujemy male
+                if c_number in small_communities.values():
                     continue
                 grouped_nodes = get_grouped_nodes(communities)
                 for node in small_c_nodes:
@@ -248,26 +252,25 @@ def merge_communities_based_on_modularity(G, communities, max_iterations):
                 # dynamic_threshold = modularity_threshold * max_size / len(small_c_nodes)
                 dynamic_threshold = modularity_threshold
 
-                weighted = cc_modularity * max_size / current_community_size
+                # weighted = cc_modularity * max_size / current_community_size
                 if DEBUG:
                     print(
-                        f"{len(current_community_size)}-{len(communities[c_number])}-{cc_modularity}-{difference}-{max_size}-{best_rank}"
+                        f"{current_community_size}-{len(communities[c_number])}-{cc_modularity}-{difference}-{max_size}-{best_rank}"
                     )
+
                 if (
-                    # cc_modularity > best_rank # and
-                    weighted > best_weighted
-                    and (
-                        difference >= 0
-                        or abs(difference / max_size * current_community_size)
-                        <= dynamic_threshold
-                    )
+                    cc_modularity > best_rank  # and
+                    # and difference >= 0
+                    # weighted > best_weighted
+                    and (difference >= 0 or abs(difference) <= dynamic_threshold)
                 ):
                     # if cc_modularity > best_rank and (difference > 0):  # or abs(difference) <= dynamic_threshold
-
+                    #
                     best_rank = cc_modularity
-                    best_weighted = weighted
+                    # best_weighted = weighted
                     best_community = c_number
                     best_community_small = small_c_number
+
             if best_community:
                 communities[best_community].update(
                     small_communities[best_community_small]
@@ -466,19 +469,32 @@ def df_node_similarity(
         node_similarity_function=node_similarity_function,
     )
 
+    # community_avg_size = get_community_avg_size(
+    #     communities, alg="mean", remove_outliers=True
+    # )
+    # sm = lambda communities, iteration: filter_communities_by_size(
+    #     communities=communities, size=community_avg_size, hard=False
+    # )
+
+    # print(get_communities_size(communities))
+    # print(get_community_avg_size(communities))
     communities = merge_communities_based_on_similarity(
         G=G,
         communities=communities,
         node_similarity_function=node_similarity_function,
         similarity_threshold=similarity_threshold,
-        # max_iterations=max_iterations
+        max_iterations=max_iterations,
+        # sm=sm
     )
+
     # print("SIM DONE")
     # poprawic by te wybrane duze klastry zostaly i podpinal male do nich ciagel
+
     communities = merge_communities_based_on_modularity(
         G=G,
         communities=communities,
         max_iterations=max_iterations,
+        # sm=sm
     )
 
     return {"communities": communities.values()}
