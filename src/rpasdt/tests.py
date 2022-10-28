@@ -241,14 +241,14 @@ def draw_communities(G, partition, name=""):
 
 GRAPHS = {
     "divided": divided_by_edge_community,
-    # "karate": karate_graph,
-    # "windmil": windmil,
-    # "football": footbal,
-    # "dolphin": dolphin,
+    "karate": karate_graph,
+    "windmil": windmil,
+    "football": footbal,
+    "dolphin": dolphin,
     # # "strogats": watts_strogatz_graph,
     # # "barabasi": barabasi,
     # "cg": cg,
-    # "radnom_partition": random_partition,
+    "radnom_partition": random_partition,
     # "facebook": facebook,
 }
 similarity_functions = [
@@ -275,7 +275,7 @@ for G_name in GRAPHS:
             f"{G_name}-{len(comm.keys())}-{[len(nodes) for nodes in comm.values()]}: {comm}"
         )
         # print(comm)
-        draw_communities(G, comm, name=f"louvain_{G_name}")
+        draw_communities(G, comm, name=f"leiden_{G_name}")
 
 # L = louvain(G)
 # print(len(L))

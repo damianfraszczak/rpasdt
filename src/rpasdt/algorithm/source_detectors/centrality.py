@@ -64,9 +64,6 @@ class CentralityCommunityBasedSourceDetector(CommunityBasedSourceDetector):
     def find_sources_in_community(self, graph: Graph):
         return compute_centrality(type=self.config.centrality_algorithm, graph=graph)
 
-    def __str__(self) -> str:
-        return f"Centrality based source detector: {self.config.centrality_algorithm}"
-
 
 class UnbiasedCentralityCommunityBasedSourceDetector(
     CentralityCommunityBasedSourceDetector

@@ -193,7 +193,7 @@ class CommunityOptionEnum(StringChoiceEnum):
     LOUVAIN = ("louvain", "Louvain maximizes a modularity score for each community.")
     LSWL = (
         "lswl",
-        "LSWL locally discovers networksâ€™ the communities precisely, deterministically, and quickly.",
+        "LSWL locally discovers networks the communities precisely, deterministically, and quickly.",
     )
     LSWL_PLUS = (
         "lswl_plus",
@@ -287,6 +287,14 @@ class NetworkAnalysisOptionEnum(StringChoiceEnum):
     SUMMARY = (
         "summary",
         "The summary includes the number of nodes and edges, or neighbours for a single node.",
+    )
+    AVERAGE_SHORTEST_PATH = (
+        "average_shortest_path",
+        "The average shortest path in a graph.",
+    )
+    ASSORTAVITY = (
+        "assortativity",
+        "Degree assortativity of graph..",
     )
 
 

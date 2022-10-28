@@ -2,6 +2,8 @@
 from typing import Dict, List, Optional
 
 import matplotlib
+
+matplotlib.use("Qt5Agg")
 import numpy as np
 from matplotlib import pyplot as plt
 from ndlib.models.DiffusionModel import DiffusionModel
@@ -10,8 +12,6 @@ from ndlib.viz.mpl.DiffusionTrend import DiffusionTrend
 from sklearn.metrics import ConfusionMatrixDisplay
 
 from rpasdt.algorithm.models import ClassificationMetrics
-
-matplotlib.use("Qt5Agg")
 
 AXIS_FONT_SIZE = 14
 LEGEND_FONT_SIZE = 10

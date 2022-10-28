@@ -143,6 +143,20 @@ def get_function_default_kwargs(func) -> Dict[str, Any]:
     }
 
 
+def default_on_error(def_val=0):
+    def decorator(func):
+        @wraps(func)
+        def inner(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception:
+                return def_val
+
+        return inner
+
+    return decorator
+
+
 def method_time(func):
     @wraps(func)
     def _time_it(*args, **kwargs):
@@ -154,6 +168,7 @@ def method_time(func):
             print(f"Total execution time {func.__name__}: {end_ if end_ > 0 else 0} ms")
 
     return _time_it
+
 
 def get_project_root() -> Path:
     return Path(__file__).parent.parent.parent.parent

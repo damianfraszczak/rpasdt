@@ -4,7 +4,7 @@ import sys
 import traceback
 from typing import Any, Optional
 
-from rpasdt.gui.utils import show_error_dialog
+from rpasdt.gui.utils import show_error_dialog as error_dialog
 
 logger = logging.getLogger("app")
 
@@ -14,6 +14,7 @@ def log_error(
     exc: Optional[Exception] = None,
     exc_traceback: Optional[Any] = None,
     title: str = None,
+    show_error_dialog: bool = True,
 ):
     """
     Intended to be assigned to sys.exception as a hook.
@@ -41,4 +42,5 @@ def log_error(
     logger.error(error_msg, exc_info=(type, exc, exc_traceback))
 
     title = title or "Error occurred"
-    show_error_dialog(title=title, error_msg=error_msg)
+    if show_error_dialog:
+        error_dialog(title=title, error_msg=error_msg)

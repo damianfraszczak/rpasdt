@@ -1,9 +1,10 @@
 """Models used to describe algorithms."""
 import statistics
+import sys
 from dataclasses import dataclass, field
 from functools import cached_property
 from math import floor
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from ndlib.models.DiffusionModel import DiffusionModel
 from networkx import Graph
@@ -18,6 +19,7 @@ from rpasdt.algorithm.taxonomies import (
     SourceDetectionAlgorithm,
     SourceSelectionOptionEnum,
 )
+from rpasdt.common.utils import default_on_error
 
 DIFFUSION_NOT_COVERED = -1
 
@@ -68,7 +70,15 @@ class UnbiasedCentralityBasedSourceDetectionConfig(
 
 @dataclass
 class CommunitiesBasedSourceDetectionConfig(SourceDetectionConfig):
-    communities_algorithm: CommunityOptionEnum = CommunityOptionEnum.GIRVAN_NEWMAN
+    communities_algorithm: CommunityOptionEnum = CommunityOptionEnum.LOUVAIN
+
+
+@dataclass
+class IterationsToCoverNetworkConfig(CommunitiesBasedSourceDetectionConfig):
+    node_selection_algorithm: SourceSelectionOptionEnum = (
+        SourceSelectionOptionEnum.DEGREE
+    )
+    neighbors_hops: int = 3
 
 
 @dataclass
@@ -129,26 +139,31 @@ class ClassificationMetrics:
         return [[self.TP, self.FP], [self.FN, self.TN]]
 
     @property
+    @default_on_error()
     def TPR(self):
         """Sensitivity, recall, hit rate, or true positive rate (TPR)."""
         return self.TP / self.P
 
     @property
+    @default_on_error()
     def TNR(self):
         """Specificity, selectivity or true negative rate (TNR)."""
         return self.TN / self.N
 
     @property
+    @default_on_error()
     def PPV(self):
         """Precision or positive predictive value (PPV)."""
         return self.TP / (self.TP + self.FP)
 
     @property
+    @default_on_error()
     def NPV(self):
         """Negative predictive value (NPV)."""
         return self.TN / (self.TN + self.FN)
 
     @property
+    @default_on_error()
     def FNR(self):
         """
         Miss rate or false negative rate (FNR).
@@ -156,26 +171,31 @@ class ClassificationMetrics:
         return self.TN / (self.TN + self.FN)
 
     @property
+    @default_on_error()
     def FPR(self):
         """Fall-out or false positive rate (FPR)."""
         return self.FP / (self.FP + self.TN)
 
     @property
+    @default_on_error()
     def FDR(self):
         """False discovery rate (FDR)."""  # noqa
         return self.FP / (self.FP + self.TP)
 
     @property
+    @default_on_error()
     def FOR(self):
         """False omission rate (FOR)."""  # noqa
         return self.FN / (self.FN + self.TN)
 
     @property
+    @default_on_error()
     def TS(self):
         """False omission rate (FOR)."""  # noqa
         return self.TP / (self.TP + self.FN + self.FP)
 
     @property
+    @default_on_error()
     def ACC(self):
         """
         Accuracy (ACC).
@@ -183,6 +203,7 @@ class ClassificationMetrics:
         return (self.TP + self.TN) / (self.P + self.N)
 
     @property
+    @default_on_error()
     def F1(self):
         """F1 score."""
         return (
@@ -352,6 +373,7 @@ class SourceDetectionSimulationConfig(DiffusionSimulationConfig):
     source_detectors: Dict[str, SourceDetectorSimulationConfig] = field(
         default_factory=dict
     )
+    timeout: int = sys.maxsize
 
 
 @dataclass
@@ -383,3 +405,23 @@ class SourceDetectionSimulationResult:
             config: compute_source_detection_experiment_evaluation(results)
             for config, results in self.raw_results.items()
         }
+
+
+@dataclass
+class PropagationReconstructionConfig:
+    G: Graph
+    IG: Graph
+    real_IG: Graph
+    m1: float = 0.6
+    m2: float = 0.3
+    m3: float = 0.1
+    max_iterations: int = 100
+    threshold: float = 0.6
+
+    @cached_property
+    def observed_infected_nodes(self) -> Set:
+        return set(self.IG)
+
+    @cached_property
+    def real_infected_nodes(self) -> Set:
+        return set(self.real_IG)

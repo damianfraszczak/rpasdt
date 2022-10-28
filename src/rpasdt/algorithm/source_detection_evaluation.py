@@ -14,20 +14,24 @@ from rpasdt.common.utils import multi_sum
 def compute_error_distance(
     G: Graph, not_detected_sources: Set[int], invalid_detected_sources: Set[int]
 ):
-    if not_detected_sources and invalid_detected_sources:
-        return sum(
-            [
-                min(
-                    [
-                        nx.shortest_path_length(G, source=source, target=invalid_source)
-                        for invalid_source in invalid_detected_sources
-                    ]
-                )
-                for source in not_detected_sources
-            ]
-        )
-    else:
-        return 0
+    bigger, smaller = invalid_detected_sources, not_detected_sources
+    if len(invalid_detected_sources) >= len(not_detected_sources):
+        bigger, smaller = not_detected_sources, invalid_detected_sources
+    if not smaller:
+        smaller = [-1 for node in bigger]
+    return sum(
+        [
+            min(
+                [
+                    nx.shortest_path_length(G, source=source, target=smaller)
+                    if source in G and smaller in G
+                    else len(G)
+                    for smaller in invalid_detected_sources
+                ]
+            )
+            for source in bigger
+        ]
+    )
 
 
 def compute_source_detection_evaluation(
