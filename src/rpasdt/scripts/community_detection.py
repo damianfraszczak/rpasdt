@@ -83,7 +83,7 @@ def network_stats():
         print(f"{':'.join(data)}")
 
 
-def get_real_communities(IG, sources):
+def get_real_communities(IG, sources) -> dict:
     bfs_map = {}
     communities = {}
     for source in sources:

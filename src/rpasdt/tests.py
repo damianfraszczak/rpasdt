@@ -240,16 +240,16 @@ def draw_communities(G, partition, name=""):
 
 
 GRAPHS = {
-    "divided": divided_by_edge_community,
-    "karate": karate_graph,
-    "windmil": windmil,
-    "football": footbal,
-    "dolphin": dolphin,
+    # "divided": divided_by_edge_community,
+    # "karate": karate_graph,
+    # "windmil": windmil,
+    # "football": footbal,
+    # "dolphin": dolphin,
     # # "strogats": watts_strogatz_graph,
     # # "barabasi": barabasi,
     # "cg": cg,
-    "radnom_partition": random_partition,
-    # "facebook": facebook,
+    # "radnom_partition": random_partition,
+    "facebook": facebook,
 }
 similarity_functions = [
     jaccard_node_similarity,
@@ -260,22 +260,23 @@ similarity_functions = [
     # leicht_holme_node_similarity,
     # resource_allocation_index_node_similarity
 ]
-for G_name in GRAPHS:
-    G = GRAPHS[G_name]()
-    for sim_f in similarity_functions:
-        comm = df_node_similarity(G, node_similarity_function=sim_f)
-        # resultat jak z METODY
-        comm = {
-            index: community
-            for index, community in enumerate(get_object_value(comm, "communities"))
-        }
-        draw_communities(G, comm, name=f"df_{G_name}")
-        comm = leiden(G)
-        print(
-            f"{G_name}-{len(comm.keys())}-{[len(nodes) for nodes in comm.values()]}: {comm}"
-        )
-        # print(comm)
-        draw_communities(G, comm, name=f"leiden_{G_name}")
+if __name__ == "main":
+    for G_name in GRAPHS:
+        G = GRAPHS[G_name]()
+        for sim_f in similarity_functions:
+            comm = df_node_similarity(G, node_similarity_function=sim_f)
+            # resultat jak z METODY
+            comm = {
+                index: community
+                for index, community in enumerate(get_object_value(comm, "communities"))
+            }
+            draw_communities(G, comm, name=f"df_{G_name}")
+            comm = leiden(G)
+            print(
+                f"{G_name}-{len(comm.keys())}-{[len(nodes) for nodes in comm.values()]}: {comm}"
+            )
+            # print(comm)
+            draw_communities(G, comm, name=f"leiden_{G_name}")
 
 # L = louvain(G)
 # print(len(L))
