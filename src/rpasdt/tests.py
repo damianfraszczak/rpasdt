@@ -1,10 +1,11 @@
 # do sprawdzenia
 # https://orbifold.net/default/community-detection-using-networkx/
 import os
+from typing import Optional
 
 import matplotlib
 import networkx as nx
-from matplotlib import cm
+from matplotlib import cm, pyplot as plt
 
 from rpasdt.algorithm.communities import df_node_similarity, find_communities
 from rpasdt.algorithm.similarity import jaccard_node_similarity
@@ -126,16 +127,65 @@ def louvain(G, resolution=1.0):
     )
 
 
-def draw_communities(G, partition):
+@method_time
+def leiden(G, resolution=1.0):
+    return find_communities(
+        graph=G, type=CommunityOptionEnum.LEIDEN, initial_membership=None
+    )
+
+
+NODE_SIZE = 3000
+NODE_COLOR = "#f0f8ff"
+NODE_COLOR = "lightgrey"
+NODE_LABEL_COLOR = "#000000"
+FONT_SIZE = 20
+NODE_LABEL_SIZE = FONT_SIZE
+AXIS_FONT_SIZE = int(FONT_SIZE * 0.6)
+LEGEND_FONT_SIZE = int(FONT_SIZE * 0.4)
+FIG_SIZE = (8, 8)
+
+
+def configure_plot(
+    title: Optional[str] = None,
+    ylabel: Optional[str] = None,
+    xlabel: Optional[str] = None,
+):
+    title = title or plt.gca().get_title()
+    ylabel = ylabel or plt.gca().get_ylabel()
+    xlabel = xlabel or plt.gca().get_xlabel()
+
+    plt.title(title, fontsize=AXIS_FONT_SIZE)
+    plt.xlabel(xlabel, fontsize=AXIS_FONT_SIZE)
+    plt.ylabel(ylabel, fontsize=AXIS_FONT_SIZE)
+    # plt.legend(loc="best", fontsize=LEGEND_FONT_SIZE)
+
+    plt.box(False)
+    plt.margins(0.15, 0.15)
+    # plt.axis("off")
+    fig = plt.gcf()
+    ax = fig.axes[0]
+    # ax.get_xaxis().set_visible(False)
+    # ax.get_yaxis().set_visible(False)
+
+    fig.set_frameon(False)
+
+
+def draw_communities(G, partition, name=""):
     from matplotlib import pyplot as plt
 
+    plt.clf()
     grouped_nodes = get_grouped_nodes(partition)
     if len(G) > 500:
         pos = nx.spring_layout(G, iterations=15, seed=1721)
     else:
         # pos = community_layout(G, grouped_nodes)
         pos = nx.kamada_kawai_layout(G)
-
+    pos = pos or nx.spring_layout(G, seed=100)
+    cf = plt.gcf()
+    cf.set_facecolor("w")
+    ax = cf.gca()
+    ax.set_axis_off()
+    plt.draw_if_interactive()
     # fig, ax = plt.subplots(figsize=(15, 9))
     # ax.axis("off")
     # nx.draw_networkx(G, pos=pos, ax=ax, **plot_options)
@@ -155,12 +205,16 @@ def draw_communities(G, partition):
     )
     nx.draw_networkx_edges(G, pos, alpha=0.5)
     nx.draw_networkx_labels(G, pos)
-
-    plt.show()
+    configure_plot()
+    plt.tight_layout(pad=0)
+    # plt.show()
+    plt.savefig(
+        f"/home/qtuser/{name}.png", bbox_inches="tight", transparent=True, pad_inches=0
+    )
 
 
 GRAPHS = {
-    "divided": divided_by_edge_community,
+    # "divided": divided_by_edge_community,
     # "karate": karate_graph,
     # "windmil": windmil,
     # "football": footbal,
@@ -168,7 +222,7 @@ GRAPHS = {
     # # "strogats": watts_strogatz_graph,
     # # "barabasi": barabasi,
     # "cg": cg,
-    # "radnom_partition": random_partition,
+    "radnom_partition": random_partition,
     # "facebook": facebook,
 }
 similarity_functions = [
@@ -183,19 +237,20 @@ similarity_functions = [
 for G_name in GRAPHS:
     G = GRAPHS[G_name]()
     for sim_f in similarity_functions:
-        # comm = df_similarity(G, node_similarity_function=sim_f)
+
         comm = df_node_similarity(G, node_similarity_function=sim_f)
         # resultat jak z METODY
         comm = {
             index: community
             for index, community in enumerate(get_object_value(comm, "communities"))
         }
-        # comm = louvain(G, resolution=2)
+        draw_communities(G, comm, name=f"df_{G_name}")
+        comm = louvain(G)
         print(
             f"{G_name}-{len(comm.keys())}-{[len(nodes) for nodes in comm.values()]}: {comm}"
         )
         # print(comm)
-        draw_communities(G, comm)
+        draw_communities(G, comm, name=f"louvain_{G_name}")
 
 # L = louvain(G)
 # print(len(L))

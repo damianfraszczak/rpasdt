@@ -222,7 +222,7 @@ def merge_communities_based_on_modularity(G, communities, max_iterations, sm=Non
         current_iteration += 1
         # print(small_communities)
         for small_c_number, small_c_nodes in list(small_communities.items()):
-            best_community, best_community_small, best_rank(
+            best_community, best_community_small, best_rank = (
                 None,
                 None,
                 -1,
