@@ -8,8 +8,9 @@ typing-extensions==3.10.0.2
 PyInstaller==4.5.1
 numpy==1.21.2
 dataclasses-json==0.5.5
-cdlib==0.2.4
+cdlib==0.2.6
 fire==0.4.0
 sphinx==4.1.2
 sphinx_rtd_theme==0.4.3
 myst-parser==0.15.2
+leidenalg

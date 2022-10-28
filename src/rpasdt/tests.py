@@ -14,8 +14,11 @@ from rpasdt.algorithm.similarity import jaccard_node_similarity
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.algorithm.utils import get_communities_size
 from rpasdt.common.utils import get_object_value, get_project_root, method_time
-from rpasdt.network.networkx_utils import get_grouped_nodes, get_nodes_color, \
-    get_community_index
+from rpasdt.network.networkx_utils import (
+    get_community_index,
+    get_grouped_nodes,
+    get_nodes_color,
+)
 
 matplotlib.use("Qt5Agg")
 
@@ -83,8 +86,7 @@ def club():
 
 def facebook():
     return nx.read_adjlist(
-        os.path.join(get_project_root(), "data", "community",
-                     "facebook_combined.txt")
+        os.path.join(get_project_root(), "data", "community", "facebook_combined.txt")
     )
 
 
@@ -122,8 +124,7 @@ def watts_strogatz_graph():
 
 @method_time
 def df_similarity(G, **kwargs):
-    return find_communities(graph=G, type=CommunityOptionEnum.NODE_SIMILARITY,
-                            **kwargs)
+    return find_communities(graph=G, type=CommunityOptionEnum.NODE_SIMILARITY, **kwargs)
 
 
 @method_time
@@ -211,12 +212,10 @@ def draw_communities(G, partition, name=""):
         node_color=[
             ccolors[get_community_index(community)]
             for community in grouped_nodes.values()
-        ]
+        ],
     )
     nx.draw_networkx_edges(G, pos, alpha=0.5)
     nx.draw_networkx_labels(G, pos)
-
-
 
     com_sizes = get_communities_size(partition)
 
@@ -236,13 +235,12 @@ def draw_communities(G, partition, name=""):
     plt.tight_layout(pad=0)
     # plt.show()
     plt.savefig(
-        f"/home/qtuser/{name}.png", bbox_inches="tight", transparent=True,
-        pad_inches=0
+        f"/home/qtuser/{name}.png", bbox_inches="tight", transparent=True, pad_inches=0
     )
 
 
 GRAPHS = {
-    # "divided": divided_by_edge_community,
+    "divided": divided_by_edge_community,
     # "karate": karate_graph,
     # "windmil": windmil,
     # "football": footbal,
@@ -251,7 +249,7 @@ GRAPHS = {
     # # "barabasi": barabasi,
     # "cg": cg,
     # "radnom_partition": random_partition,
-    "facebook": facebook,
+    # "facebook": facebook,
 }
 similarity_functions = [
     jaccard_node_similarity,
@@ -269,11 +267,10 @@ for G_name in GRAPHS:
         # resultat jak z METODY
         comm = {
             index: community
-            for index, community in
-            enumerate(get_object_value(comm, "communities"))
+            for index, community in enumerate(get_object_value(comm, "communities"))
         }
         draw_communities(G, comm, name=f"df_{G_name}")
-        comm = louvain(G)
+        comm = leiden(G)
         print(
             f"{G_name}-{len(comm.keys())}-{[len(nodes) for nodes in comm.values()]}: {comm}"
         )
