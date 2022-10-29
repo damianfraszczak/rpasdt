@@ -480,7 +480,7 @@ def community_evaluation():
                         log_error(exc=e, show_error_dialog=False)
 
 
-community_evaluation2()
+# community_evaluation2()
 # G = karate_graph()
 # com = get_real_communities(G, [0, 33])
 # found_communities = find_communities(type=CommunityOptionEnum.LOUVAIN,

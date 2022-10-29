@@ -16,3 +16,6 @@ myst-parser==0.15.2
 stopit
 powerlaw
 leidenalg
+infomap
+wurlitzer
+karateclub

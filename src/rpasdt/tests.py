@@ -233,10 +233,10 @@ def draw_communities(G, partition, name=""):
     ]
     plt.legend(loc="lower right", handles=legend_elements)
     plt.tight_layout(pad=0)
-    # plt.show()
-    plt.savefig(
-        f"/home/qtuser/{name}.png", bbox_inches="tight", transparent=True, pad_inches=0
-    )
+    plt.show()
+    # plt.savefig(
+    #     f"/home/qtuser/{name}.png", bbox_inches="tight", transparent=True, pad_inches=0
+    # )
 
 
 GRAPHS = {
@@ -248,7 +248,7 @@ GRAPHS = {
     # # "strogats": watts_strogatz_graph,
     # # "barabasi": barabasi,
     # "cg": cg,
-    # "radnom_partition": random_partition,
+    "radnom_partition": random_partition,
     "facebook": facebook,
 }
 similarity_functions = [
@@ -260,7 +260,7 @@ similarity_functions = [
     # leicht_holme_node_similarity,
     # resource_allocation_index_node_similarity
 ]
-if __name__ == "main":
+if __name__ == "__main__":
     for G_name in GRAPHS:
         G = GRAPHS[G_name]()
         for sim_f in similarity_functions:
@@ -271,12 +271,12 @@ if __name__ == "main":
                 for index, community in enumerate(get_object_value(comm, "communities"))
             }
             draw_communities(G, comm, name=f"df_{G_name}")
-            comm = leiden(G)
-            print(
-                f"{G_name}-{len(comm.keys())}-{[len(nodes) for nodes in comm.values()]}: {comm}"
-            )
+            # comm = leiden(G)
+            # print(
+            #     f"{G_name}-{len(comm.keys())}-{[len(nodes) for nodes in comm.values()]}: {comm}"
+            # )
             # print(comm)
-            draw_communities(G, comm, name=f"leiden_{G_name}")
+            # draw_communities(G, comm, name=f"leiden_{G_name}")
 
 # L = louvain(G)
 # print(len(L))

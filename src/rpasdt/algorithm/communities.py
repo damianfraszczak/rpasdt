@@ -152,20 +152,22 @@ def merge_communities_based_on_similarity(
                 == communities_number_without_compared
             ):
                 continue
-
+            if len(max_similarity_communities) > 1:
+                continue
             communities[small_c_number] = set()
             communities[small_c_number].update(small_c_nodes)
 
             for community_to_join in max_similarity_communities:
-                communities[small_c_number].update(communities[community_to_join])
-                delete_communities(
-                    communities=communities,
-                    communities_to_delete={
-                        community_to_join: communities[community_to_join]
-                    },
-                )
+
+                ll = []
+                for key, values in communities.items():
+                    ll.extend(values)
+                communities[community_to_join].update(small_c_nodes)
+                #
+                communities.pop(small_c_number, None)
                 small_communities.pop(small_c_number, None)
                 changed = True
+
             # print(f"{max_similarity}-{similarities[max_similarity]}")
 
             # for c_number, c_nodes in communities.items():
@@ -223,7 +225,7 @@ def merge_communities_based_on_modularity(G, communities, max_iterations, sm=Non
     small_communities = sm(communities, iteration=current_iteration)
     # print([len(n) for c, n in small_communities.items()])
     # powiazac to z rozmiarem obecnej spolecznosci
-    modularity_threshold = 0.001
+    modularity_threshold = 0.005
     if DEBUG:
         print(get_communities_size(communities))
         print(community_avg_size)
@@ -505,7 +507,7 @@ def df_node_similarity(
     communities = merge_communities_based_on_modularity(
         G=G,
         communities=communities,
-        max_iterations=max_iterations,
+        max_iterations=1,
         # sm=sm
     )
 
