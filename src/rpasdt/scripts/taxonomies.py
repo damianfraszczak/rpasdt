@@ -90,14 +90,14 @@ def watts_strogatz_graph_2():
 
 
 graphs = {
-    karate_graph,
-    dolphin,
-    footbal,
-    facebook,
-    barabasi_1,
-    barabasi_2,
-    watts_strogatz_graph_1,
-    watts_strogatz_graph_2,
+    # karate_graph,
+    # dolphin,
+    # footbal,
+    # facebook,
+    # barabasi_1,
+    # barabasi_2,
+    # watts_strogatz_graph_1,
+    # watts_strogatz_graph_2,
     soc_anybeat,
 }
 
@@ -119,8 +119,11 @@ communities = [
     CommunityOptionEnum.SPECTRAL,
     # CommunityOptionEnum.SBM_DL,
 ]
+communities = [
+    CommunityOptionEnum.NODE_SIMILARITY,
+]
 
 sources_number = [0.001, 0.01, 0.1]
-sources_number = [0.1]
+# sources_number = [0.1]
 fallback_sources_number = 0.05
 # sources_number = [2, 3, 4]

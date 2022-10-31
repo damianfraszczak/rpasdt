@@ -140,12 +140,12 @@ header = [
     "F1",
 ]
 for graph_function in graphs:
-    filename: str = f"results/sd/{graph_function.__name__}.csv"
+    filename: str = f"results/sd_df/{graph_function.__name__}.csv"
     file = open(filename, "w")
     csvwriter = csv.writer(file)
     csvwriter.writerow(header)
     file.close()
-
+    print(f"Processing {graph_function.__name__}")
     graph = graph_function()
     for sn in sources_number:
         source_number = sn if sn > 1 else max(2, math.ceil(len(graph.nodes) * sn))

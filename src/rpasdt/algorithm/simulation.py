@@ -118,7 +118,6 @@ def perform_source_detection_simulation(
                 config=source_detector_config.config,
                 number_of_sources=number_of_sources,
             )
-            print(source_detector)
             try:
                 with stopit.ThreadingTimeout(source_detection_config.timeout):
                     sd_evaluation = source_detector.evaluate_sources(

@@ -74,6 +74,14 @@ class CommunitiesBasedSourceDetectionConfig(SourceDetectionConfig):
 
 
 @dataclass
+class EnsembleCommunitiesBasedSourceDetectionConfig(
+    CommunitiesBasedSourceDetectionConfig
+):
+
+    source_detectors: List = field(default_factory=list)
+
+
+@dataclass
 class IterationsToCoverNetworkConfig(CommunitiesBasedSourceDetectionConfig):
     node_selection_algorithm: SourceSelectionOptionEnum = (
         SourceSelectionOptionEnum.DEGREE
@@ -228,6 +236,8 @@ class SingleSourceDetectionEvaluation(ClassificationMetrics):
 @dataclass
 class ExperimentSourceDetectionEvaluation(ClassificationMetrics):
     avg_error_distance: int
+    real_sources: List[List[int]]
+    detected_sources: List[List[int]]
 
 
 @dataclass

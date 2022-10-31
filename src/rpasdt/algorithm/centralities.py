@@ -23,9 +23,7 @@ CENTRALITY_OPERATION_MAP = {
 def compute_centrality(
     type: Union[str, CentralityOptionEnum], graph: Graph, *args, **kwargs
 ) -> Dict[int, float]:
-    return CENTRALITY_OPERATION_MAP.get(get_enum(type, CentralityOptionEnum))(
-        graph, args=args, kwargs=kwargs
-    )
+    return CENTRALITY_OPERATION_MAP.get(get_enum(type, CentralityOptionEnum))(graph)
 
 
 def compute_unbiased_centrality(

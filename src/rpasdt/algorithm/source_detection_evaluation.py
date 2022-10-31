@@ -88,6 +88,19 @@ def compute_source_detection_experiment_evaluation(
         aggregated["error_distance"],
     )
     avg_error_distance = error_distance / len(evaluations)
+    real_sources = []
+    detected_sources = []
+    for result in evaluations:
+        real_sources.append(result.real_sources)
+        detected_sources.append(result.detected_sources)
     return ExperimentSourceDetectionEvaluation(
-        avg_error_distance=avg_error_distance, TP=TP, TN=TN, FP=FP, FN=FN, P=P, N=N
+        avg_error_distance=avg_error_distance,
+        TP=TP,
+        TN=TN,
+        FP=FP,
+        FN=FN,
+        P=P,
+        N=N,
+        real_sources=real_sources,
+        detected_sources=detected_sources,
     )
