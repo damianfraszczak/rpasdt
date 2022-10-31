@@ -6,6 +6,7 @@ import os
 from collections import defaultdict
 from time import process_time
 
+import networkx as nx
 import networkx.algorithms.community as nx_comm
 
 # 'karate_club', 'dblp', 'amazon', 'youtube'
@@ -56,9 +57,33 @@ def football_gt():
     )
 
 
+def eu_core():
+    return nx.read_adjlist(
+        os.path.join(get_project_root(), "data", "community", "eu-core.edges.txt")
+    )
+
+
 def eu_core_gt():
     return read_clusters_from_file(
         os.path.join(get_project_root(), "data", "community", "eu-core.clusters.txt")
+    )
+
+
+def polbooks():
+    return nx.read_adjlist(
+        os.path.join(get_project_root(), "data", "community", "polbooks.edges.txt")
+    )
+
+
+def polbooks_gt():
+    return read_clusters_from_file(
+        os.path.join(get_project_root(), "data", "community", "polbooks.clusters.txt")
+    )
+
+
+def polblogs():
+    return nx.read_adjlist(
+        os.path.join(get_project_root(), "data", "community", "polblogs.edges.txt")
     )
 
 
@@ -107,12 +132,24 @@ def dblp() -> Graph:
 NETWORKS = [
     # karate_graph,
     # footbal,
-    dolphin,
+    # dolphin,
+    # amazon,
+    # youtube,
+    # dblp,
+    # eu_core,
+    # polblogs,
+    polbooks
 ]
 GT_CLUSTERS = [
     # karate_gt,
     # football_gt,
-    dolphin_gt
+    # dolphin_gt,
+    # amazon_gt,
+    # youtube_gt,
+    # dblp_gt,
+    # eu_core_gt,
+    # polblogs_gt,
+    polbooks_gt
 ]
 METHODS = [
     CommunityOptionEnum.LOUVAIN,
@@ -129,12 +166,12 @@ METHODS = [
     # CommunityOptionEnum.SPINGLASS,
     CommunityOptionEnum.SURPRISE_COMMUNITIES,
     CommunityOptionEnum.WALKTRAP,
-    CommunityOptionEnum.SPECTRAL,
+    # CommunityOptionEnum.SPECTRAL,
     # CommunityOptionEnum.SBM_DL,
     CommunityOptionEnum.NODE_SIMILARITY,
 ]
 
-METHODS = [CommunityOptionEnum.NODE_SIMILARITY]
+# METHODS = [CommunityOptionEnum.NODE_SIMILARITY]
 header = [
     "graph",
     "n",
@@ -147,42 +184,48 @@ header = [
     "pper",
 ]
 
-for index, gf in enumerate(NETWORKS):
-    g = gf()
-    gt = GT_CLUSTERS[index]()
-    n = len(g)
-    e = len(g.edges)
-    c = len(gt.keys())
 
-    filename = f"results/communities/{gf.__name__}_communities_gt.csv"
-    file = open(filename, "w")
-    csvwriter = csv.writer(file)
-    csvwriter.writerow(header)
-    file.close()
+def analysis():
+    for index, gf in enumerate(NETWORKS):
+        g = gf()
+        gt = GT_CLUSTERS[index]()
+        n = len(g)
+        e = len(g.edges)
+        c = len(gt.keys())
 
-    for m in METHODS:
-        print(m)
-        start = int(round(process_time() * 1000))
-        communities = find_communities(type=m, graph=g)
-        end_ = int(round(process_time() * 1000)) - start
-
-        m_nmi = nmi(communities, gt)
-        modularity = cmodularity(g, communities.values())
-        pcov, pper = nx_comm.partition_quality(g, communities.values())
-        row = [
-            gf.__name__,
-            m,
-            n,
-            e,
-            c,
-            len(communities.keys()),
-            end_,
-            m_nmi,
-            modularity,
-            pcov,
-            pper,
-        ]
-        file = open(filename, "a")
+        filename = f"results/communities/{gf.__name__}_communities_gt.csv"
+        file = open(filename, "w")
         csvwriter = csv.writer(file)
-        csvwriter.writerow(row)
+        csvwriter.writerow(header)
         file.close()
+
+        for m in METHODS:
+            print(m)
+            start = int(round(process_time() * 1000))
+            communities = find_communities(type=m, graph=g)
+            end_ = int(round(process_time() * 1000)) - start
+
+            m_nmi = -1
+            try:
+                m_nmi = nmi(communities, gt)
+            except:
+                print(f"NMI ERROR {m}")
+            modularity = cmodularity(g, communities.values())
+            pcov, pper = nx_comm.partition_quality(g, communities.values())
+            row = [
+                gf.__name__,
+                m,
+                n,
+                e,
+                c,
+                len(communities.keys()),
+                end_,
+                m_nmi,
+                modularity,
+                pcov,
+                pper,
+            ]
+            file = open(filename, "a")
+            csvwriter = csv.writer(file)
+            csvwriter.writerow(row)
+            file.close()
