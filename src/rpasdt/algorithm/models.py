@@ -49,6 +49,7 @@ class NetworkSourceSelectionConfig:
 @dataclass
 class SourceDetectionConfig:
     number_of_sources: Optional[int] = 1
+    source_threshold: Optional[float] = None
 
 
 @dataclass
@@ -77,7 +78,6 @@ class CommunitiesBasedSourceDetectionConfig(SourceDetectionConfig):
 class EnsembleCommunitiesBasedSourceDetectionConfig(
     CommunitiesBasedSourceDetectionConfig
 ):
-
     source_detectors: List = field(default_factory=list)
 
 

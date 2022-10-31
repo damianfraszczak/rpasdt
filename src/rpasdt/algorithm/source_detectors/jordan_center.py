@@ -64,7 +64,6 @@ class JordanCenterCommunityBasedSourceDetector(CommunityBasedSourceDetector):
 
             t = t + 1
         return {
-            node: tall[node]
+            node: tall[node] if len(infected_nodes_neighbours[node]) >= N else 0
             for node in nodes
-            if len(infected_nodes_neighbours[node]) >= N
         }
