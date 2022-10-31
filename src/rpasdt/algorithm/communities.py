@@ -34,6 +34,7 @@ NUMBER_OF_COMMUNITIES_KWARG_NAMES = ["k", "number_communities", "level"]
 MAX_NUMBER_OF_COMMUNITIES_KWARG_NAMES = ["kmax"]
 
 DEBUG = False
+MOD_THRESHOLD = 0.005
 
 
 def _update_communities_kwarg(
@@ -225,7 +226,7 @@ def merge_communities_based_on_modularity(G, communities, max_iterations, sm=Non
     small_communities = sm(communities, iteration=current_iteration)
     # print([len(n) for c, n in small_communities.items()])
     # powiazac to z rozmiarem obecnej spolecznosci
-    modularity_threshold = 0.005
+    modularity_threshold = MOD_THRESHOLD
     if DEBUG:
         print(get_communities_size(communities))
         print(community_avg_size)

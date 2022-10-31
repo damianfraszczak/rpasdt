@@ -137,8 +137,8 @@ NETWORKS = [
     # youtube,
     # dblp,
     # eu_core,
-    # polblogs,
-    polbooks
+    polblogs,
+    polbooks,
 ]
 GT_CLUSTERS = [
     # karate_gt,
@@ -148,8 +148,8 @@ GT_CLUSTERS = [
     # youtube_gt,
     # dblp_gt,
     # eu_core_gt,
-    # polblogs_gt,
-    polbooks_gt
+    polblogs_gt,
+    polbooks_gt,
 ]
 METHODS = [
     CommunityOptionEnum.LOUVAIN,
@@ -174,6 +174,7 @@ METHODS = [
 # METHODS = [CommunityOptionEnum.NODE_SIMILARITY]
 header = [
     "graph",
+    "method",
     "n",
     "e",
     "real communities",
@@ -229,3 +230,6 @@ def analysis():
             csvwriter = csv.writer(file)
             csvwriter.writerow(row)
             file.close()
+
+
+analysis()
