@@ -49,7 +49,6 @@ class NetworkSourceSelectionConfig:
 @dataclass
 class SourceDetectionConfig:
     number_of_sources: Optional[int] = 1
-    source_threshold: Optional[float] = None
 
 
 @dataclass
@@ -72,6 +71,7 @@ class UnbiasedCentralityBasedSourceDetectionConfig(
 @dataclass
 class CommunitiesBasedSourceDetectionConfig(SourceDetectionConfig):
     communities_algorithm: CommunityOptionEnum = CommunityOptionEnum.LOUVAIN
+    source_threshold: Optional[float] = None
 
 
 @dataclass

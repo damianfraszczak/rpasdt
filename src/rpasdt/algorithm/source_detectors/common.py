@@ -45,6 +45,7 @@ class SourceDetector(ABC):
 
     @cached_property
     def detected_sources(self) -> Union[int, List[int]]:
+        """Return nodes classified as sources."""
         result = [source for source, _ in self.detected_sources_estimation]
         return result[0] if len(result) == 1 else result
 
@@ -77,7 +78,6 @@ class CommunityBasedSourceDetector(SourceDetector, ABC):
 
     @cached_property
     def communities(self) -> Dict[int, List[int]]:
-
         return (
             {0: self.IG}
             if self.config.number_of_sources == 1
@@ -99,9 +99,16 @@ class CommunityBasedSourceDetector(SourceDetector, ABC):
         pass
 
     def process_estimation(self, result: Dict[int, float]) -> Union[int, List[int]]:
-        # in one community there is exactly one source
-        # [0] get first from sorted, [0] get node index
-        return [
-            sort_dict_by_value(nodes_dict)[0]
-            for cluster, nodes_dict in self.estimate_sources().items()
-        ]
+        nodes = []
+        for cluster, nodes_dict in self.estimate_sources().items():
+            sorted_nodes = sort_dict_by_value(nodes_dict)
+            # in one community there is exactly one source
+            # [0] get first from sorted, [0] get node index
+            if not self.config.source_threshold:
+                nodes.append(sorted_nodes[0][0])
+            max_val = sorted_nodes[0][1]
+            threshold = max_val - self.config.source_threshold
+            for nnode, val in sorted_nodes:
+                if val >= threshold:
+                    nodes.append(nnode)
+        return nodes
