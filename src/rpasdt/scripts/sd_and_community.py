@@ -153,7 +153,7 @@ for graph_function in graphs:
             name: config(source_number) for name, config in source_detectors.items()
         }
         source_detection_config = SourceDetectionSimulationConfig(
-            number_of_experiments=3,
+            number_of_experiments=1,
             diffusion_models=[sir_config],
             iteration_bunch=50,
             source_selection_config=NetworkSourceSelectionConfig(

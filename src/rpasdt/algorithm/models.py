@@ -78,7 +78,8 @@ class CommunitiesBasedSourceDetectionConfig(SourceDetectionConfig):
 class EnsembleCommunitiesBasedSourceDetectionConfig(
     CommunitiesBasedSourceDetectionConfig
 ):
-    source_detectors: List = field(default_factory=list)
+    source_detectors: List[SourceDetectionAlgorithm] = field(default_factory=list)
+    source_detector_config: Dict[str, Dict] = field(default_factory=dict)
 
 
 @dataclass

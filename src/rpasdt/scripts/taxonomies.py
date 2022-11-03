@@ -89,17 +89,17 @@ def watts_strogatz_graph_2():
     return nx.watts_strogatz_graph(n=1000, k=10, p=0.4)
 
 
-graphs = {
+graphs = [
     # karate_graph,
-    # dolphin,
-    # footbal,
-    # facebook,
-    # barabasi_1,
-    # barabasi_2,
-    # watts_strogatz_graph_1,
-    # watts_strogatz_graph_2,
+    dolphin,
+    footbal,
+    barabasi_1,
+    barabasi_2,
+    watts_strogatz_graph_1,
+    watts_strogatz_graph_2,
+    facebook,
     soc_anybeat,
-}
+]
 
 communities = [
     CommunityOptionEnum.LOUVAIN,

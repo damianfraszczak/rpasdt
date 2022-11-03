@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import List
 
 from networkx import Graph
 
@@ -7,16 +8,18 @@ from rpasdt.algorithm.models import (
 )
 from rpasdt.algorithm.source_detectors.common import (
     CommunityBasedSourceDetector,
+    SourceDetector,
 )
 
 
 class EnsembleLearnerSourceDetector(CommunityBasedSourceDetector):
     CONFIG_CLASS = EnsembleCommunitiesBasedSourceDetectionConfig
+    source_detectors: List[SourceDetector]
 
     def find_sources_in_community(self, graph: Graph):
         results = defaultdict(int)
-        for sd in self.config.source_detectors:
-            result = sd.find_sources_in_community(graph)
+        for sd in self.source_detectors:
+            result = sd.f(graph)
             for key, value in result.items():
                 results[key] += value
         results = {
