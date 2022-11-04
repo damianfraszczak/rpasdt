@@ -2,126 +2,20 @@ import csv
 import math
 
 from rpasdt.algorithm.models import (
-    CentralityBasedSourceDetectionConfig,
-    CentralityCommunityBasedSourceDetectionConfig,
-    CommunitiesBasedSourceDetectionConfig,
     DiffusionModelSimulationConfig,
     NetworkSourceSelectionConfig,
     SourceDetectionSimulationConfig,
-    SourceDetectorSimulationConfig,
-    UnbiasedCentralityBasedSourceDetectionConfig,
-    UnbiasedCentralityCommunityBasedSourceDetectionConfig,
 )
 from rpasdt.algorithm.simulation import perform_source_detection_simulation
 from rpasdt.algorithm.taxonomies import (
-    CentralityOptionEnum,
     DiffusionTypeEnum,
-    SourceDetectionAlgorithm,
     SourceSelectionOptionEnum,
 )
-from rpasdt.scripts.taxonomies import communities, graphs, sources_number
+from rpasdt.scripts.taxonomies import graphs, source_detectors, sources_number
 
 sir_config = DiffusionModelSimulationConfig(
     diffusion_model_type=DiffusionTypeEnum.SIR,
     diffusion_model_params={"beta": 0.01, "gamma": 0.005},
-)
-
-sd_centralities = [
-    # CentralityOptionEnum.DEGREE,
-    CentralityOptionEnum.BETWEENNESS,
-    # CentralityOptionEnum.CLOSENESS,
-    # CentralityOptionEnum.EDGE_BETWEENNESS,
-    # CentralityOptionEnum.EIGENVECTOR
-]
-
-source_detectors = {}
-
-source_detectors.update(
-    {
-        f"centrality:{centrality}": lambda x, centrality=centrality: SourceDetectorSimulationConfig(
-            alg=SourceDetectionAlgorithm.CENTRALITY_BASED,
-            config=CentralityBasedSourceDetectionConfig(
-                number_of_sources=x, centrality_algorithm=centrality
-            ),
-        )
-        for centrality in sd_centralities
-    }
-)
-
-source_detectors.update(
-    {
-        f"unbiased:{centrality}": lambda x, centrality=centrality: SourceDetectorSimulationConfig(
-            alg=SourceDetectionAlgorithm.UNBIASED_CENTRALITY_BASED,
-            config=UnbiasedCentralityBasedSourceDetectionConfig(
-                number_of_sources=x, centrality_algorithm=centrality
-            ),
-        )
-        for centrality in sd_centralities
-    }
-)
-
-source_detectors.update(
-    {
-        f"centrality-cm:{centrality}:{cm}": lambda x, centrality=centrality, cm=cm: SourceDetectorSimulationConfig(
-            alg=SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
-            config=CentralityCommunityBasedSourceDetectionConfig(
-                number_of_sources=x,
-                centrality_algorithm=centrality,
-                communities_algorithm=cm,
-            ),
-        )
-        for centrality in sd_centralities
-        for cm in communities
-    }
-)
-
-source_detectors.update(
-    {
-        f"unbiased-cm:{centrality}:{cm}": lambda x, centrality=centrality, cm=cm: SourceDetectorSimulationConfig(
-            alg=SourceDetectionAlgorithm.COMMUNITY_UNBIASED_CENTRALITY_BASED,
-            config=UnbiasedCentralityCommunityBasedSourceDetectionConfig(
-                number_of_sources=x,
-                centrality_algorithm=centrality,
-                communities_algorithm=cm,
-            ),
-        )
-        for centrality in sd_centralities
-        for cm in communities
-    }
-)
-source_detectors.update(
-    {
-        f"rumor:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
-            alg=SourceDetectionAlgorithm.RUMOR_CENTER,
-            config=CommunitiesBasedSourceDetectionConfig(
-                number_of_sources=x, communities_algorithm=cm
-            ),
-        )
-        for cm in communities
-    }
-)
-source_detectors.update(
-    {
-        f"jordan:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
-            alg=SourceDetectionAlgorithm.JORDAN_CENTER,
-            config=CommunitiesBasedSourceDetectionConfig(
-                number_of_sources=x, communities_algorithm=cm
-            ),
-        )
-        for cm in communities
-    }
-)
-
-source_detectors.update(
-    {
-        f"netsleuth:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
-            alg=SourceDetectionAlgorithm.NET_SLEUTH,
-            config=CommunitiesBasedSourceDetectionConfig(
-                number_of_sources=x, communities_algorithm=cm
-            ),
-        )
-        for cm in communities
-    }
 )
 
 header = [

@@ -60,7 +60,6 @@ def _simulate_diffusion(simulation_config: DiffusionSimulationConfig):
         ]
 
         for diffusion_model in diffusion_models:
-            print(f"{diffusion_model}-{len(diffusion_models)}")
             diffusion_iterations = diffusion_model.iteration_bunch(
                 simulation_config.iteration_bunch
             )

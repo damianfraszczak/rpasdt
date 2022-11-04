@@ -480,6 +480,84 @@ def community_evaluation():
                         log_error(exc=e, show_error_dialog=False)
 
 
+def community_evaluation_with_static_propagations():
+    header = [
+        "graph",
+        "community",
+        "sources",
+        "nodes",
+        "coverage",
+        "iterations",
+        "detected_sources",
+        "sources_ratio",
+        "sizes",
+        "avg_sizes",
+        "time",
+    ]
+
+    for graph_function in graphs:
+        G = graph_function()
+
+        filename = (
+            f"results/communities/{graph_function.__name__}_ce_static_network.csv"
+        )
+        file = open(filename, "w")
+        csvwriter = csv.writer(file)
+        csvwriter.writerow(header)
+        file.close()
+
+        source_file = f"results/propagations/{graph_function.__name__}.csv"
+        with open(source_file) as csvfile:
+            spamreader = csv.DictReader(csvfile)
+            for row in spamreader:
+                sources, infected_nodes = (
+                    row["sources"],
+                    row["infected_nodes"],
+                )
+                infected_nodes = infected_nodes.split("|")
+                sources = sources.split("|")
+                IG = G.subgraph(infected_nodes)
+                for key in communities:
+                    try:
+                        print(f"COM DETECTION {key}")
+                        with stopit.ThreadingTimeout(TIMEOUT) as context_manager:
+
+                            start = time.time()
+                            result = find_communities(type=key, graph=IG)
+                            end = time.time()
+                            total_time = end - start
+                            if context_manager.state == context_manager.TIMED_OUT:
+                                continue
+
+                            sources_communities = set()
+                            if result:
+                                for source_node in sources:
+                                    for community, nodes in result.items():
+                                        if source_node in nodes:
+                                            sources_communities.add(community)
+                                            break
+                            sizes = [len(c) for c in result.values()]
+                            avg_size = sum(sizes) / len(sizes)
+
+                            row = [
+                                graph_function.__name__,
+                                key,
+                                len(sources),
+                                len(IG.nodes),
+                                len(result) if result else None,
+                                len(sources_communities),
+                                "|".join([str(c) for c in sizes]),
+                                str(avg_size),
+                                total_time,
+                            ]
+                            file = open(filename, "a")
+                            csvwriter = csv.writer(file)
+                            csvwriter.writerow(row)
+                            file.close()
+                    except Exception as e:
+                        log_error(exc=e, show_error_dialog=False)
+
+
 # community_evaluation2()
 # G = karate_graph()
 # com = get_real_communities(G, [0, 33])

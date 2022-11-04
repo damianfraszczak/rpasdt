@@ -38,14 +38,16 @@ class SourceDetector(ABC):
 
     @abstractmethod
     def estimate_sources(self) -> Dict[int, Union[int, Dict[int, float]]]:
+        """Compute each node score to be source."""
         pass
 
     def process_estimation(self, result: Dict[int, float]):
+        """Return estimated sources with scores."""
         return sort_dict_by_value(result)[: self.config.number_of_sources]
 
     @cached_property
     def detected_sources(self) -> Union[int, List[int]]:
-        """Return nodes classified as sources."""
+        """Return estimated sources."""
         result = [source for source, _ in self.detected_sources_estimation]
         return result[0] if len(result) == 1 else result
 
@@ -98,17 +100,19 @@ class CommunityBasedSourceDetector(SourceDetector, ABC):
     def find_sources_in_community(self, graph: Graph):
         pass
 
-    def process_estimation(self, result: Dict[int, float]) -> Union[int, List[int]]:
-        nodes = []
+    def process_estimation(self, result: Dict[int, float]) -> List[Tuple[int, float]]:
+        nodes = {}
         for cluster, nodes_dict in self.estimate_sources().items():
             sorted_nodes = sort_dict_by_value(nodes_dict)
+
             # in one community there is exactly one source
             # [0] get first from sorted, [0] get node index
             if not self.config.source_threshold:
-                nodes.append(sorted_nodes[0][0])
-            max_val = sorted_nodes[0][1]
-            threshold = max_val - self.config.source_threshold
-            for nnode, val in sorted_nodes:
-                if val >= threshold:
-                    nodes.append(nnode)
-        return nodes
+                nodes[sorted_nodes[0][0]] = sorted_nodes[0][1]
+            else:
+                max_val = sorted_nodes[0][1]
+                threshold = max_val - self.config.source_threshold
+                for nnode, val in sorted_nodes:
+                    if val >= threshold:
+                        nodes[nnode] = val
+        return sort_dict_by_value(nodes)

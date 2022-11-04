@@ -4,7 +4,15 @@ import networkx as nx
 import numpy as np
 from scipy.io import mmread
 
-from rpasdt.algorithm.taxonomies import CommunityOptionEnum
+from rpasdt.algorithm.models import (
+    CentralityCommunityBasedSourceDetectionConfig,
+    SourceDetectorSimulationConfig,
+)
+from rpasdt.algorithm.taxonomies import (
+    CentralityOptionEnum,
+    CommunityOptionEnum,
+    SourceDetectionAlgorithm,
+)
 
 
 def get_project_root():
@@ -90,17 +98,17 @@ def watts_strogatz_graph_2():
 
 
 graphs = [
-    # karate_graph,
-    dolphin,
-    footbal,
-    barabasi_1,
-    barabasi_2,
-    watts_strogatz_graph_1,
-    watts_strogatz_graph_2,
-    facebook,
-    soc_anybeat,
+    karate_graph,
+    # dolphin,
+    # footbal,
+    # barabasi_1,
+    # barabasi_2,
+    # watts_strogatz_graph_1,
+    # watts_strogatz_graph_2,
+    # facebook,
+    # soc_anybeat,
 ]
-
+SOURCE_THRESHOLD = 0.1
 communities = [
     CommunityOptionEnum.LOUVAIN,
     # CommunityOptionEnum.BELIEF,
@@ -127,3 +135,105 @@ sources_number = [0.001, 0.01, 0.1]
 # sources_number = [0.1]
 fallback_sources_number = 0.05
 # sources_number = [2, 3, 4]
+
+sd_centralities = [
+    # CentralityOptionEnum.DEGREE,
+    CentralityOptionEnum.BETWEENNESS,
+    # CentralityOptionEnum.CLOSENESS,
+    # CentralityOptionEnum.EDGE_BETWEENNESS,
+    # CentralityOptionEnum.EIGENVECTOR
+]
+
+source_detectors = {}
+
+# source_detectors.update(
+#     {
+#         f"centrality:{centrality}": lambda x,
+#                                            centrality=centrality: SourceDetectorSimulationConfig(
+#             alg=SourceDetectionAlgorithm.CENTRALITY_BASED,
+#             config=CentralityBasedSourceDetectionConfig(
+#                 number_of_sources=x, centrality_algorithm=centrality
+#             ),
+#         )
+#         for centrality in sd_centralities
+#     }
+# )
+# #
+# source_detectors.update(
+#     {
+#         f"unbiased:{centrality}": lambda x,
+#                                          centrality=centrality: SourceDetectorSimulationConfig(
+#             alg=SourceDetectionAlgorithm.UNBIASED_CENTRALITY_BASED,
+#             config=UnbiasedCentralityBasedSourceDetectionConfig(
+#                 number_of_sources=x, centrality_algorithm=centrality
+#             ),
+#         )
+#         for centrality in sd_centralities
+#     }
+# )
+#
+source_detectors.update(
+    {
+        f"centrality-cm:{centrality}:{cm}": lambda x, centrality=centrality, cm=cm: SourceDetectorSimulationConfig(
+            alg=SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
+            config=CentralityCommunityBasedSourceDetectionConfig(
+                number_of_sources=x,
+                centrality_algorithm=centrality,
+                communities_algorithm=cm,
+                source_threshold=SOURCE_THRESHOLD,
+            ),
+        )
+        for centrality in sd_centralities
+        for cm in communities
+    }
+)
+
+# source_detectors.update(
+#     {
+#         f"unbiased-cm:{centrality}:{cm}": lambda x, centrality=centrality,
+#                                                  cm=cm: SourceDetectorSimulationConfig(
+#             alg=SourceDetectionAlgorithm.COMMUNITY_UNBIASED_CENTRALITY_BASED,
+#             config=UnbiasedCentralityCommunityBasedSourceDetectionConfig(
+#                 number_of_sources=x,
+#                 centrality_algorithm=centrality,
+#                 communities_algorithm=cm,
+#             ),
+#         )
+#         for centrality in sd_centralities
+#         for cm in communities
+#     }
+# )
+# source_detectors.update(
+#     {
+#         f"rumor:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
+#             alg=SourceDetectionAlgorithm.RUMOR_CENTER,
+#             config=CommunitiesBasedSourceDetectionConfig(
+#                 number_of_sources=x, communities_algorithm=cm
+#             ),
+#         )
+#         for cm in communities
+#     }
+# )
+# source_detectors.update(
+#     {
+#         f"jordan:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
+#             alg=SourceDetectionAlgorithm.JORDAN_CENTER,
+#             config=CommunitiesBasedSourceDetectionConfig(
+#                 number_of_sources=x, communities_algorithm=cm
+#             ),
+#         )
+#         for cm in communities
+#     }
+# )
+#
+# source_detectors.update(
+#     {
+#         f"netsleuth:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
+#             alg=SourceDetectionAlgorithm.NET_SLEUTH,
+#             config=CommunitiesBasedSourceDetectionConfig(
+#                 number_of_sources=x, communities_algorithm=cm
+#             ),
+#         )
+#         for cm in communities
+#     }
+# )
