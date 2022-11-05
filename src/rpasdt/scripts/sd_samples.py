@@ -12,7 +12,7 @@ from rpasdt.algorithm.source_detectors.source_detection import (
 from rpasdt.common.exceptions import log_error
 from rpasdt.scripts.taxonomies import graphs, source_detectors
 
-THRESHOLDS = [None, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3]
+THRESHOLDS = [None, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]
 
 
 def sd_evaluation_with_static_propagations():
@@ -108,7 +108,6 @@ def sd_evaluation_with_static_propagations():
                             avg_com_size += detected_communities
 
                         avg_com_size /= len(rr.additional_data)
-                        print(threshold)
                         row = [
                             config,
                             number_of_sources,

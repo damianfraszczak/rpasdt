@@ -341,4 +341,7 @@ class SourceDetectionAlgorithm(StringChoiceEnum):
         "Find sources with community unbiased centrality based algorithm.",
     )
     JORDAN_CENTER = ("jordan_center", "Find sources with Jordan center algorithm.")
-    ENSEMBLE_LEARNER = ("ensemble_learner", "Find sources with Ensemble approach.")
+    COMMUNITY_ENSEMBLE_LEARNER = (
+        "community_ensemble_learner",
+        "Find sources with community Ensemble approach.",
+    )

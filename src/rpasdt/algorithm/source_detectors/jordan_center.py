@@ -13,14 +13,15 @@ class JordanCenterCommunityBasedSourceDetector(CommunityBasedSourceDetector):
     def find_sources_in_community(self, graph: Graph):
 
         IG = graph
-        nodes = list(self.G.nodes())
+        G = self.G
+        nodes = list(G.nodes())
         N = len(IG.nodes())
         tall = defaultdict(int)
 
         infected_nodes_neighbours = defaultdict(list)
         infected_nodes_neighbours.update(
             {
-                infected_node: list(nx.all_neighbors(self.G, infected_node))
+                infected_node: list(nx.all_neighbors(G, infected_node))
                 for infected_node in IG.nodes()
             }
         )
@@ -31,7 +32,7 @@ class JordanCenterCommunityBasedSourceDetector(CommunityBasedSourceDetector):
         while STOP == 0:
             nodes_with_infected_neighbours = defaultdict(list)
             for node in nodes:
-                for neighbour in nx.all_neighbors(self.G, node):
+                for neighbour in nx.all_neighbors(G, node):
                     nodes_with_infected_neighbours[neighbour] = list(
                         set(
                             nodes_with_infected_neighbours[neighbour]
@@ -63,7 +64,11 @@ class JordanCenterCommunityBasedSourceDetector(CommunityBasedSourceDetector):
                     STOP = 1
 
             t = t + 1
+        max_tall = max(tall.values())
         return {
-            node: tall[node] if len(infected_nodes_neighbours[node]) >= N else 0
+            node: tall[node] / max_tall
+            if len(infected_nodes_neighbours[node]) >= N
+            else 0
             for node in nodes
+            if node in graph
         }

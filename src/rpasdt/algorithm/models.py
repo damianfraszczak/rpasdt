@@ -4,7 +4,7 @@ import sys
 from dataclasses import dataclass, field
 from functools import cached_property
 from math import floor
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from ndlib.models.DiffusionModel import DiffusionModel
 from networkx import Graph
@@ -78,8 +78,9 @@ class CommunitiesBasedSourceDetectionConfig(SourceDetectionConfig):
 class EnsembleCommunitiesBasedSourceDetectionConfig(
     CommunitiesBasedSourceDetectionConfig
 ):
-    source_detectors: List[SourceDetectionAlgorithm] = field(default_factory=list)
-    source_detector_config: Dict[str, Dict] = field(default_factory=dict)
+    source_detectors_config: Dict[
+        str, Tuple[SourceDetectionAlgorithm, SourceDetectionConfig]
+    ] = field(default_factory=dict)
 
 
 @dataclass

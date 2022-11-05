@@ -16,7 +16,7 @@ from rpasdt.algorithm.source_detectors.dynamic_age import (
     DynamicAgeSourceDetector,
 )
 from rpasdt.algorithm.source_detectors.ensemble_learner import (
-    EnsembleLearnerSourceDetector,
+    CommunityEnsembleLearnerSourceDetector,
 )
 from rpasdt.algorithm.source_detectors.jordan_center import (
     JordanCenterCommunityBasedSourceDetector,
@@ -39,7 +39,7 @@ SOURCE_DETECTORS = {
     SourceDetectionAlgorithm.NET_SLEUTH: NetSleuthCommunityBasedSourceDetector,
     SourceDetectionAlgorithm.RUMOR_CENTER: RumorCenterCommunityBasedSourceDetector,
     SourceDetectionAlgorithm.JORDAN_CENTER: JordanCenterCommunityBasedSourceDetector,
-    SourceDetectionAlgorithm.ENSEMBLE_LEARNER: EnsembleLearnerSourceDetector,
+    SourceDetectionAlgorithm.COMMUNITY_ENSEMBLE_LEARNER: CommunityEnsembleLearnerSourceDetector,
 }
 
 
