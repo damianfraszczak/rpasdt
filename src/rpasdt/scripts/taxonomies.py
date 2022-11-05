@@ -6,7 +6,9 @@ from scipy.io import mmread
 
 from rpasdt.algorithm.models import (
     CentralityCommunityBasedSourceDetectionConfig,
+    CommunitiesBasedSourceDetectionConfig,
     SourceDetectorSimulationConfig,
+    UnbiasedCentralityCommunityBasedSourceDetectionConfig,
 )
 from rpasdt.algorithm.taxonomies import (
     CentralityOptionEnum,
@@ -108,7 +110,7 @@ graphs = [
     # facebook,
     # soc_anybeat,
 ]
-SOURCE_THRESHOLD = 0.1
+SOURCE_THRESHOLD = None
 communities = [
     CommunityOptionEnum.LOUVAIN,
     # CommunityOptionEnum.BELIEF,
@@ -188,52 +190,51 @@ source_detectors.update(
     }
 )
 
-# source_detectors.update(
-#     {
-#         f"unbiased-cm:{centrality}:{cm}": lambda x, centrality=centrality,
-#                                                  cm=cm: SourceDetectorSimulationConfig(
-#             alg=SourceDetectionAlgorithm.COMMUNITY_UNBIASED_CENTRALITY_BASED,
-#             config=UnbiasedCentralityCommunityBasedSourceDetectionConfig(
-#                 number_of_sources=x,
-#                 centrality_algorithm=centrality,
-#                 communities_algorithm=cm,
-#             ),
-#         )
-#         for centrality in sd_centralities
-#         for cm in communities
-#     }
-# )
-# source_detectors.update(
-#     {
-#         f"rumor:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
-#             alg=SourceDetectionAlgorithm.RUMOR_CENTER,
-#             config=CommunitiesBasedSourceDetectionConfig(
-#                 number_of_sources=x, communities_algorithm=cm
-#             ),
-#         )
-#         for cm in communities
-#     }
-# )
-# source_detectors.update(
-#     {
-#         f"jordan:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
-#             alg=SourceDetectionAlgorithm.JORDAN_CENTER,
-#             config=CommunitiesBasedSourceDetectionConfig(
-#                 number_of_sources=x, communities_algorithm=cm
-#             ),
-#         )
-#         for cm in communities
-#     }
-# )
-#
-# source_detectors.update(
-#     {
-#         f"netsleuth:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
-#             alg=SourceDetectionAlgorithm.NET_SLEUTH,
-#             config=CommunitiesBasedSourceDetectionConfig(
-#                 number_of_sources=x, communities_algorithm=cm
-#             ),
-#         )
-#         for cm in communities
-#     }
-# )
+source_detectors.update(
+    {
+        f"unbiased-cm:{centrality}:{cm}": lambda x, centrality=centrality, cm=cm: SourceDetectorSimulationConfig(
+            alg=SourceDetectionAlgorithm.COMMUNITY_UNBIASED_CENTRALITY_BASED,
+            config=UnbiasedCentralityCommunityBasedSourceDetectionConfig(
+                number_of_sources=x,
+                centrality_algorithm=centrality,
+                communities_algorithm=cm,
+            ),
+        )
+        for centrality in sd_centralities
+        for cm in communities
+    }
+)
+source_detectors.update(
+    {
+        f"rumor:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
+            alg=SourceDetectionAlgorithm.RUMOR_CENTER,
+            config=CommunitiesBasedSourceDetectionConfig(
+                number_of_sources=x, communities_algorithm=cm
+            ),
+        )
+        for cm in communities
+    }
+)
+source_detectors.update(
+    {
+        f"jordan:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
+            alg=SourceDetectionAlgorithm.JORDAN_CENTER,
+            config=CommunitiesBasedSourceDetectionConfig(
+                number_of_sources=x, communities_algorithm=cm
+            ),
+        )
+        for cm in communities
+    }
+)
+
+source_detectors.update(
+    {
+        f"netsleuth-cm:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
+            alg=SourceDetectionAlgorithm.NET_SLEUTH,
+            config=CommunitiesBasedSourceDetectionConfig(
+                number_of_sources=x, communities_algorithm=cm
+            ),
+        )
+        for cm in communities
+    }
+)

@@ -231,7 +231,7 @@ def merge_communities_based_on_modularity(G, communities, max_iterations, sm=Non
         print(get_communities_size(communities))
         print(community_avg_size)
         print(get_communities_size(small_communities))
-    print(get_communities_size(small_communities))
+
     while small_communities and changed and current_iteration <= max_iterations:
         changed = False
         current_iteration += 1
