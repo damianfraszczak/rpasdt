@@ -11,10 +11,11 @@ from rpasdt.algorithm.source_detectors.common import (
 class NetSleuthCommunityBasedSourceDetector(CommunityBasedSourceDetector):
     def find_sources_in_community(self, graph: Graph):
         nodes = np.array(graph.nodes())
+        node_to_index = {k: v for v, k in enumerate(nodes)}
         L = nx.laplacian_matrix(graph).todense().A
         w, v = np.linalg.eig(L)
         v1 = v[np.where(w == np.min(w))][0]
         # max_val = np.max(v1)
-        # sources = nodes[np.where(v1 == np.max(v1))]
+        # sources = nodes[np.where(v1 == max_val)]
         # return {source: max_val for source in sources}
-        return {node: v1[node] for node in nodes}
+        return {node: v1[node_to_index[node]] for node in nodes}
