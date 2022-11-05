@@ -12,11 +12,15 @@ from rpasdt.algorithm.source_detectors.source_detection import (
 from rpasdt.common.exceptions import log_error
 from rpasdt.scripts.taxonomies import graphs, source_detectors
 
+THRESHOLDS = [None, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3]
+
 
 def sd_evaluation_with_static_propagations():
     header = [
         "type",
         "sources",
+        "comm_difference",
+        "avg_com_size",
         "avg_distance",
         "TP",
         "TN",
@@ -87,9 +91,20 @@ def sd_evaluation_with_static_propagations():
 
         for number_of_sources, aggregated_result in aggregated_result.items():
             for config, rr in aggregated_result.aggregated_results.items():
+                comm_difference, avg_com_size = 0, 0
+                for data in rr.additional_data:
+                    communities = data["communities"]
+                    detected_communities = len(communities.keys())
+                    comm_difference += abs(detected_communities - number_of_sources)
+                    avg_com_size += detected_communities
+
+                avg_com_size /= len(rr.additional_data)
+
                 row = [
                     config,
                     number_of_sources,
+                    comm_difference,
+                    avg_com_size,
                     rr.avg_error_distance,
                     rr.TP,
                     rr.TN,
