@@ -232,6 +232,7 @@ class SingleSourceDetectionEvaluation(ClassificationMetrics):
     real_sources: List[int]
     detected_sources: List[int]
     error_distance: int
+    additional_data: Dict[str, Any]
 
 
 @dataclass
@@ -239,6 +240,7 @@ class ExperimentSourceDetectionEvaluation(ClassificationMetrics):
     avg_error_distance: int
     real_sources: List[List[int]]
     detected_sources: List[List[int]]
+    additional_data: List[Dict[str, Any]]
 
 
 @dataclass

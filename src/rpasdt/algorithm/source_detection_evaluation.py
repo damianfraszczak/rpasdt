@@ -1,5 +1,5 @@
 """Source detection evaluation metrics."""
-from typing import List, Set, Union
+from typing import Any, Dict, List, Set, Union
 
 import networkx as nx
 from networkx import Graph
@@ -35,7 +35,10 @@ def compute_error_distance(
 
 
 def compute_source_detection_evaluation(
-    G: Graph, real_sources: List[int], detected_sources: Union[int, List[int]]
+    G: Graph,
+    real_sources: List[int],
+    detected_sources: Union[int, List[int]],
+    additional_data: Dict[str, Any],
 ) -> SingleSourceDetectionEvaluation:
     detected_sources = (
         detected_sources if isinstance(detected_sources, list) else [detected_sources]
@@ -69,6 +72,7 @@ def compute_source_detection_evaluation(
         FN=FN,
         P=P,
         N=N,
+        additional_data=additional_data,
     )
 
 
@@ -90,9 +94,11 @@ def compute_source_detection_experiment_evaluation(
     avg_error_distance = error_distance / len(evaluations)
     real_sources = []
     detected_sources = []
+    additional_data = []
     for result in evaluations:
         real_sources.append(result.real_sources)
         detected_sources.append(result.detected_sources)
+        additional_data.append(result.additional_data)
     return ExperimentSourceDetectionEvaluation(
         avg_error_distance=avg_error_distance,
         TP=TP,
@@ -103,4 +109,5 @@ def compute_source_detection_experiment_evaluation(
         N=N,
         real_sources=real_sources,
         detected_sources=detected_sources,
+        additional_data=additional_data,
     )

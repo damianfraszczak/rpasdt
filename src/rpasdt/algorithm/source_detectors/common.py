@@ -1,7 +1,7 @@
 """Common source detection methods."""
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from networkx import Graph
 
@@ -55,11 +55,17 @@ class SourceDetector(ABC):
     def detected_sources_estimation(self) -> List[Tuple[int, float]]:
         return self.process_estimation(self.estimate_sources())
 
+    def get_additional_data_for_source_evaluation(self) -> Dict[str, Any]:
+        return {}
+
     def evaluate_sources(
         self, real_sources: List[int]
     ) -> SingleSourceDetectionEvaluation:
         return compute_source_detection_evaluation(
-            G=self.IG, real_sources=real_sources, detected_sources=self.detected_sources
+            G=self.IG,
+            real_sources=real_sources,
+            detected_sources=self.detected_sources,
+            additional_data=self.get_additional_data_for_source_evaluation(),
         )
 
     def __str__(self) -> str:
@@ -116,3 +122,6 @@ class CommunityBasedSourceDetector(SourceDetector, ABC):
                     if val >= threshold:
                         nodes[nnode] = val
         return sort_dict_by_value(nodes)
+
+    def get_additional_data_for_source_evaluation(self) -> Dict[str, Any]:
+        return {"communities": self.communities}
