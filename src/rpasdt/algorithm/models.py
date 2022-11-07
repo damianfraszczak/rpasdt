@@ -49,6 +49,8 @@ class NetworkSourceSelectionConfig:
 @dataclass
 class SourceDetectionConfig:
     number_of_sources: Optional[int] = 1
+    source_threshold: Optional[float] = None
+    normalize_results: bool = True
 
 
 @dataclass
@@ -71,7 +73,6 @@ class UnbiasedCentralityBasedSourceDetectionConfig(
 @dataclass
 class CommunitiesBasedSourceDetectionConfig(SourceDetectionConfig):
     communities_algorithm: CommunityOptionEnum = CommunityOptionEnum.LOUVAIN
-    source_threshold: Optional[float] = None
 
 
 @dataclass
@@ -239,6 +240,7 @@ class SingleSourceDetectionEvaluation(ClassificationMetrics):
 @dataclass
 class ExperimentSourceDetectionEvaluation(ClassificationMetrics):
     avg_error_distance: int
+    avg_execution_time: float
     real_sources: List[List[int]]
     detected_sources: List[List[int]]
     additional_data: List[Dict[str, Any]]

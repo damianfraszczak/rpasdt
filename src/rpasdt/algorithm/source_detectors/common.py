@@ -14,7 +14,11 @@ from rpasdt.algorithm.models import (
 from rpasdt.algorithm.source_detection_evaluation import (
     compute_source_detection_evaluation,
 )
-from rpasdt.common.utils import camel_case_split, sort_dict_by_value
+from rpasdt.common.utils import (
+    camel_case_split,
+    normalize_dict_values,
+    sort_dict_by_value,
+)
 
 
 class SourceDetector(ABC):
@@ -41,9 +45,21 @@ class SourceDetector(ABC):
         """Compute each node score to be source."""
         pass
 
-    def process_estimation(self, result: Dict[int, float]):
+    def process_estimation(self, result: Dict[int, float]) -> List[Tuple[int, float]]:
         """Return estimated sources with scores."""
-        return sort_dict_by_value(result)[: self.config.number_of_sources]
+
+        if self.config.number_of_sources:
+            result = normalize_dict_values(result)
+        if self.config.source_threshold:
+            return sort_dict_by_value(
+                {
+                    node: value
+                    for node, value in result.items()
+                    if value >= self.config.source_threshold
+                }
+            )
+        else:
+            return sort_dict_by_value(result)[: self.config.number_of_sources]
 
     @cached_property
     def detected_sources(self) -> Union[int, List[int]]:
@@ -98,7 +114,11 @@ class CommunityBasedSourceDetector(SourceDetector, ABC):
 
     def estimate_sources(self) -> Dict[int, Dict[int, float]]:
         return {
-            cluster: self.find_sources_in_community(self.IG.subgraph(nodes))
+            cluster: normalize_dict_values(
+                self.find_sources_in_community(self.IG.subgraph(nodes))
+            )
+            if self.config.normalize_results
+            else self.find_sources_in_community(self.IG.subgraph(nodes))
             for cluster, nodes in self.communities.items()
         }
 

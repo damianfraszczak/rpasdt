@@ -64,11 +64,8 @@ class JordanCenterCommunityBasedSourceDetector(CommunityBasedSourceDetector):
                     STOP = 1
 
             t = t + 1
-        max_tall = max(tall.values())
         return {
-            node: tall[node] / max_tall
-            if len(infected_nodes_neighbours[node]) >= N
-            else 0
+            node: tall[node] if len(infected_nodes_neighbours[node]) >= N else 0
             for node in nodes
             if node in graph
         }

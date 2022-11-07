@@ -97,6 +97,11 @@ def sort_dict_by_value(data: Dict[any, any], reverse=True) -> List[Tuple]:
     return sorted(data.items(), key=lambda x: x[1], reverse=reverse)
 
 
+def normalize_dict_values(data: Dict[any, float]) -> Dict[any, float]:
+    maxv = max(data.values())
+    return {key: value / maxv for key, value in data.items()}
+
+
 def eval_if_str(val: Any):
     if isinstance(val, str):
         return ast.literal_eval(val)

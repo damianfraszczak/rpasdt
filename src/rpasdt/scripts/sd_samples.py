@@ -1,4 +1,5 @@
 import csv
+import time
 
 import stopit
 
@@ -22,6 +23,7 @@ def sd_evaluation_with_static_propagations():
         "threshold",
         "comm_difference",
         "avg_com_size",
+        "avg_time",
         "avg_distance",
         "TP",
         "TN",
@@ -55,10 +57,15 @@ def sd_evaluation_with_static_propagations():
                         row["sources"],
                         row["infected_nodes"],
                     )
-                    infected_nodes = [int(x) for x in infected_nodes.split("|")]
-                    sources = [int(x) for x in sources.split("|")]
+                    infected_nodes = infected_nodes.split("|")
+                    sources = sources.split("|")
                     number_of_sources = len(sources)
+
                     IG = G.subgraph(infected_nodes)
+                    if len(IG.nodes) == 0:
+                        infected_nodes = [int(x) for x in infected_nodes]
+                        sources = [int(x) for x in sources]
+                        IG = G.subgraph(infected_nodes)
 
                     result = aggregated_result.get(
                         number_of_sources
@@ -86,10 +93,13 @@ def sd_evaluation_with_static_propagations():
                         )
 
                         try:
-                            with stopit.ThreadingTimeout(1000):
+                            with stopit.ThreadingTimeout(60):
+                                start = time.time()
                                 sd_evaluation = source_detector.evaluate_sources(
                                     sources
                                 )
+                                end = time.time()
+                                sd_evaluation.additional_data["time"] = end - start
                                 result.add_result(
                                     name, source_detector_config, sd_evaluation
                                 )
@@ -114,6 +124,7 @@ def sd_evaluation_with_static_propagations():
                             threshold,
                             comm_difference,
                             avg_com_size,
+                            rr.avg_execution_time,
                             rr.avg_error_distance,
                             rr.TP,
                             rr.TN,

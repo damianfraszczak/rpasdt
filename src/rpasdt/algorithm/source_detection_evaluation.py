@@ -95,10 +95,13 @@ def compute_source_detection_experiment_evaluation(
     real_sources = []
     detected_sources = []
     additional_data = []
+    time = 0
     for result in evaluations:
         real_sources.append(result.real_sources)
         detected_sources.append(result.detected_sources)
         additional_data.append(result.additional_data)
+        time += result.additional_data.get("time", 0)
+
     return ExperimentSourceDetectionEvaluation(
         avg_error_distance=avg_error_distance,
         TP=TP,
@@ -110,4 +113,5 @@ def compute_source_detection_experiment_evaluation(
         real_sources=real_sources,
         detected_sources=detected_sources,
         additional_data=additional_data,
+        avg_execution_time=time / len(evaluations),
     )
