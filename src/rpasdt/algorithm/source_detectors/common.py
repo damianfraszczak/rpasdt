@@ -48,7 +48,9 @@ class SourceDetector(ABC):
         return self.CONFIG_CLASS()
 
     @abstractmethod
-    def estimate_sources(self) -> Dict[int, Union[int, Dict[int, float]]]:
+    def estimate_sources(
+        self, G: Graph, IG: Graph
+    ) -> Dict[int, Union[int, Dict[int, float]]]:
         """Compute each node score to be source."""
         pass
 
@@ -76,7 +78,7 @@ class SourceDetector(ABC):
 
     @cached_property
     def detected_sources_estimation(self) -> List[Tuple[int, float]]:
-        return self.process_estimation(self.estimate_sources())
+        return self.process_estimation(self.estimate_sources(G=self.G, IG=self.IG))
 
     def get_additional_data_for_source_evaluation(self) -> Dict[str, Any]:
         return {}
@@ -119,9 +121,9 @@ class CommunityBasedSourceDetector(SourceDetector, ABC):
             )
         )
 
-    def estimate_sources(self) -> Dict[int, Dict[int, float]]:
+    def estimate_sources(self, G: Graph, IG: Graph) -> Dict[int, Dict[int, float]]:
         return {
-            cluster: self.find_sources_in_community(self.IG.subgraph(nodes))
+            cluster: self.find_sources_in_community(IG.subgraph(nodes))
             for cluster, nodes in self.communities.items()
         }
 
@@ -131,7 +133,7 @@ class CommunityBasedSourceDetector(SourceDetector, ABC):
 
     def process_estimation(self, result: Dict[int, float]) -> List[Tuple[int, float]]:
         nodes = {}
-        for cluster, nodes_dict in self.estimate_sources().items():
+        for cluster, nodes_dict in self.estimate_sources(G=self.G, IG=self.IG).items():
             nodes.update(super().process_estimation(nodes_dict))
         return sort_dict_by_value(nodes)
 

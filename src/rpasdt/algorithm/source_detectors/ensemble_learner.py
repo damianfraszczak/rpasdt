@@ -1,6 +1,6 @@
 from collections import defaultdict
 from dataclasses import field
-from typing import List
+from typing import Dict, List, Union
 
 from networkx import Graph
 
@@ -11,16 +11,21 @@ from rpasdt.algorithm.source_detectors.common import (
     CommunityBasedSourceDetector,
     SourceDetector,
 )
+from rpasdt.common.utils import normalize_dict_values
 
 
-class EnsembleLearnerSourceDetector(CommunityBasedSourceDetector):
+class EnsembleLearnerSourceDetector(SourceDetector):
     CONFIG_CLASS = EnsembleCommunitiesBasedSourceDetectionConfig
     source_detectors: List[SourceDetector]
 
-    def find_sources_in_community(self, graph: Graph):
+    def estimate_sources(
+        self, G: Graph, IG: Graph
+    ) -> Dict[int, Union[int, Dict[int, float]]]:
+        """Compute each node score to be source."""
         results = defaultdict(int)
         for sd in self.source_detectors:
-            result = sd.f(graph)
+            result = sd.estimate_sources(G=G, IG=IG)
+            result = normalize_dict_values(result)
             for key, value in result.items():
                 results[key] += value
         results = {
@@ -32,7 +37,7 @@ class EnsembleLearnerSourceDetector(CommunityBasedSourceDetector):
 
 class CommunityEnsembleLearnerSourceDetector(CommunityBasedSourceDetector):
     CONFIG_CLASS = EnsembleCommunitiesBasedSourceDetectionConfig
-    source_detectors: List[CommunityBasedSourceDetector] = field(default_factory=list)
+    source_detectors: List[SourceDetector] = field(default_factory=list)
 
     def __init__(
         self, G: Graph, IG: Graph, config: EnsembleCommunitiesBasedSourceDetectionConfig
@@ -53,7 +58,7 @@ class CommunityEnsembleLearnerSourceDetector(CommunityBasedSourceDetector):
     def find_sources_in_community(self, graph: Graph):
         results = defaultdict(float)
         for sd in self.source_detectors:
-            result = sd.find_sources_in_community(graph)
+            result = sd.fin(graph)
             for key, value in result.items():
                 results[key] += value
 

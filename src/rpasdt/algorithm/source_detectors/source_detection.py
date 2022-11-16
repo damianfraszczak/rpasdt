@@ -1,9 +1,14 @@
 """Source detection utility methods."""
 from typing import Optional
 
+import networkx as nx
 from networkx import Graph
 
-from rpasdt.algorithm.models import SourceDetectionConfig
+from rpasdt.algorithm.models import (
+    CentralityBasedSourceDetectionConfig,
+    CentralityCommunityBasedSourceDetectionConfig,
+    SourceDetectionConfig,
+)
 from rpasdt.algorithm.source_detectors.centrality import (
     CentralityBasedSourceDetector,
     CentralityCommunityBasedSourceDetector,
@@ -27,7 +32,10 @@ from rpasdt.algorithm.source_detectors.net_sleuth import (
 from rpasdt.algorithm.source_detectors.rumour_center import (
     RumorCenterCommunityBasedSourceDetector,
 )
-from rpasdt.algorithm.taxonomies import SourceDetectionAlgorithm
+from rpasdt.algorithm.taxonomies import (
+    CommunityOptionEnum,
+    SourceDetectionAlgorithm,
+)
 
 SOURCE_DETECTORS = {
     SourceDetectionAlgorithm.CENTRALITY_BASED: CentralityBasedSourceDetector,
@@ -60,24 +68,31 @@ def get_source_detector(
     return detector
 
 
-#
-# import networkx as nx
-# from rpasdt.algorithm.models import (
-#     CentralityCommunityBasedSourceDetectionConfig,
-#     SourceDetectionConfig,
-# )
-# from rpasdt.algorithm.taxonomies import (
-#     CommunityOptionEnum,
-#     SourceDetectionAlgorithm,
-# )
-# G = nx.karate_club_graph()
-# detector = get_source_detector(
-#     SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
-#     G=G,
-#     IG=G,
-#     config=CentralityCommunityBasedSourceDetectionConfig(
-#         source_threshold=0.4, communities_algorithm=CommunityOptionEnum.NODE_SIMILARITY
-#     ),
-# )
-# print(detector.detected_sources_estimation)
-# print(detector.detected_sources)
+def detectors_test():
+    G = nx.karate_club_graph()
+    detectors = [
+        get_source_detector(
+            SourceDetectionAlgorithm.CENTRALITY_BASED,
+            G=G,
+            IG=G,
+            config=CentralityBasedSourceDetectionConfig(
+                source_threshold=0.1,
+            ),
+        ),
+        get_source_detector(
+            SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
+            G=G,
+            IG=G,
+            config=CentralityCommunityBasedSourceDetectionConfig(
+                source_threshold=0.1, communities_algorithm=CommunityOptionEnum.LOUVAIN
+            ),
+        ),
+    ]
+    for detector in detectors:
+        print(str(detector))
+        print(detector.detected_sources_estimation)
+        print(detector.detected_sources)
+
+
+if __name__ == "__main__":
+    detectors_test()

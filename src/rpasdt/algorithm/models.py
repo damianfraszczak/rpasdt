@@ -76,9 +76,7 @@ class CommunitiesBasedSourceDetectionConfig(SourceDetectionConfig):
 
 
 @dataclass
-class EnsembleCommunitiesBasedSourceDetectionConfig(
-    CommunitiesBasedSourceDetectionConfig
-):
+class EnsembleCommunitiesBasedSourceDetectionConfig(SourceDetectionConfig):
     source_detectors_config: Dict[
         str, Tuple[SourceDetectionAlgorithm, SourceDetectionConfig]
     ] = field(default_factory=dict)

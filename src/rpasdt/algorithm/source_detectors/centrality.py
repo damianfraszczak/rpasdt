@@ -24,17 +24,21 @@ from rpasdt.algorithm.source_detectors.common import (
 class CentralityBasedSourceDetector(SourceDetector):
     CONFIG_CLASS = CentralityBasedSourceDetectionConfig
 
-    def estimate_sources(self) -> Dict[int, Union[float, Dict[int, float]]]:
-        return compute_centrality(type=self.config.centrality_algorithm, graph=self.IG)
+    def estimate_sources(
+        self, G: Graph, IG: Graph
+    ) -> Dict[int, Union[float, Dict[int, float]]]:
+        return compute_centrality(type=self.config.centrality_algorithm, graph=IG)
 
 
 class MultipleCentralityBasedSourceDetector(SourceDetector):
     CONFIG_CLASS = MultipleCentralityBasedSourceDetectionConfig
 
-    def estimate_sources(self) -> Dict[int, Union[float, Dict[int, float]]]:
+    def estimate_sources(
+        self, G: Graph, IG: Graph
+    ) -> Dict[int, Union[float, Dict[int, float]]]:
         sums = Counter()
         for alg in self.config.centrality_algorithms:
-            sums.update(compute_centrality(type=alg, graph=self.IG))
+            sums.update(compute_centrality(type=alg, graph=IG))
         return {
             node: value / len(self.config.centrality_algorithms)
             for node, value in sums.items()
@@ -44,9 +48,11 @@ class MultipleCentralityBasedSourceDetector(SourceDetector):
 class UnbiasedCentralityBasedSourceDetector(SourceDetector):
     CONFIG_CLASS = UnbiasedCentralityBasedSourceDetectionConfig
 
-    def estimate_sources(self) -> Dict[int, Union[float, Dict[int, float]]]:
+    def estimate_sources(
+        self, G: Graph, IG: Graph
+    ) -> Dict[int, Union[float, Dict[int, float]]]:
         return compute_unbiased_centrality(
-            type=self.config.centrality_algorithm, r=self.config.r, graph=self.IG
+            type=self.config.centrality_algorithm, r=self.config.r, graph=IG
         )
 
 
