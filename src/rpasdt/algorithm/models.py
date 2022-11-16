@@ -76,10 +76,15 @@ class CommunitiesBasedSourceDetectionConfig(SourceDetectionConfig):
 
 
 @dataclass
-class EnsembleCommunitiesBasedSourceDetectionConfig(SourceDetectionConfig):
+class EnsembleBasedSourceDetectionConfig(SourceDetectionConfig):
     source_detectors_config: Dict[
         str, Tuple[SourceDetectionAlgorithm, SourceDetectionConfig]
     ] = field(default_factory=dict)
+
+
+@dataclass
+class EnsembleCommunityBasedSourceDetectionConfig(EnsembleBasedSourceDetectionConfig):
+    communities_algorithm: CommunityOptionEnum = CommunityOptionEnum.LOUVAIN
 
 
 @dataclass
