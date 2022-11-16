@@ -7,7 +7,6 @@ from scipy.io import mmread
 from rpasdt.algorithm.models import (
     CentralityCommunityBasedSourceDetectionConfig,
     CommunitiesBasedSourceDetectionConfig,
-    EnsembleCommunitiesBasedSourceDetectionConfig,
     SourceDetectorSimulationConfig,
 )
 from rpasdt.algorithm.taxonomies import (
@@ -100,13 +99,13 @@ def watts_strogatz_graph_2():
 
 
 graphs = [
-    # karate_graph,
-    # dolphin,
-    # footbal,
+    karate_graph,
+    dolphin,
+    footbal,
     # barabasi_1,
-    barabasi_2,
-    watts_strogatz_graph_1,
-    watts_strogatz_graph_2,
+    # barabasi_2,
+    # watts_strogatz_graph_1,
+    # watts_strogatz_graph_2,
     # facebook,
     # soc_anybeat,
 ]
@@ -236,93 +235,93 @@ source_detectors.update(
         for cm in communities
     }
 )
-source_detectors.update(
-    {
-        f"ensemble:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
-            alg=SourceDetectionAlgorithm.COMMUNITY_ENSEMBLE_LEARNER,
-            config=EnsembleCommunitiesBasedSourceDetectionConfig(
-                number_of_sources=x,
-                communities_algorithm=cm,
-                source_detectors_config={
-                    "BETWEENNESS": (
-                        SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
-                        CentralityCommunityBasedSourceDetectionConfig(
-                            number_of_sources=x,
-                            centrality_algorithm=CentralityOptionEnum.BETWEENNESS,
-                            communities_algorithm=cm,
-                            source_threshold=SOURCE_THRESHOLD,
-                        ),
-                    ),
-                    # "JORDAN": (SourceDetectionAlgorithm.JORDAN_CENTER,
-                    #            CommunitiesBasedSourceDetectionConfig(
-                    #                number_of_sources=x,
-                    #                communities_algorithm=cm
-                    #            )),
-                    "RUMOR": (
-                        SourceDetectionAlgorithm.RUMOR_CENTER,
-                        CommunitiesBasedSourceDetectionConfig(
-                            number_of_sources=x, communities_algorithm=cm
-                        ),
-                    ),
-                    "NETSLEUTH": (
-                        SourceDetectionAlgorithm.NET_SLEUTH,
-                        CommunitiesBasedSourceDetectionConfig(
-                            number_of_sources=x, communities_algorithm=cm
-                        ),
-                    ),
-                },
-            ),
-        )
-        for cm in communities
-    }
-)
-source_detectors.update(
-    {
-        f"ensemble-centralities:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
-            alg=SourceDetectionAlgorithm.COMMUNITY_ENSEMBLE_LEARNER,
-            config=EnsembleCommunitiesBasedSourceDetectionConfig(
-                number_of_sources=x,
-                communities_algorithm=cm,
-                source_detectors_config={
-                    "BETWEENNESS": (
-                        SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
-                        CentralityCommunityBasedSourceDetectionConfig(
-                            number_of_sources=x,
-                            centrality_algorithm=CentralityOptionEnum.BETWEENNESS,
-                            communities_algorithm=cm,
-                            source_threshold=SOURCE_THRESHOLD,
-                        ),
-                    ),
-                    "DEGREE": (
-                        SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
-                        CentralityCommunityBasedSourceDetectionConfig(
-                            number_of_sources=x,
-                            centrality_algorithm=CentralityOptionEnum.DEGREE,
-                            communities_algorithm=cm,
-                            source_threshold=SOURCE_THRESHOLD,
-                        ),
-                    ),
-                    "CLOSENESS": (
-                        SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
-                        CentralityCommunityBasedSourceDetectionConfig(
-                            number_of_sources=x,
-                            centrality_algorithm=CentralityOptionEnum.CLOSENESS,
-                            communities_algorithm=cm,
-                            source_threshold=SOURCE_THRESHOLD,
-                        ),
-                    ),
-                    "PAGE_RANK": (
-                        SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
-                        CentralityCommunityBasedSourceDetectionConfig(
-                            number_of_sources=x,
-                            centrality_algorithm=CentralityOptionEnum.PAGE_RANK,
-                            communities_algorithm=cm,
-                            source_threshold=SOURCE_THRESHOLD,
-                        ),
-                    ),
-                },
-            ),
-        )
-        for cm in communities
-    }
-)
+# source_detectors.update(
+#     {
+#         f"ensemble:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
+#             alg=SourceDetectionAlgorithm.COMMUNITY_ENSEMBLE_LEARNER,
+#             config=EnsembleCommunitiesBasedSourceDetectionConfig(
+#                 number_of_sources=x,
+#                 communities_algorithm=cm,
+#                 source_detectors_config={
+#                     "BETWEENNESS": (
+#                         SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
+#                         CentralityCommunityBasedSourceDetectionConfig(
+#                             number_of_sources=x,
+#                             centrality_algorithm=CentralityOptionEnum.BETWEENNESS,
+#                             communities_algorithm=cm,
+#                             source_threshold=SOURCE_THRESHOLD,
+#                         ),
+#                     ),
+#                     # "JORDAN": (SourceDetectionAlgorithm.JORDAN_CENTER,
+#                     #            CommunitiesBasedSourceDetectionConfig(
+#                     #                number_of_sources=x,
+#                     #                communities_algorithm=cm
+#                     #            )),
+#                     "RUMOR": (
+#                         SourceDetectionAlgorithm.RUMOR_CENTER,
+#                         CommunitiesBasedSourceDetectionConfig(
+#                             number_of_sources=x, communities_algorithm=cm
+#                         ),
+#                     ),
+#                     "NETSLEUTH": (
+#                         SourceDetectionAlgorithm.NET_SLEUTH,
+#                         CommunitiesBasedSourceDetectionConfig(
+#                             number_of_sources=x, communities_algorithm=cm
+#                         ),
+#                     ),
+#                 },
+#             ),
+#         )
+#         for cm in communities
+#     }
+# )
+# source_detectors.update(
+#     {
+#         f"ensemble-centralities:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
+#             alg=SourceDetectionAlgorithm.COMMUNITY_ENSEMBLE_LEARNER,
+#             config=EnsembleCommunitiesBasedSourceDetectionConfig(
+#                 number_of_sources=x,
+#                 communities_algorithm=cm,
+#                 source_detectors_config={
+#                     "BETWEENNESS": (
+#                         SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
+#                         CentralityCommunityBasedSourceDetectionConfig(
+#                             number_of_sources=x,
+#                             centrality_algorithm=CentralityOptionEnum.BETWEENNESS,
+#                             communities_algorithm=cm,
+#                             source_threshold=SOURCE_THRESHOLD,
+#                         ),
+#                     ),
+#                     "DEGREE": (
+#                         SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
+#                         CentralityCommunityBasedSourceDetectionConfig(
+#                             number_of_sources=x,
+#                             centrality_algorithm=CentralityOptionEnum.DEGREE,
+#                             communities_algorithm=cm,
+#                             source_threshold=SOURCE_THRESHOLD,
+#                         ),
+#                     ),
+#                     "CLOSENESS": (
+#                         SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
+#                         CentralityCommunityBasedSourceDetectionConfig(
+#                             number_of_sources=x,
+#                             centrality_algorithm=CentralityOptionEnum.CLOSENESS,
+#                             communities_algorithm=cm,
+#                             source_threshold=SOURCE_THRESHOLD,
+#                         ),
+#                     ),
+#                     "PAGE_RANK": (
+#                         SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
+#                         CentralityCommunityBasedSourceDetectionConfig(
+#                             number_of_sources=x,
+#                             centrality_algorithm=CentralityOptionEnum.PAGE_RANK,
+#                             communities_algorithm=cm,
+#                             source_threshold=SOURCE_THRESHOLD,
+#                         ),
+#                     ),
+#                 },
+#             ),
+#         )
+#         for cm in communities
+#     }
+# )

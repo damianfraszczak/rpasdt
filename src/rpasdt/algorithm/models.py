@@ -48,7 +48,7 @@ class NetworkSourceSelectionConfig:
 
 @dataclass
 class SourceDetectionConfig:
-    number_of_sources: Optional[int] = 1
+    number_of_sources: Optional[int] = None
     source_threshold: Optional[float] = None
     normalize_results: bool = True
 

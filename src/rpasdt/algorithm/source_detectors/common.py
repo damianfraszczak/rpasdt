@@ -30,6 +30,13 @@ class SourceDetector(ABC):
         self.G = G
         self.IG = IG
         self._config = config
+        self.validate_config()
+
+    def validate_config(self):
+        if self.config.source_threshold and self.config.number_of_sources:
+            raise Exception(
+                "Only one of `source_threshold` or `number_of_sources` is " "required."
+            )
 
     @property
     def config(self):
@@ -48,18 +55,18 @@ class SourceDetector(ABC):
     def process_estimation(self, result: Dict[int, float]) -> List[Tuple[int, float]]:
         """Return estimated sources with scores."""
 
-        if self.config.number_of_sources:
+        if self.config.normalize_results:
             result = normalize_dict_values(result)
+        result = sort_dict_by_value(result)
+        max_estimation = result[0][1]
         if self.config.source_threshold:
-            return sort_dict_by_value(
-                {
-                    node: value
-                    for node, value in result.items()
-                    if value >= self.config.source_threshold
-                }
-            )
+            return [
+                (node, value)
+                for node, value in result
+                if max_estimation - value <= self.config.source_threshold
+            ]
         else:
-            return sort_dict_by_value(result)[: self.config.number_of_sources]
+            return result[: self.config.number_of_sources or 1]
 
     @cached_property
     def detected_sources(self) -> Union[int, List[int]]:
@@ -114,11 +121,7 @@ class CommunityBasedSourceDetector(SourceDetector, ABC):
 
     def estimate_sources(self) -> Dict[int, Dict[int, float]]:
         return {
-            cluster: normalize_dict_values(
-                self.find_sources_in_community(self.IG.subgraph(nodes))
-            )
-            if self.config.normalize_results
-            else self.find_sources_in_community(self.IG.subgraph(nodes))
+            cluster: self.find_sources_in_community(self.IG.subgraph(nodes))
             for cluster, nodes in self.communities.items()
         }
 
@@ -129,18 +132,7 @@ class CommunityBasedSourceDetector(SourceDetector, ABC):
     def process_estimation(self, result: Dict[int, float]) -> List[Tuple[int, float]]:
         nodes = {}
         for cluster, nodes_dict in self.estimate_sources().items():
-            sorted_nodes = sort_dict_by_value(nodes_dict)
-
-            # in one community there is exactly one source
-            # [0] get first from sorted, [0] get node index
-            if not self.config.source_threshold:
-                nodes[sorted_nodes[0][0]] = sorted_nodes[0][1]
-            else:
-                max_val = sorted_nodes[0][1]
-                threshold = max_val - self.config.source_threshold
-                for nnode, val in sorted_nodes:
-                    if val >= threshold:
-                        nodes[nnode] = val
+            nodes.update(super().process_estimation(nodes_dict))
         return sort_dict_by_value(nodes)
 
     def get_additional_data_for_source_evaluation(self) -> Dict[str, Any]:

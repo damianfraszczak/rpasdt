@@ -345,3 +345,10 @@ class SourceDetectionAlgorithm(StringChoiceEnum):
         "community_ensemble_learner",
         "Find sources with community Ensemble approach.",
     )
+
+
+class SdDataKey(StringChoiceEnum):
+    RESULT = (
+        "result",
+        "Obtained result.",
+    )

@@ -62,18 +62,22 @@ def get_source_detector(
 
 #
 # import networkx as nx
-#
+# from rpasdt.algorithm.models import (
+#     CentralityCommunityBasedSourceDetectionConfig,
+#     SourceDetectionConfig,
+# )
+# from rpasdt.algorithm.taxonomies import (
+#     CommunityOptionEnum,
+#     SourceDetectionAlgorithm,
+# )
 # G = nx.karate_club_graph()
 # detector = get_source_detector(
-#     SourceDetectionAlgorithm.MULTIPLE_CENTRALITY_BASED,
+#     SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
 #     G=G,
 #     IG=G,
-#     number_of_sources=2,
-#     config=MultipleCentralityBasedSourceDetectionConfig(
-#         centrality_algorithms=[
-#             CentralityOptionEnum.DEGREE,
-#             CentralityOptionEnum.BETWEENNESS,
-#         ]
+#     config=CentralityCommunityBasedSourceDetectionConfig(
+#         source_threshold=0.4, communities_algorithm=CommunityOptionEnum.NODE_SIMILARITY
 #     ),
 # )
+# print(detector.detected_sources_estimation)
 # print(detector.detected_sources)
