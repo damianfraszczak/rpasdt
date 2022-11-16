@@ -1,5 +1,6 @@
 """Common methods shared throughout the app."""
 import ast
+import collections
 import inspect
 import re
 from collections import defaultdict
@@ -7,7 +8,7 @@ from enum import Enum
 from functools import wraps
 from pathlib import Path
 from time import process_time
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Mapping, Optional, Type, Union
 
 from dataclasses_json import dataclass_json
 
@@ -93,8 +94,10 @@ def group_dict_by_values(dict: Dict):
     return res
 
 
-def sort_dict_by_value(data: Dict[any, any], reverse=True) -> List[Tuple]:
-    return sorted(data.items(), key=lambda x: x[1], reverse=reverse)
+def sort_dict_by_value(data: Dict[any, any], reverse=True) -> Dict[any, any]:
+    return collections.OrderedDict(
+        sorted(data.items(), key=lambda x: x[1], reverse=reverse)
+    )
 
 
 def normalize_dict_values(data: Dict[any, float]) -> Dict[any, float]:

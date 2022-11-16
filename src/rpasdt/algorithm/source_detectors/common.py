@@ -1,7 +1,7 @@
 """Common source detection methods."""
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 from networkx import Graph
 
@@ -30,6 +30,8 @@ class SourceDetector(ABC):
         self.G = G
         self.IG = IG
         self._config = config
+        self._node_estimations = {}
+        self._normalized_node_estimations = {}
         self.validate_config()
 
     def validate_config(self):
@@ -54,34 +56,45 @@ class SourceDetector(ABC):
         """Compute each node score to be source."""
         pass
 
-    def process_estimation(self, result: Dict[int, float]) -> List[Tuple[int, float]]:
+    def process_estimation(self, result: Dict[int, float]) -> Dict[int, float]:
         """Return estimated sources with scores."""
-
+        result = sort_dict_by_value(result)
+        self._node_estimations.update(result)
         if self.config.normalize_results:
             result = normalize_dict_values(result)
-        result = sort_dict_by_value(result)
-        max_estimation = result[0][1]
+        max_estimation = max(result.values())
+        self._normalized_node_estimations.update(result)
         if self.config.source_threshold:
-            return [
-                (node, value)
-                for node, value in result
+            return {
+                node: value
+                for node, value in result.items()
                 if max_estimation - value <= self.config.source_threshold
-            ]
+            }
         else:
-            return result[: self.config.number_of_sources or 1]
+            return {
+                node: value
+                for node, value in list(result.items())[
+                    : self.config.number_of_sources or 1
+                ]
+            }
 
     @cached_property
     def detected_sources(self) -> Union[int, List[int]]:
         """Return estimated sources."""
-        result = [source for source, _ in self.detected_sources_estimation]
+        result = [source for source, _ in self.detected_sources_estimation.items()]
         return result[0] if len(result) == 1 else result
 
     @cached_property
-    def detected_sources_estimation(self) -> List[Tuple[int, float]]:
+    def detected_sources_estimation(self) -> Dict[int, float]:
         return self.process_estimation(self.estimate_sources(G=self.G, IG=self.IG))
 
     def get_additional_data_for_source_evaluation(self) -> Dict[str, Any]:
-        return {}
+        return {
+            "node_estimations": sort_dict_by_value(self._node_estimations),
+            "normalized_node_estimations": sort_dict_by_value(
+                self._normalized_node_estimations
+            ),
+        }
 
     def evaluate_sources(
         self, real_sources: List[int]
@@ -121,21 +134,22 @@ class CommunityBasedSourceDetector(SourceDetector, ABC):
             )
         )
 
-    def estimate_sources(self, G: Graph, IG: Graph) -> Dict[int, Dict[int, float]]:
-        return {
-            cluster: self.find_sources_in_community(IG.subgraph(nodes))
-            for cluster, nodes in self.communities.items()
-        }
-
-    @abstractmethod
-    def find_sources_in_community(self, graph: Graph):
-        pass
-
-    def process_estimation(self, result: Dict[int, float]) -> List[Tuple[int, float]]:
-        nodes = {}
-        for cluster, nodes_dict in self.estimate_sources(G=self.G, IG=self.IG).items():
-            nodes.update(super().process_estimation(nodes_dict))
-        return sort_dict_by_value(nodes)
+    @cached_property
+    def detected_sources_estimation(self) -> Dict[int, float]:
+        nodes_estimation = {}
+        for cluster, nodes in self.communities.items():
+            estimation = self.estimate_sources(G=self.G, IG=self.IG.subgraph(nodes))
+            nodes_estimation.update(self.process_estimation(estimation))
+        return sort_dict_by_value(nodes_estimation)
 
     def get_additional_data_for_source_evaluation(self) -> Dict[str, Any]:
-        return {"communities": self.communities}
+        return {
+            **super().get_additional_data_for_source_evaluation(),
+            "communities": self.communities,
+            "estimation_per_community": {
+                cluster: sort_dict_by_value(
+                    {node: self._node_estimations[node] for node in nodes}
+                )
+                for cluster, nodes in self.communities.items()
+            },
+        }

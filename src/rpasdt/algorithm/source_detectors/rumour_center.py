@@ -30,14 +30,14 @@ def children_processed(tree: DiGraph, node: int, processed_nodes: List[int]) -> 
 
 
 class RumorCenterCommunityBasedSourceDetector(CommunityBasedSourceDetector):
-    def find_sources_in_community(self, graph: Graph):
-        nodes = list(graph)
+    def estimate_sources(self, G: Graph, IG: Graph):
+        nodes = list(IG)
         shuffle(nodes)
         N = len(nodes)
         rumorCentrality = {}
 
         for sourceNode in nodes:
-            bfs_tree = nx.bfs_tree(graph, sourceNode, False)
+            bfs_tree = nx.bfs_tree(IG, sourceNode, False)
             messages_up = {}
             messages_down = {}
             leaves = get_leaves(bfs_tree)

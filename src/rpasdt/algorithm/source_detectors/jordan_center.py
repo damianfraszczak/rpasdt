@@ -10,10 +10,7 @@ from rpasdt.algorithm.source_detectors.common import (
 
 
 class JordanCenterCommunityBasedSourceDetector(CommunityBasedSourceDetector):
-    def find_sources_in_community(self, graph: Graph):
-
-        IG = graph
-        G = self.G
+    def estimate_sources(self, G: Graph, IG: Graph):
         nodes = list(G.nodes())
         N = len(IG.nodes())
         tall = defaultdict(int)
@@ -67,5 +64,5 @@ class JordanCenterCommunityBasedSourceDetector(CommunityBasedSourceDetector):
         return {
             node: tall[node] if len(infected_nodes_neighbours[node]) >= N else 0
             for node in nodes
-            if node in graph
+            if node in IG
         }

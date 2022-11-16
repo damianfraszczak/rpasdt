@@ -11,13 +11,13 @@ from rpasdt.algorithm.source_detectors.common import (
 
 
 class DynamicAgeSourceDetector(CommunityBasedSourceDetector):
-    def find_sources_in_community(self, graph: Graph):
-        A = nx.adjacency_matrix(graph).todense().A
-        dynamicAges = {node: 0 for node in graph.nodes}
-        node_position = {node: index for index, node in enumerate(graph.nodes)}
+    def estimate_sources(self, G: Graph, IG: Graph):
+        A = nx.adjacency_matrix(IG).todense().A
+        dynamicAges = {node: 0 for node in IG.nodes}
+        node_position = {node: index for index, node in enumerate(IG.nodes)}
         lamda_max = max(np.linalg.eigvals(A)).real
 
-        for node in graph.nodes:
+        for node in IG.nodes:
             A_new = copy.deepcopy(A)
             A_new = np.delete(A_new, node_position[node], axis=0)
             A_new = np.delete(A_new, node_position[node], axis=1)

@@ -5,7 +5,6 @@ import networkx as nx
 from networkx import Graph
 
 from rpasdt.algorithm.models import (
-    CentralityBasedSourceDetectionConfig,
     CentralityCommunityBasedSourceDetectionConfig,
     SourceDetectionConfig,
 )
@@ -71,27 +70,32 @@ def get_source_detector(
 def detectors_test():
     G = nx.karate_club_graph()
     detectors = [
-        get_source_detector(
-            SourceDetectionAlgorithm.CENTRALITY_BASED,
-            G=G,
-            IG=G,
-            config=CentralityBasedSourceDetectionConfig(
-                source_threshold=0.1,
-            ),
-        ),
+        # get_source_detector(
+        #     SourceDetectionAlgorithm.CENTRALITY_BASED,
+        #     G=G,
+        #     IG=G,
+        #     config=CentralityBasedSourceDetectionConfig(
+        #         source_threshold=0.1,
+        #     ),
+        # ),
         get_source_detector(
             SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
             G=G,
             IG=G,
             config=CentralityCommunityBasedSourceDetectionConfig(
-                source_threshold=0.1, communities_algorithm=CommunityOptionEnum.LOUVAIN
+                source_threshold=0.0, communities_algorithm=CommunityOptionEnum.LOUVAIN
             ),
         ),
     ]
     for detector in detectors:
+        print("########")
         print(str(detector))
         print(detector.detected_sources_estimation)
         print(detector.detected_sources)
+        for key, value in detector.get_additional_data_for_source_evaluation().items():
+            print("$$$$$$$$")
+            print(key)
+            print(value)
 
 
 if __name__ == "__main__":

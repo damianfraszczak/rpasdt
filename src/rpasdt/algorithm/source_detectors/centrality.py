@@ -56,7 +56,9 @@ class UnbiasedCentralityBasedSourceDetector(SourceDetector):
         )
 
 
-class CentralityCommunityBasedSourceDetector(CommunityBasedSourceDetector):
+class CentralityCommunityBasedSourceDetector(
+    CentralityBasedSourceDetector, CommunityBasedSourceDetector
+):
     CONFIG_CLASS = CentralityCommunityBasedSourceDetectionConfig
 
     def __init__(
@@ -67,16 +69,16 @@ class CentralityCommunityBasedSourceDetector(CommunityBasedSourceDetector):
     ):
         super().__init__(G, IG, config)
 
-    def find_sources_in_community(self, graph: Graph):
-        return compute_centrality(type=self.config.centrality_algorithm, graph=graph)
-
 
 class UnbiasedCentralityCommunityBasedSourceDetector(
-    CentralityCommunityBasedSourceDetector
+    UnbiasedCentralityBasedSourceDetector, CommunityBasedSourceDetector
 ):
     CONFIG_CLASS = UnbiasedCentralityCommunityBasedSourceDetectionConfig
 
-    def find_sources_in_community(self, graph: Graph):
-        return compute_unbiased_centrality(
-            type=self.config.centrality_algorithm, graph=graph, r=self.config.r
-        )
+    def __init__(
+        self,
+        G: Graph,
+        IG: Graph,
+        config: Optional[UnbiasedCentralityCommunityBasedSourceDetectionConfig] = None,
+    ):
+        super().__init__(G, IG, config)
