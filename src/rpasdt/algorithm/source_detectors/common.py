@@ -57,13 +57,18 @@ class SourceDetector(ABC):
         pass
 
     def process_estimation(self, result: Dict[int, float]) -> Dict[int, float]:
-        """Return estimated sources with scores."""
         result = sort_dict_by_value(result)
         self._node_estimations.update(result)
         if self.config.normalize_results:
             result = normalize_dict_values(result)
-        max_estimation = max(result.values())
         self._normalized_node_estimations.update(result)
+        return result
+
+    def retrieve_sources_from_estimation(
+        self, result: Dict[int, float]
+    ) -> Dict[int, float]:
+        """Return estimated sources with scores."""
+        max_estimation = max(result.values())
         if self.config.source_threshold:
             return {
                 node: value
@@ -86,7 +91,9 @@ class SourceDetector(ABC):
 
     @cached_property
     def detected_sources_estimation(self) -> Dict[int, float]:
-        return self.process_estimation(self.estimate_sources(G=self.G, IG=self.IG))
+        estimation = self.estimate_sources(G=self.G, IG=self.IG)
+        processed_estimation = self.process_estimation(estimation)
+        return self.retrieve_sources_from_estimation(processed_estimation)
 
     def get_additional_data_for_source_evaluation(self) -> Dict[str, Any]:
         return {
@@ -136,20 +143,21 @@ class CommunityBasedSourceDetector(SourceDetector, ABC):
 
     @cached_property
     def detected_sources_estimation(self) -> Dict[int, float]:
-        nodes_estimation = {}
+        sources = {}
         for cluster, nodes in self.communities.items():
             estimation = self.estimate_sources(G=self.G, IG=self.IG.subgraph(nodes))
-            nodes_estimation.update(self.process_estimation(estimation))
-        return sort_dict_by_value(nodes_estimation)
+            processed_estimation = self.process_estimation(estimation)
+            sources.update(self.retrieve_sources_from_estimation(processed_estimation))
+        return sort_dict_by_value(sources)
 
     def get_additional_data_for_source_evaluation(self) -> Dict[str, Any]:
+        estimation_per_community = {}
+        for cluster, nodes in self.communities.items():
+            estimation_per_community[cluster] = {
+                node: self._node_estimations[node] for node in nodes
+            }
         return {
             **super().get_additional_data_for_source_evaluation(),
             "communities": self.communities,
-            "estimation_per_community": {
-                cluster: sort_dict_by_value(
-                    {node: self._node_estimations[node] for node in nodes}
-                )
-                for cluster, nodes in self.communities.items()
-            },
+            "estimation_per_community": estimation_per_community,
         }

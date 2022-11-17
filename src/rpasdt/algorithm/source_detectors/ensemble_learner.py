@@ -37,16 +37,16 @@ class EnsembleLearnerSourceDetector(SourceDetector):
         self, G: Graph, IG: Graph
     ) -> Dict[int, Union[int, Dict[int, float]]]:
         """Compute each node score to be source."""
-        results = defaultdict(int)
+        results = defaultdict(float)
         for sd in self.source_detectors:
             result = sd.estimate_sources(G=G, IG=IG)
+            result = sd.process_estimation(result)
             result = normalize_dict_values(result)
             for key, value in result.items():
                 results[key] += value
         results = {
             key: value / len(self.source_detectors) for key, value in results.items()
         }
-        self._node_estimations.update(results)
         return results
 
     def get_additional_data_for_source_evaluation(self) -> Dict[str, Any]:
@@ -73,6 +73,10 @@ class CommunityEnsembleLearnerSourceDetector(
     def detected_sources_estimation(self) -> Dict[int, float]:
         nodes_estimation = {}
         for cluster, nodes in self.communities.items():
-            estimation = self.estimate_sources(G=self.G, IG=self.IG.subgraph(nodes))
-            nodes_estimation.update(self.process_estimation(estimation))
+            IG = self.IG.subgraph(nodes)
+            estimation = self.estimate_sources(G=self.G, IG=IG)
+            processed_estimation = self.process_estimation(estimation)
+            nodes_estimation.update(
+                self.retrieve_sources_from_estimation(processed_estimation)
+            )
         return sort_dict_by_value(nodes_estimation)

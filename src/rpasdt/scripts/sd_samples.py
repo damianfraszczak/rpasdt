@@ -14,9 +14,10 @@ from rpasdt.algorithm.source_detectors.source_detection import (
 from rpasdt.common.exceptions import log_error
 from rpasdt.scripts.taxonomies import graphs, source_detectors
 
-THRESHOLDS = np.arange(0, 1, 0.5)
+THRESHOLDS = np.arange(0, 1, 0.1)
 
-WRITE_FROM_BEGGINING = True
+WRITE_FROM_SCRATCH = True
+DIR_NAME = "sd_samples"
 
 
 def sd_evaluation_with_static_propagations():
@@ -45,8 +46,8 @@ def sd_evaluation_with_static_propagations():
     for graph_function in graphs:
         G = graph_function()
 
-        filename = f"results/sd_samples/{graph_function.__name__}_ce_static_network.csv"
-        if WRITE_FROM_BEGGINING:
+        filename = f"results/{DIR_NAME}/{graph_function.__name__}_ce_static_network.csv"
+        if WRITE_FROM_SCRATCH:
             file = open(filename, "w")
             csvwriter = csv.writer(file)
             csvwriter.writerow(header)

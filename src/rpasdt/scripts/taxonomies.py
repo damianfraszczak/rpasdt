@@ -7,6 +7,7 @@ from scipy.io import mmread
 from rpasdt.algorithm.models import (
     CentralityCommunityBasedSourceDetectionConfig,
     CommunitiesBasedSourceDetectionConfig,
+    EnsembleCommunityBasedSourceDetectionConfig,
     SourceDetectorSimulationConfig,
 )
 from rpasdt.algorithm.taxonomies import (
@@ -248,68 +249,67 @@ source_detectors.update(
 # )
 
 
-# source_detectors.update(
-#     {
-#         f"ensemble:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
-#             alg=SourceDetectionAlgorithm.COMMUNITY_ENSEMBLE_LEARNER,
-#             config=EnsembleCommunityBasedSourceDetectionConfig(
-#                 number_of_sources=x,
-#                 communities_algorithm=cm,
-#                 source_detectors_config={
-#                     "JORDAN": (
-#                         SourceDetectionAlgorithm.JORDAN_CENTER,
-#                         CommunitiesBasedSourceDetectionConfig(
-#                             number_of_sources=x, communities_algorithm=cm
-#                         ),
-#                     ),
-#                     "RUMOR": (
-#                         SourceDetectionAlgorithm.RUMOR_CENTER,
-#                         CommunitiesBasedSourceDetectionConfig(
-#                             number_of_sources=x, communities_algorithm=cm
-#                         ),
-#                     ),
-#                     "NETSLEUTH": (
-#                         SourceDetectionAlgorithm.NET_SLEUTH,
-#                         CommunitiesBasedSourceDetectionConfig(
-#                             number_of_sources=x, communities_algorithm=cm
-#                         ),
-#                     ),
-#                 },
-#             ),
-#         )
-#         for cm in communities
-#     }
-# )
-# source_detectors.update(
-#     {
-#         f"ensemble-centralities:{cm}": lambda x,
-#                                               cm=cm: SourceDetectorSimulationConfig(
-#             alg=SourceDetectionAlgorithm.COMMUNITY_ENSEMBLE_LEARNER,
-#             config=EnsembleCommunityBasedSourceDetectionConfig(
-#                 number_of_sources=x,
-#                 communities_algorithm=cm,
-#                 source_detectors_config={
-#                     "DEGREE": (
-#                         SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
-#                         CentralityCommunityBasedSourceDetectionConfig(
-#                             number_of_sources=x,
-#                             centrality_algorithm=CentralityOptionEnum.DEGREE,
-#                             communities_algorithm=cm,
-#                             source_threshold=SOURCE_THRESHOLD,
-#                         ),
-#                     ),
-#                     "PAGE_RANK": (
-#                         SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
-#                         CentralityCommunityBasedSourceDetectionConfig(
-#                             number_of_sources=x,
-#                             centrality_algorithm=CentralityOptionEnum.PAGE_RANK,
-#                             communities_algorithm=cm,
-#                             source_threshold=SOURCE_THRESHOLD,
-#                         ),
-#                     ),
-#                 },
-#             ),
-#         )
-#         for cm in communities
-#     }
-# )
+source_detectors.update(
+    {
+        f"ensemble:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
+            alg=SourceDetectionAlgorithm.COMMUNITY_ENSEMBLE_LEARNER,
+            config=EnsembleCommunityBasedSourceDetectionConfig(
+                number_of_sources=x,
+                communities_algorithm=cm,
+                source_detectors_config={
+                    "JORDAN": (
+                        SourceDetectionAlgorithm.JORDAN_CENTER,
+                        CommunitiesBasedSourceDetectionConfig(
+                            number_of_sources=x, communities_algorithm=cm
+                        ),
+                    ),
+                    "RUMOR": (
+                        SourceDetectionAlgorithm.RUMOR_CENTER,
+                        CommunitiesBasedSourceDetectionConfig(
+                            number_of_sources=x, communities_algorithm=cm
+                        ),
+                    ),
+                    "NETSLEUTH": (
+                        SourceDetectionAlgorithm.NET_SLEUTH,
+                        CommunitiesBasedSourceDetectionConfig(
+                            number_of_sources=x, communities_algorithm=cm
+                        ),
+                    ),
+                },
+            ),
+        )
+        for cm in communities
+    }
+)
+source_detectors.update(
+    {
+        f"ensemble-centralities:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
+            alg=SourceDetectionAlgorithm.COMMUNITY_ENSEMBLE_LEARNER,
+            config=EnsembleCommunityBasedSourceDetectionConfig(
+                number_of_sources=x,
+                communities_algorithm=cm,
+                source_detectors_config={
+                    "DEGREE": (
+                        SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
+                        CentralityCommunityBasedSourceDetectionConfig(
+                            number_of_sources=x,
+                            centrality_algorithm=CentralityOptionEnum.DEGREE,
+                            communities_algorithm=cm,
+                            source_threshold=SOURCE_THRESHOLD,
+                        ),
+                    ),
+                    "BETWEENNESS": (
+                        SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
+                        CentralityCommunityBasedSourceDetectionConfig(
+                            number_of_sources=x,
+                            centrality_algorithm=CentralityOptionEnum.BETWEENNESS,
+                            communities_algorithm=cm,
+                            source_threshold=SOURCE_THRESHOLD,
+                        ),
+                    ),
+                },
+            ),
+        )
+        for cm in communities
+    }
+)

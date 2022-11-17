@@ -1,9 +1,52 @@
 import networkx as nx
 
+from rpasdt.algorithm.models import (
+    CentralityCommunityBasedSourceDetectionConfig,
+    EnsembleCommunityBasedSourceDetectionConfig,
+    SourceDetectorSimulationConfig,
+)
 from rpasdt.algorithm.source_detectors.source_detection import (
     get_source_detector,
 )
-from rpasdt.scripts.taxonomies import source_detectors
+from rpasdt.algorithm.taxonomies import (
+    CentralityOptionEnum,
+    SourceDetectionAlgorithm,
+)
+from rpasdt.scripts.taxonomies import communities
+
+source_detectors = {}
+source_detectors.update(
+    {
+        f"ensemble-centralities:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
+            alg=SourceDetectionAlgorithm.COMMUNITY_ENSEMBLE_LEARNER,
+            config=EnsembleCommunityBasedSourceDetectionConfig(
+                number_of_sources=x,
+                communities_algorithm=cm,
+                source_detectors_config={
+                    "DEGREE": (
+                        SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
+                        CentralityCommunityBasedSourceDetectionConfig(
+                            number_of_sources=x,
+                            centrality_algorithm=CentralityOptionEnum.DEGREE,
+                            communities_algorithm=cm,
+                            normalize_results=False,
+                        ),
+                    ),
+                    "BETWEENNESS": (
+                        SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
+                        CentralityCommunityBasedSourceDetectionConfig(
+                            number_of_sources=x,
+                            centrality_algorithm=CentralityOptionEnum.BETWEENNESS,
+                            communities_algorithm=cm,
+                            normalize_results=False,
+                        ),
+                    ),
+                },
+            ),
+        )
+        for cm in communities
+    }
+)
 
 
 def detectors_test():
@@ -18,8 +61,9 @@ def detectors_test():
             config=source_detector_config.config,
             number_of_sources=None,
         )
+
         print(name)
-        # print(source_detector.detected_sources_estimation)
+        print(source_detector.detected_sources_estimation)
         print(source_detector.detected_sources)
         # for key, value in source_detector.get_additional_data_for_source_evaluation().items():
         #     print("$$$$$$$$")
