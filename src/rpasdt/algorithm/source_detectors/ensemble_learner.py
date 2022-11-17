@@ -80,3 +80,10 @@ class CommunityEnsembleLearnerSourceDetector(
                 self.retrieve_sources_from_estimation(processed_estimation)
             )
         return sort_dict_by_value(nodes_estimation)
+
+    def get_additional_data_for_source_evaluation(self) -> Dict[str, Any]:
+        return {
+            **super().get_additional_data_for_source_evaluation(),
+            "communities": self.communities,
+            "estimation_per_community": self.get_estimation_per_community(),
+        }

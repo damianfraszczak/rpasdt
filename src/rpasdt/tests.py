@@ -5,8 +5,7 @@ from typing import Optional
 
 import matplotlib
 import networkx as nx
-from matplotlib import cm, pyplot as plt
-from matplotlib.colors import to_hex
+from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 
 from rpasdt.algorithm.communities import df_node_similarity, find_communities
@@ -200,7 +199,7 @@ def draw_communities(G, partition, name=""):
     #
 
     # color the nodes according to their partition
-    cmap = cm.get_cmap("tab20c", len(grouped_nodes.keys()))
+    # cmap = cm.get_cmap("tab20c", len(grouped_nodes.keys()))
     ccolors = get_nodes_color(partition)
 
     configure_plot()
@@ -248,7 +247,7 @@ GRAPHS = {
     # # "strogats": watts_strogatz_graph,
     # # "barabasi": barabasi,
     # "cg": cg,
-    "radnom_partition": random_partition,
+    # "radnom_partition": random_partition,
     "facebook": facebook,
 }
 similarity_functions = [
@@ -270,11 +269,11 @@ if __name__ == "__main__":
                 index: community
                 for index, community in enumerate(get_object_value(comm, "communities"))
             }
-            draw_communities(G, comm, name=f"df_{G_name}")
+            # draw_communities(G, comm, name=f"df_{G_name}")
             # comm = leiden(G)
-            # print(
-            #     f"{G_name}-{len(comm.keys())}-{[len(nodes) for nodes in comm.values()]}: {comm}"
-            # )
+            print(
+                f"{G_name}-{len(comm.keys())}-{[len(nodes) for nodes in comm.values()]}: {comm}"
+            )
             # print(comm)
             # draw_communities(G, comm, name=f"leiden_{G_name}")
 

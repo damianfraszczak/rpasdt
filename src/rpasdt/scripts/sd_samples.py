@@ -23,6 +23,7 @@ DIR_NAME = "sd_samples"
 def sd_evaluation_with_static_propagations():
     header = [
         "type",
+        "experiments",
         "sources",
         "threshold",
         "comm_difference",
@@ -121,6 +122,7 @@ def sd_evaluation_with_static_propagations():
                             0.0,
                         )
                         for data in rr.additional_data:
+
                             communities = data["communities"]
                             detected_communities = len(communities.keys())
                             comm_difference += abs(
@@ -136,9 +138,10 @@ def sd_evaluation_with_static_propagations():
                         )
 
                         avg_com_count /= 1.0 * len(rr.additional_data)
-                        nr_of_missing_communities /= 1.0 * len(rr.additional_data)
+
                         row = [
                             config,
+                            len(rr.additional_data),
                             number_of_sources,
                             threshold,
                             comm_difference,

@@ -151,13 +151,17 @@ class CommunityBasedSourceDetector(SourceDetector, ABC):
         return sort_dict_by_value(sources)
 
     def get_additional_data_for_source_evaluation(self) -> Dict[str, Any]:
+
+        return {
+            **super().get_additional_data_for_source_evaluation(),
+            "communities": self.communities,
+            "estimation_per_community": self.get_estimation_per_community(),
+        }
+
+    def get_estimation_per_community(self):
         estimation_per_community = {}
         for cluster, nodes in self.communities.items():
             estimation_per_community[cluster] = {
                 node: self._node_estimations[node] for node in nodes
             }
-        return {
-            **super().get_additional_data_for_source_evaluation(),
-            "communities": self.communities,
-            "estimation_per_community": estimation_per_community,
-        }
+        return estimation_per_community
