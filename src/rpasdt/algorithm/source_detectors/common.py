@@ -68,7 +68,7 @@ class SourceDetector(ABC):
             return {
                 node: value
                 for node, value in result.items()
-                if max_estimation - value <= self.config.source_threshold
+                if max_estimation - value <= self.config.source_threshold and value >= 0
             }
         else:
             return {

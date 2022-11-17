@@ -34,7 +34,7 @@ NUMBER_OF_COMMUNITIES_KWARG_NAMES = ["k", "number_communities", "level"]
 MAX_NUMBER_OF_COMMUNITIES_KWARG_NAMES = ["kmax"]
 
 DEBUG = False
-MOD_THRESHOLD = 0.001
+MOD_THRESHOLD = 0.005
 
 
 def _update_communities_kwarg(

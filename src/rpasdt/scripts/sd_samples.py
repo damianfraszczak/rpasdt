@@ -14,7 +14,7 @@ from rpasdt.algorithm.source_detectors.source_detection import (
 from rpasdt.common.exceptions import log_error
 from rpasdt.scripts.taxonomies import graphs, source_detectors
 
-THRESHOLDS = np.arange(0, 1, 0.1)
+THRESHOLDS = np.arange(0, 1, 0.5)
 
 WRITE_FROM_BEGGINING = True
 
@@ -25,9 +25,11 @@ def sd_evaluation_with_static_propagations():
         "sources",
         "threshold",
         "comm_difference",
-        "avg_com_size",
+        "avg_com_count",
         "avg_time",
         "avg_distance",
+        "avg_detected_sources",
+        "nr_of_missing_communities",
         "TP",
         "TN",
         "FP",
@@ -49,7 +51,7 @@ def sd_evaluation_with_static_propagations():
             csvwriter = csv.writer(file)
             csvwriter.writerow(header)
             file.close()
-        print(f"Proccesing {graph_function.__name__}")
+        print(f"############### {graph_function.__name__}")
 
         source_file = f"results/propagations/{graph_function.__name__}.csv"
         for threshold in THRESHOLDS:
@@ -79,21 +81,21 @@ def sd_evaluation_with_static_propagations():
                     aggregated_result[number_of_sources] = result
 
                     sd_local = {
-                        name: config(number_of_sources)
-                        for name, config in source_detectors.items()
+                        name: config(None) for name, config in source_detectors.items()
                     }
 
                     for (
                         name,
                         source_detector_config,
                     ) in sd_local.items():
+                        print(f"PROCESSING {name}")
                         source_detector_config.config.source_threshold = threshold
                         source_detector = get_source_detector(
                             algorithm=source_detector_config.alg,
                             G=G,
                             IG=IG,
                             config=source_detector_config.config,
-                            number_of_sources=number_of_sources,
+                            # number_of_sources=number_of_sources,
                         )
 
                         try:
@@ -112,24 +114,38 @@ def sd_evaluation_with_static_propagations():
 
                 for number_of_sources, aggregated_result in aggregated_result.items():
                     for config, rr in aggregated_result.aggregated_results.items():
-                        comm_difference, avg_com_size = 0, 0
+                        comm_difference, avg_com_count, nr_of_missing_communities = (
+                            0.0,
+                            0.0,
+                            0.0,
+                        )
                         for data in rr.additional_data:
                             communities = data["communities"]
                             detected_communities = len(communities.keys())
                             comm_difference += abs(
                                 detected_communities - number_of_sources
                             )
-                            avg_com_size += detected_communities
+                            avg_com_count += detected_communities
+                            for cluster, nodes in communities.items():
+                                if not any(s in nodes for s in sources):
+                                    nr_of_missing_communities += 1
 
-                        avg_com_size /= len(rr.additional_data)
+                        detected_sources_sum = sum(
+                            [len(s) for s in rr.detected_sources]
+                        )
+
+                        avg_com_count /= 1.0 * len(rr.additional_data)
+                        nr_of_missing_communities /= 1.0 * len(rr.additional_data)
                         row = [
                             config,
                             number_of_sources,
                             threshold,
                             comm_difference,
-                            avg_com_size,
+                            avg_com_count,
                             rr.avg_execution_time,
                             rr.avg_error_distance,
+                            detected_sources_sum * 1.0 / len(rr.detected_sources),
+                            nr_of_missing_communities,
                             rr.TP,
                             rr.TN,
                             rr.FP,
