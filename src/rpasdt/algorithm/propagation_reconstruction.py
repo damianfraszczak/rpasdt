@@ -1,7 +1,7 @@
 import math
 import operator
 import random
-from functools import lru_cache, reduce
+from functools import reduce
 from typing import List, Set
 
 import matplotlib
@@ -52,8 +52,7 @@ def _get_nodes_to_process(EG: Graph, threshold: float) -> List[int]:
                 [
                     nn
                     for nn in nx.neighbors(EG, node)
-                    if
-                    EG.nodes[node][NODE_INFECTION_PROBABILITY_ATTR] > threshold
+                    if EG.nodes[node][NODE_INFECTION_PROBABILITY_ATTR] > threshold
                 ]
             ),
             reverse=True,
@@ -61,8 +60,7 @@ def _get_nodes_to_process(EG: Graph, threshold: float) -> List[int]:
     )
 
 
-def _check_node_in_external_network(node: int,
-                                    infected_nodes: Set[int]) -> bool:
+def _check_node_in_external_network(node: int, infected_nodes: Set[int]) -> bool:
     """
     Return True if node is detected to send a rumor in other site
     False otherwise.
@@ -75,23 +73,23 @@ def _check_node_in_external_network(node: int,
 
 def _compute_neighbors_probability(node: int, G: Graph) -> float:
     neighbors_probability = [
-        G.nodes[node][NODE_INFECTION_PROBABILITY_ATTR] for node in
-        nx.neighbors(G, node)
+        G.nodes[node][NODE_INFECTION_PROBABILITY_ATTR] for node in nx.neighbors(G, node)
     ]
-    return reduce(
-        operator.add,
-        neighbors_probability,
-        0,
-    ) / len(neighbors_probability)
+    return (
+        reduce(
+            operator.add,
+            neighbors_probability,
+            0,
+        )
+        / len(neighbors_probability)
+    )
 
 
-@lru_cache
 def _get_shortest_path(G: Graph, source: int, target: int) -> List[int]:
     return nx.shortest_path(G, source=source, target=target)
 
 
-def _check_if_node_is_on_path_between_infected_nodes(node: int,
-                                                     G: Graph) -> bool:
+def _check_if_node_is_on_path_between_infected_nodes(node: int, G: Graph) -> bool:
     neighbors = nx.neighbors(G, node)
     for n1 in neighbors:
         for n2 in neighbors:
@@ -106,7 +104,9 @@ def _check_if_node_is_on_path_between_infected_nodes(node: int,
 def _compute_node_recovery(
     EG: Graph, node: int, config: PropagationReconstructionConfig
 ) -> float:
-    neighbors_probability = _compute_neighbors_probability(node=node, G=EG, threshold=config.threshold)
+    neighbors_probability = _compute_neighbors_probability(
+        node=node, G=EG, threshold=config.threshold
+    )
     node_on_path = int(
         _check_if_node_is_on_path_between_infected_nodes(node=node, G=EG)
     )
@@ -150,15 +150,14 @@ def create_snapshot_IG(G, ratio_to_remove=None):
 
 
 def reconstruct_propagation(config: PropagationReconstructionConfig) -> Graph:
-    EG = _init_extended_network(G=config.G,IG=config.IG)
+    EG = _init_extended_network(G=config.G, IG=config.IG)
     iter = 1
     nodes = [1]
     while iter < config.max_iterations and nodes:
         iter += 1
         nodes = _get_nodes_to_process(EG, config.threshold)
         for node in nodes:
-            EG.nodes[node][
-                NODE_INFECTION_PROBABILITY_ATTR] = _compute_node_recovery(
+            EG.nodes[node][NODE_INFECTION_PROBABILITY_ATTR] = _compute_node_recovery(
                 EG=EG, node=node, config=config
             )
     _compute_edges_weights(EG)

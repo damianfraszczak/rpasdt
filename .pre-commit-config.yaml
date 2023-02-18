@@ -12,7 +12,7 @@ repos:
     rev: 1.6.2
     hooks:
       - id: bandit
-        language_version: python3.8
+        language_version: python3
         args: [ -ll, '-x=tests', '-s=B101,B301,B403,B308,B303,B608' ]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
@@ -36,4 +36,4 @@ repos:
       - id: flake8
         name: Flake8 Py3
         additional_dependencies: [ flake8-docstrings ]
-        language_version: python3.8
+        language_version: python3
