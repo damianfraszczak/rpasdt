@@ -4,8 +4,12 @@ import random
 import matplotlib
 import networkx as nx
 from matplotlib import pyplot as plt
+from matplotlib.lines import Line2D
+from networkx import star_graph
 
 from rpasdt.algorithm.models import PropagationReconstructionConfig
+from rpasdt.algorithm.propagation_reconstruction import \
+    reconstruct_propagation, create_snapshot_IG
 
 matplotlib.use("Qt5Agg")
 
@@ -19,16 +23,6 @@ def plt_with_weight(G):
     labels = nx.get_edge_attributes(G, "weight")
     nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
     plt.show()
-
-
-def create_sample_IG(G, number_to_remove=None):
-    IG = G.copy()
-    if not number_to_remove:
-        number_to_remove = math.ceil(len(G.nodes) / 10)
-    to_remove = random.choices(list(G.nodes), k=number_to_remove)
-    IG.remove_nodes_from(to_remove)
-    return IG, to_remove
-
 
 def draw_results(G, RealIG, IG, EG, removed, extended):
     fig, axes = plt.subplots(nrows=1, ncols=3)
@@ -67,7 +61,7 @@ def draw_results(G, RealIG, IG, EG, removed, extended):
 def main():
     G = nx.karate_club_graph()
     RealIG = G
-    IG, removed = create_sample_IG(RealIG, number_to_remove=10)
+    IG, removed = create_snapshot_IG(RealIG, ratio_to_remove=10)
     EG = reconstruct_propagation(
         PropagationReconstructionConfig(G=G, IG=IG, real_IG=RealIG)
     )

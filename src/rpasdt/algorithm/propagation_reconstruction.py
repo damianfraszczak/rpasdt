@@ -1,3 +1,4 @@
+import math
 import operator
 import random
 from functools import lru_cache, reduce
@@ -15,8 +16,7 @@ NODE_INFECTION_PROBABILITY_ATTR = "INFECTION_PROBABILITY"
 WEIGHT_ATTR = "weight"
 
 
-def _init_extended_network(config: PropagationReconstructionConfig) -> Graph:
-    G, IG = config.G, config.IG
+def _init_extended_network(G, IG) -> Graph:
     EG = G.copy()
     nx.set_node_attributes(
         EG,
@@ -52,7 +52,8 @@ def _get_nodes_to_process(EG: Graph, threshold: float) -> List[int]:
                 [
                     nn
                     for nn in nx.neighbors(EG, node)
-                    if EG.nodes[node][NODE_INFECTION_PROBABILITY_ATTR] > threshold
+                    if
+                    EG.nodes[node][NODE_INFECTION_PROBABILITY_ATTR] > threshold
                 ]
             ),
             reverse=True,
@@ -60,7 +61,8 @@ def _get_nodes_to_process(EG: Graph, threshold: float) -> List[int]:
     )
 
 
-def _check_node_in_external_network(node: int, infected_nodes: Set[int]) -> bool:
+def _check_node_in_external_network(node: int,
+                                    infected_nodes: Set[int]) -> bool:
     """
     Return True if node is detected to send a rumor in other site
     False otherwise.
@@ -73,13 +75,14 @@ def _check_node_in_external_network(node: int, infected_nodes: Set[int]) -> bool
 
 def _compute_neighbors_probability(node: int, G: Graph) -> float:
     neighbors_probability = [
-        G.nodes[node][NODE_INFECTION_PROBABILITY_ATTR] for node in nx.neighbors(G, node)
+        G.nodes[node][NODE_INFECTION_PROBABILITY_ATTR] for node in
+        nx.neighbors(G, node)
     ]
     return reduce(
-        operator.mul,
+        operator.add,
         neighbors_probability,
-        1,
-    )
+        0,
+    ) / len(neighbors_probability)
 
 
 @lru_cache
@@ -87,7 +90,8 @@ def _get_shortest_path(G: Graph, source: int, target: int) -> List[int]:
     return nx.shortest_path(G, source=source, target=target)
 
 
-def _check_if_node_is_on_path_between_infected_nodes(node: int, G: Graph) -> bool:
+def _check_if_node_is_on_path_between_infected_nodes(node: int,
+                                                     G: Graph) -> bool:
     neighbors = nx.neighbors(G, node)
     for n1 in neighbors:
         for n2 in neighbors:
@@ -102,7 +106,7 @@ def _check_if_node_is_on_path_between_infected_nodes(node: int, G: Graph) -> boo
 def _compute_node_recovery(
     EG: Graph, node: int, config: PropagationReconstructionConfig
 ) -> float:
-    neighbors_probability = _compute_neighbors_probability(node=node, G=EG)
+    neighbors_probability = _compute_neighbors_probability(node=node, G=EG, threshold=config.threshold)
     node_on_path = int(
         _check_if_node_is_on_path_between_infected_nodes(node=node, G=EG)
     )
@@ -129,15 +133,32 @@ def _remove_invalid_edges_and_nodes(EG, threshold):
     EG.remove_nodes_from(list(nx.isolates(EG)))
 
 
+def create_snapshot_IG(G, ratio_to_remove=None):
+    """Create a snapshot of the network by removing a random number of nodes.
+
+    :param G: The network
+    :param ratio_to_remove: The ratio of nodes to remove. If None, remove 10%
+    of the nodes.
+    """
+    IG = G.copy()
+    if not ratio_to_remove:
+        ratio_to_remove = 10
+    k = math.ceil(len(G.nodes) / ratio_to_remove)
+    to_remove = random.choices(list(G.nodes), k=k)
+    IG.remove_nodes_from(to_remove)
+    return IG, to_remove
+
+
 def reconstruct_propagation(config: PropagationReconstructionConfig) -> Graph:
-    EG = _init_extended_network(config)
+    EG = _init_extended_network(G=config.G,IG=config.IG)
     iter = 1
     nodes = [1]
     while iter < config.max_iterations and nodes:
         iter += 1
         nodes = _get_nodes_to_process(EG, config.threshold)
         for node in nodes:
-            EG.nodes[node][NODE_INFECTION_PROBABILITY_ATTR] = _compute_node_recovery(
+            EG.nodes[node][
+                NODE_INFECTION_PROBABILITY_ATTR] = _compute_node_recovery(
                 EG=EG, node=node, config=config
             )
     _compute_edges_weights(EG)

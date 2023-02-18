@@ -69,7 +69,7 @@ class CommunityEnsembleLearnerSourceDetector(
     ):
         super().__init__(G, IG, config)
 
-    @cached_property
+    @property
     def detected_sources_estimation(self) -> Dict[int, float]:
         nodes_estimation = {}
         for cluster, nodes in self.communities.items():

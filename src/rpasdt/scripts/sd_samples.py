@@ -1,6 +1,8 @@
 import csv
+import multiprocessing
 import time
 from collections import defaultdict
+from copy import copy
 from dataclasses import dataclass
 from typing import Any, Dict, List
 
@@ -20,7 +22,7 @@ from rpasdt.scripts.taxonomies import graphs, source_detectors
 
 THRESHOLDS = np.arange(0, 1, 0.1).round(2)
 
-WRITE_FROM_SCRATCH = True
+WRITE_FROM_SCRATCH = False
 DIR_NAME = "sd_samples"
 
 header = [
@@ -70,6 +72,8 @@ def get_experiments(graph_function) -> Dict[int, List[Experiment]]:
             infected_nodes = infected_nodes.split("|")
             sources = sources.split("|")
             number_of_sources = len(sources)
+            if number_of_sources == 13:
+                continue
 
             IG = G.subgraph(infected_nodes)
             if len(IG.nodes) == 0:
@@ -77,10 +81,28 @@ def get_experiments(graph_function) -> Dict[int, List[Experiment]]:
                 sources = [int(x) for x in sources]
                 IG = G.subgraph(infected_nodes)
             result[number_of_sources].append(
-                Experiment(G=G, IG=IG, graph_function=graph_function, sources=sources)
+                Experiment(G=G, IG=IG, graph_function=graph_function,
+                           sources=sources)
             )
 
     return result
+
+MINUTE = 60
+def sd_work(ttt):
+    with stopit.ThreadingTimeout(MINUTE * 10):
+        name, experiment, source_detector, threshold = ttt[0],ttt[1],ttt[2],ttt[3]
+        source_detector.config.source_threshold = threshold
+        print(f"Processing {name}")
+        start = time.time()
+        sd_evaluation = source_detector.evaluate_sources(
+            experiment.sources
+        )
+        end = time.time()
+        sd_evaluation.additional_data[
+            "time"] = end - start
+        sd_evaluation.additional_data["experiment"] = experiment
+        return sd_evaluation
+
 
 
 def do_evaluation():
@@ -95,13 +117,22 @@ def do_evaluation():
             csvwriter.writerow(header)
             file.close()
         for number_of_sources, experiments in experiments.items():
+
             print(f"######## number_of_sources {number_of_sources}")
             aggregated_results = {}
             for experiment in experiments:
-                sd_local = {
-                    name: config(None) for name, config in source_detectors.items()
+                sd_configs = {
+                    name: config(None) for name, config in
+                    source_detectors.items()
                 }
-
+                sd_local = {name: get_source_detector(
+                    algorithm=config.alg,
+                    G=experiment.G,
+                    IG=experiment.IG,
+                    config=config.config,
+                    # number_of_sources=number_of_sources,
+                ) for name, config in sd_configs.items()}
+                sd_local_items = list(sd_local.items())
                 for threshold in THRESHOLDS:
 
                     result = aggregated_results.get(
@@ -110,34 +141,22 @@ def do_evaluation():
                         source_detection_config=SourceDetectionSimulationConfig()
                     )
                     aggregated_results[threshold] = result
+                    pool_obj = multiprocessing.Pool()
+                    evaluations = pool_obj.map(sd_work,[(name,experiment, source_detector, threshold) for name, source_detector in sd_local.items()])
 
-                    for (
-                        name,
-                        source_detector_config,
-                    ) in sd_local.items():
-                        print(f"PROCESSING {name}, threshold = {threshold}")
-                        source_detector_config.config.source_threshold = threshold
-                        source_detector = get_source_detector(
-                            algorithm=source_detector_config.alg,
-                            G=experiment.G,
-                            IG=experiment.IG,
-                            config=source_detector_config.config,
-                            # number_of_sources=number_of_sources,
+                    for i,evaluation in enumerate(evaluations):
+
+                        name = sd_local_items[i][0]
+                        source_detector= sd_local_items[i][1]
+                        if evaluation is None:
+                            print(f"NONE EVALUATION - {name}-{str(source_detector)}")
+                            continue
+                        result.add_result(
+                            name, copy(source_detector.config),
+                            evaluation
                         )
+                    pool_obj.close()
 
-                        try:
-                            with stopit.ThreadingTimeout(60):
-                                start = time.time()
-                                sd_evaluation = source_detector.evaluate_sources(
-                                    experiment.sources
-                                )
-                                end = time.time()
-                                sd_evaluation.additional_data["time"] = end - start
-                                result.add_result(
-                                    name, source_detector_config, sd_evaluation
-                                )
-                        except Exception as e:
-                            log_error(exc=e, show_error_dialog=False)
             # wszystkie thresholdy
             for threshold, aggregated_result in aggregated_results.items():
                 for config, rr in aggregated_result.aggregated_results.items():
@@ -149,14 +168,17 @@ def do_evaluation():
                     for data in rr.additional_data:
 
                         communities = data["communities"]
+                        experiment = data["experiment"]
                         detected_communities = len(communities.keys())
-                        comm_difference += abs(detected_communities - number_of_sources)
+                        comm_difference += abs(
+                            detected_communities - number_of_sources)
                         avg_com_count += detected_communities
                         for cluster, nodes in communities.items():
                             if not any(s in nodes for s in experiment.sources):
                                 nr_of_missing_communities += 1
 
-                    detected_sources_sum = sum([len(s) for s in rr.detected_sources])
+                    detected_sources_sum = sum(
+                        [len(s) for s in rr.detected_sources])
 
                     avg_com_count /= 1.0 * len(rr.additional_data)
 
@@ -228,7 +250,8 @@ def sd_evaluation_with_static_propagations():
                     aggregated_result[number_of_sources] = result
 
                     sd_local = {
-                        name: config(None) for name, config in source_detectors.items()
+                        name: config(None) for name, config in
+                        source_detectors.items()
                     }
 
                     for (
@@ -252,7 +275,10 @@ def sd_evaluation_with_static_propagations():
                                     sources
                                 )
                                 end = time.time()
-                                sd_evaluation.additional_data["time"] = end - start
+                                sd_evaluation.additional_data[
+                                    "time"] = end - start
+                                sd_evaluation.additional_data[
+                                    "experiment"] = Experiment(sources=sources,IG=IG,G=G,graph_function=graph_function)
                                 result.add_result(
                                     name, source_detector_config, sd_evaluation
                                 )
@@ -269,13 +295,14 @@ def sd_evaluation_with_static_propagations():
                         for data in rr.additional_data:
 
                             communities = data["communities"]
+                            experiment = data["experiment"]
                             detected_communities = len(communities.keys())
                             comm_difference += abs(
                                 detected_communities - number_of_sources
                             )
                             avg_com_count += detected_communities
                             for cluster, nodes in communities.items():
-                                if not any(s in nodes for s in sources):
+                                if not any(s in nodes for s in experiment.sources):
                                     nr_of_missing_communities += 1
 
                         detected_sources_sum = sum(
@@ -293,7 +320,8 @@ def sd_evaluation_with_static_propagations():
                             avg_com_count,
                             rr.avg_execution_time,
                             rr.avg_error_distance,
-                            detected_sources_sum * 1.0 / len(rr.detected_sources),
+                            detected_sources_sum * 1.0 / len(
+                                rr.detected_sources),
                             nr_of_missing_communities,
                             rr.TP,
                             rr.TN,
@@ -312,4 +340,5 @@ def sd_evaluation_with_static_propagations():
                         file.close()
 
 
-do_evaluation()
+# do_evaluation()
+# sd_evaluation_with_static_propagations()

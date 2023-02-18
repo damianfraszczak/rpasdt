@@ -1,4 +1,5 @@
 """Rumor Center source detection method."""
+from decimal import Decimal
 from random import shuffle
 from typing import List
 
@@ -63,9 +64,10 @@ class RumorCenterCommunityBasedSourceDetector(CommunityBasedSourceDetector):
                             messages_down[node] = messages_up[node] * msg_down
 
             source_children = get_children(bfs_tree, sourceNode)
-            r = 1.0
+            r = Decimal(1.0)
             for child in source_children:
                 r = r / messages_down[child]
             r = r / N
+            r = float (r)
             rumorCentrality[sourceNode] = r
         return rumorCentrality

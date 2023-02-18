@@ -432,8 +432,8 @@ class PropagationReconstructionConfig:
     IG: Graph
     real_IG: Graph
     m1: float = 0.6
-    m2: float = 0.3
-    m3: float = 0.1
+    m2: float = 0.4
+    m3: float = 0.0
     max_iterations: int = 100
     threshold: float = 0.6
 

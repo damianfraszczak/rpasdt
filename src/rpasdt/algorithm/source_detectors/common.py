@@ -83,13 +83,13 @@ class SourceDetector(ABC):
                 ]
             }
 
-    @cached_property
+    @property
     def detected_sources(self) -> Union[int, List[int]]:
         """Return estimated sources."""
         result = [source for source, _ in self.detected_sources_estimation.items()]
         return result[0] if len(result) == 1 else result
 
-    @cached_property
+    @property
     def detected_sources_estimation(self) -> Dict[int, float]:
         estimation = self.estimate_sources(G=self.G, IG=self.IG)
         processed_estimation = self.process_estimation(estimation)
@@ -141,7 +141,7 @@ class CommunityBasedSourceDetector(SourceDetector, ABC):
             )
         )
 
-    @cached_property
+    @property
     def detected_sources_estimation(self) -> Dict[int, float]:
         sources = {}
         for cluster, nodes in self.communities.items():
