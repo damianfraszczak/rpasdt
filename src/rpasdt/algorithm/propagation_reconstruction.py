@@ -104,9 +104,7 @@ def _check_if_node_is_on_path_between_infected_nodes(node: int, G: Graph) -> boo
 def _compute_node_recovery(
     EG: Graph, node: int, config: PropagationReconstructionConfig
 ) -> float:
-    neighbors_probability = _compute_neighbors_probability(
-        node=node, G=EG, threshold=config.threshold
-    )
+    neighbors_probability = _compute_neighbors_probability(node=node, G=EG)
     node_on_path = int(
         _check_if_node_is_on_path_between_infected_nodes(node=node, G=EG)
     )
@@ -115,11 +113,11 @@ def _compute_node_recovery(
             node=node, infected_nodes=config.real_infected_nodes
         )
     )
-
     m1 = config.m1 * neighbors_probability
     m2 = config.m2 * node_on_path
     m3 = config.m3 * node_in_external_network
-    return m1 + m2 + m3
+    m_free = config.m_free
+    return 1 / (1 + math.exp(-(m1 + m2 + m3 + m_free)))
 
 
 def _remove_invalid_edges_and_nodes(EG, threshold):
@@ -133,7 +131,7 @@ def _remove_invalid_edges_and_nodes(EG, threshold):
     EG.remove_nodes_from(list(nx.isolates(EG)))
 
 
-def create_snapshot_IG(G, ratio_to_remove=None):
+def create_snapshot_IG(G, delete_ratio=None):
     """Create a snapshot of the network by removing a random number of nodes.
 
     :param G: The network
@@ -141,17 +139,18 @@ def create_snapshot_IG(G, ratio_to_remove=None):
     of the nodes.
     """
     IG = G.copy()
-    if not ratio_to_remove:
-        ratio_to_remove = 10
-    k = math.ceil(len(G.nodes) / ratio_to_remove)
-    to_remove = random.choices(list(G.nodes), k=k)
+    if not delete_ratio:
+        delete_ratio = 10
+    delete_ratio = delete_ratio / 100 if delete_ratio > 1 else delete_ratio
+    k = math.ceil(len(G.nodes) * delete_ratio)
+    to_remove = list(sorted(random.sample(list(G.nodes), k=k)))
     IG.remove_nodes_from(to_remove)
     return IG, to_remove
 
 
 def reconstruct_propagation(config: PropagationReconstructionConfig) -> Graph:
     EG = _init_extended_network(G=config.G, IG=config.IG)
-    iter = 1
+    iter = 0
     nodes = [1]
     while iter < config.max_iterations and nodes:
         iter += 1
