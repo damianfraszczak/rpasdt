@@ -1,1 +1,2 @@
-graph,n,e,real communities,found communities,time,m_nmimodularity,pcov,pper
+graph,method,n,e,real communities,found communities,time,m_nmimodularity,pcov,pper
+youtube,louvain,1134890,2987624,16386,5495,235601,-1,0.7210217596952699,0.8244989998741474,0.9332145081912034

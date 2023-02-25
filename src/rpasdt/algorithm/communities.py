@@ -39,6 +39,7 @@ MOD_THRESHOLD = 0.002
 # dla soc anybeat
 MOD_THRESHOLD = 0.0001
 
+
 def _update_communities_kwarg(
     graph: Graph, type: CommunityOptionEnum, kwargs: Dict, number_communities: int
 ):
@@ -77,6 +78,7 @@ def find_communities(
         graph=graph, type=type, kwargs=kwargs, number_communities=number_communities
     )
     result = alg(**kwargs)
+
     return {
         index: community
         for index, community in enumerate(get_object_value(result, "communities"))

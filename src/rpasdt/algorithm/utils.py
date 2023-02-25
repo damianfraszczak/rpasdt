@@ -1,8 +1,13 @@
+import math
+import statistics
+from collections import defaultdict
 from typing import Set
 
 import networkx as nx
+import numpy as np
 import powerlaw
 from networkx import Graph
+from sklearn.metrics import normalized_mutual_info_score
 
 
 def _neighbors_of_k_hops(
@@ -44,8 +49,8 @@ def nmi(partition1, partition2):
 
     first_partition_c = _prepare_partition(partition1)
     second_partition_c = _prepare_partition(partition2)
-
-    from sklearn.metrics import normalized_mutual_info_score
+    print(len(first_partition_c))
+    print(len(second_partition_c))
 
     return normalized_mutual_info_score(first_partition_c, second_partition_c)
 
@@ -57,12 +62,6 @@ def get_power_law(G):
     xmin = fit.power_law.xmin
     return alpha, xmin
 
-
-import math
-import statistics
-from collections import defaultdict
-
-import numpy as np
 
 last_size = 0
 

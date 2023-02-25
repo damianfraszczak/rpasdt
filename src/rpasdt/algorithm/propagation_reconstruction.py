@@ -1,7 +1,8 @@
+import itertools
 import math
 import operator
 import random
-from functools import reduce
+from functools import lru_cache, reduce
 from typing import List, Set
 
 import matplotlib
@@ -85,20 +86,21 @@ def _compute_neighbors_probability(node: int, G: Graph) -> float:
     )
 
 
+@lru_cache
 def _get_shortest_path(G: Graph, source: int, target: int) -> List[int]:
     return nx.shortest_path(G, source=source, target=target)
 
 
-def _check_if_node_is_on_path_between_infected_nodes(node: int, G: Graph) -> bool:
-    neighbors = nx.neighbors(G, node)
-    for n1 in neighbors:
-        for n2 in neighbors:
-            if n1 == n2:
-                continue
-            sp = _get_shortest_path(G, source=n1, target=n2)
-            if node in sp:
-                return True
-    return False
+def _check_if_node_is_on_path_between_infected_nodes(node: int, G: Graph) -> float:
+    neighbors = list(nx.neighbors(G, node))
+    combination = list(itertools.combinations(neighbors, 2))
+    sum = 0.0
+    for n1, n2 in combination:
+        sp = _get_shortest_path(G, source=n1, target=n2)
+        if node in sp:
+            sum += 1.0
+    value = sum / len(combination) if sum > 0 else 0.0
+    return value
 
 
 def _compute_node_recovery(
