@@ -45,41 +45,35 @@ def club():
 
 def soc_epinions():
     # return nx.from_scipy_sparse_matrix(sp.io.mmread(fh))
-    path = os.path.join(get_project_root(), "data", "community",
-                        "socfb-Berkeley13.mtx")
+    path = os.path.join(get_project_root(), "data", "community", "socfb-Berkeley13.mtx")
     return nx.Graph(np.matrix(mmread(path).todense()))
 
 
 def soc_anybeat():
     # return nx.from_scipy_sparse_matrix(sp.io.mmread(fh))
-    path = os.path.join(get_project_root(), "data", "community",
-                        "soc-anybeat.edges")
+    path = os.path.join(get_project_root(), "data", "community", "soc-anybeat.edges")
     return nx.read_edgelist(path)
 
 
 def foursqaure():
-    path = os.path.join(get_project_root(), "data", "community",
-                        "soc-FourSquare.edges")
+    path = os.path.join(get_project_root(), "data", "community", "soc-FourSquare.edges")
     return nx.read_edgelist(path)
 
 
 def buzznet():
-    path = os.path.join(get_project_root(), "data", "community",
-                        "soc-buzznet.edges")
+    path = os.path.join(get_project_root(), "data", "community", "soc-buzznet.edges")
     return nx.read_edgelist(path)
 
 
 def soc_wiki_elec():
     # return nx.from_scipy_sparse_matrix(sp.io.mmread(fh))
-    path = os.path.join(get_project_root(), "data", "community",
-                        "soc-anybeat.edges")
+    path = os.path.join(get_project_root(), "data", "community", "soc-anybeat.edges")
     return nx.read_edgelist(path)
 
 
 def facebook():
     return nx.read_adjlist(
-        os.path.join(get_project_root(), "data", "community",
-                     "facebook_combined.txt")
+        os.path.join(get_project_root(), "data", "community", "facebook_combined.txt")
     )
 
 
@@ -90,8 +84,7 @@ def emailucore():
 
 
 def barabasi_1():
-    filename = os.path.join(get_project_root(), "data", "community",
-                            "barabasi_1.txt")
+    filename = os.path.join(get_project_root(), "data", "community", "barabasi_1.txt")
     if not os.path.exists(filename):
         G = nx.barabasi_albert_graph(500, 5)
         nx.write_adjlist(G, filename)
@@ -99,8 +92,7 @@ def barabasi_1():
 
 
 def barabasi_2():
-    filename = os.path.join(get_project_root(), "data", "community",
-                            "barabasi_2.txt")
+    filename = os.path.join(get_project_root(), "data", "community", "barabasi_2.txt")
     if not os.path.exists(filename):
         G = nx.barabasi_albert_graph(1000, 5)
         nx.write_adjlist(G, filename)
@@ -108,8 +100,9 @@ def barabasi_2():
 
 
 def watts_strogatz_graph_1():
-    filename = os.path.join(get_project_root(), "data", "community",
-                            "watts_strogatz_graph_1.txt")
+    filename = os.path.join(
+        get_project_root(), "data", "community", "watts_strogatz_graph_1.txt"
+    )
     if not os.path.exists(filename):
         G = nx.watts_strogatz_graph(n=500, k=10, p=0.4)
         nx.write_adjlist(G, filename)
@@ -117,8 +110,9 @@ def watts_strogatz_graph_1():
 
 
 def watts_strogatz_graph_2():
-    filename = os.path.join(get_project_root(), "data", "community",
-                            "watts_strogatz_graph_2.txt")
+    filename = os.path.join(
+        get_project_root(), "data", "community", "watts_strogatz_graph_2.txt"
+    )
     if not os.path.exists(filename):
         G = nx.watts_strogatz_graph(n=1000, k=10, p=0.4)
         nx.write_adjlist(G, filename)
@@ -126,16 +120,17 @@ def watts_strogatz_graph_2():
 
 
 graphs = [
-    # karate_graph,
+    karate_graph,
     # dolphin,
-    # footbal,
-    # barabasi_1,
-    # barabasi_2,
-    # watts_strogatz_graph_1,
-    # watts_strogatz_graph_2,
+    footbal,
+    barabasi_1,
+    barabasi_2,
+    watts_strogatz_graph_1,
+    watts_strogatz_graph_2,
     # facebook,
-    soc_anybeat,
+    # soc_anybeat,
 ]
+
 SOURCE_THRESHOLD = None
 communities = [
     CommunityOptionEnum.LOUVAIN,
@@ -155,7 +150,7 @@ communities = [
     CommunityOptionEnum.SPECTRAL,
     # CommunityOptionEnum.SBM_DL,
 ]
-communities = [CommunityOptionEnum.LEIDEN, CommunityOptionEnum.NODE_SIMILARITY]
+# communities = [CommunityOptionEnum.LEIDEN, CommunityOptionEnum.NODE_SIMILARITY]
 sources_number = [0.001, 0.01, 0.1]
 # sources_number = [0.1]
 fallback_sources_number = 0.05
@@ -199,8 +194,7 @@ source_detectors = {}
 #
 source_detectors.update(
     {
-        f"centrality-cm:{centrality}:{cm}": lambda x, centrality=centrality,
-                                                   cm=cm: SourceDetectorSimulationConfig(
+        f"centrality-cm:{centrality}:{cm}": lambda x, centrality=centrality, cm=cm: SourceDetectorSimulationConfig(
             alg=SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
             config=CentralityCommunityBasedSourceDetectionConfig(
                 number_of_sources=x,
@@ -310,8 +304,7 @@ source_detectors.update(
 )
 source_detectors.update(
     {
-        f"ensemble-centralities:{cm}": lambda x,
-                                              cm=cm: SourceDetectorSimulationConfig(
+        f"ensemble-centralities:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
             alg=SourceDetectionAlgorithm.COMMUNITY_ENSEMBLE_LEARNER,
             config=EnsembleCommunityBasedSourceDetectionConfig(
                 number_of_sources=x,

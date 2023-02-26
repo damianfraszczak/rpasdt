@@ -37,7 +37,7 @@ DEBUG = False
 MOD_THRESHOLD = 0.002
 
 # dla soc anybeat
-MOD_THRESHOLD = 0.0001
+# MOD_THRESHOLD = 0.0001
 
 
 def _update_communities_kwarg(

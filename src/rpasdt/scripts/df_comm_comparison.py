@@ -18,7 +18,6 @@ from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.algorithm.utils import nmi
 from rpasdt.common.utils import get_object_value, get_project_root
 from rpasdt.scripts.community_detection import cmodularity
-from rpasdt.tests import dolphin, footbal, karate_graph
 
 
 def read_clusters_from_file(path):
@@ -33,7 +32,8 @@ def read_clusters_from_file(path):
 def map_communities(result):
     return {
         index: community
-        for index, community in enumerate(get_object_value(result, "communities"))
+        for index, community in
+        enumerate(get_object_value(result, "communities"))
     }
 
 
@@ -47,50 +47,70 @@ def karate_gt() -> dict:
 
 def dolphin_gt():
     return read_clusters_from_file(
-        os.path.join(get_project_root(), "data", "community", "dolphins.clusters.txt")
+        os.path.join(get_project_root(), "data", "community",
+                     "dolphins.clusters.txt")
     )
 
 
 def football_gt():
     return read_clusters_from_file(
-        os.path.join(get_project_root(), "data", "community", "football.clusters.txt")
+        os.path.join(get_project_root(), "data", "community",
+                     "football.clusters.txt")
     )
 
 
 def eu_core():
     return nx.read_adjlist(
-        os.path.join(get_project_root(), "data", "community", "eu-core.edges.txt")
+        os.path.join(get_project_root(), "data", "community",
+                     "eu-core.edges.txt")
     )
 
 
 def eu_core_gt():
     return read_clusters_from_file(
-        os.path.join(get_project_root(), "data", "community", "eu-core.clusters.txt")
+        os.path.join(get_project_root(), "data", "community",
+                     "eu-core.clusters.txt")
     )
 
 
 def polbooks():
     return nx.read_adjlist(
-        os.path.join(get_project_root(), "data", "community", "polbooks.edges.txt")
+        os.path.join(get_project_root(), "data", "community",
+                     "polbooks.edges.txt")
     )
 
 
 def polbooks_gt():
     return read_clusters_from_file(
-        os.path.join(get_project_root(), "data", "community", "polbooks.clusters.txt")
+        os.path.join(get_project_root(), "data", "community",
+                     "polbooks.clusters.txt")
     )
 
 
 def polblogs():
     return nx.read_adjlist(
-        os.path.join(get_project_root(), "data", "community", "polblogs.edges.txt")
+        os.path.join(get_project_root(), "data", "community",
+                     "polblogs.edges.txt")
     )
 
 
 def polblogs_gt():
     return read_clusters_from_file(
-        os.path.join(get_project_root(), "data", "community", "polblogs.clusters.txt")
+        os.path.join(get_project_root(), "data", "community",
+                     "polblogs.clusters.txt")
     )
+
+
+def sp_data():
+    return nx.read_gml(
+        os.path.join(get_project_root(), "data", "community",
+                     "sp_school_day_1.gml")
+    )
+
+
+def sp_data_gt():
+    G = sp_data()
+    return {node[0]: node[1]["gt"] for node in G.nodes(data=True)}
 
 
 def amazon_gt() -> dict:
@@ -102,7 +122,8 @@ def amazon_gt() -> dict:
 
 
 def amazon() -> Graph:
-    return datasets.fetch_network_data(net_name="amazon_club", net_type="networkx")
+    return datasets.fetch_network_data(net_name="amazon_club",
+                                       net_type="networkx")
 
 
 def youtube_gt() -> dict:
@@ -137,8 +158,9 @@ NETWORKS = [
     # youtube,
     # dblp,
     # eu_core,
-    polblogs,
-    polbooks,
+    # polblogs,
+    # polbooks,
+    sp_data
 ]
 GT_CLUSTERS = [
     # karate_gt,
@@ -148,8 +170,9 @@ GT_CLUSTERS = [
     # youtube_gt,
     # dblp_gt,
     # eu_core_gt,
-    polblogs_gt,
-    polbooks_gt,
+    # polblogs_gt,
+    # polbooks_gt,
+    sp_data_gt
 ]
 METHODS = [
     CommunityOptionEnum.LOUVAIN,
@@ -209,8 +232,8 @@ def analysis():
             m_nmi = -1
             try:
                 m_nmi = nmi(communities, gt)
-            except:
-                print(f"NMI ERROR {m}")
+            except Exception as ex:
+                print(f"NMI ERROR {ex}")
             modularity = cmodularity(g, communities.values())
             pcov, pper = nx_comm.partition_quality(g, communities.values())
             row = [

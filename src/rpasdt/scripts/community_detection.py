@@ -484,12 +484,12 @@ def community_evaluation_with_static_propagations():
     header = [
         "graph",
         "community",
-        "sources",
         "nodes",
-        "coverage",
-        "iterations",
-        "detected_sources",
+        "sources",
+        "detected",
+        "difference",
         "sources_ratio",
+        "nmi",
         "sizes",
         "avg_sizes",
         "time",
@@ -498,9 +498,7 @@ def community_evaluation_with_static_propagations():
     for graph_function in graphs:
         G = graph_function()
 
-        filename = (
-            f"results/communities/{graph_function.__name__}_ce_static_network.csv"
-        )
+        filename = f"results/communities/outbreaks/{graph_function.__name__}.csv"
         file = open(filename, "w")
         csvwriter = csv.writer(file)
         csvwriter.writerow(header)
@@ -516,14 +514,20 @@ def community_evaluation_with_static_propagations():
                 )
                 infected_nodes = infected_nodes.split("|")
                 sources = sources.split("|")
+
                 IG = G.subgraph(infected_nodes)
+                if len(IG.nodes) == 0:
+                    infected_nodes = [int(x) for x in infected_nodes]
+                    sources = [int(x) for x in sources]
+                    IG = G.subgraph(infected_nodes)
+                real_communities = get_real_communities(IG, sources)
                 for key in communities:
                     try:
                         print(f"COM DETECTION {key}")
                         with stopit.ThreadingTimeout(TIMEOUT) as context_manager:
 
                             start = time.time()
-                            result = find_communities(type=key, graph=IG)
+                            result = find_communities(type=key, graph=IG) or {}
                             end = time.time()
                             total_time = end - start
                             if context_manager.state == context_manager.TIMED_OUT:
@@ -538,17 +542,31 @@ def community_evaluation_with_static_propagations():
                                             break
                             sizes = [len(c) for c in result.values()]
                             avg_size = sum(sizes) / len(sizes)
-
+                            nmin = nmi(real_communities, result)
+                            # "graph",
+                            #         "community",
+                            #         "sources",
+                            #         "nodes",
+                            #         "detected",
+                            #         "difference",
+                            #         "sources_ratio",
+                            #         "nmi",
+                            #         "sizes",
+                            #         "avg_sizes",
+                            #         "time",
                             row = [
                                 graph_function.__name__,
                                 key,
-                                len(sources),
                                 len(IG.nodes),
-                                len(result) if result else None,
-                                len(sources_communities),
-                                "|".join([str(c) for c in sizes]),
-                                str(avg_size),
-                                total_time,
+                                len(sources),
+                                len(result),  # ?detected
+                                len(sources) - len(result.keys()),
+                                # difference
+                                len(sources_communities),  # sources ratio
+                                nmin,  # nmi
+                                "|".join([str(c) for c in sizes]),  # sizes
+                                str(avg_size),  # avg_sizes
+                                total_time,  # time
                             ]
                             file = open(filename, "a")
                             csvwriter = csv.writer(file)
@@ -572,3 +590,4 @@ def community_evaluation_with_static_propagations():
 # print(per_cov)
 
 # sd_communities()
+community_evaluation_with_static_propagations()
