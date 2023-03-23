@@ -19,6 +19,7 @@ from rpasdt.algorithm.source_detectors.source_detection import (
 )
 from rpasdt.common.exceptions import log_error
 from rpasdt.scripts.taxonomies import graphs, source_detectors
+from rpasdt.scripts.utils import get_IG
 
 THRESHOLDS = np.arange(0, 1, 0.1).round(2)
 
@@ -81,28 +82,26 @@ def get_experiments(graph_function) -> Dict[int, List[Experiment]]:
                 sources = [int(x) for x in sources]
                 IG = G.subgraph(infected_nodes)
             result[number_of_sources].append(
-                Experiment(G=G, IG=IG, graph_function=graph_function,
-                           sources=sources)
+                Experiment(G=G, IG=IG, graph_function=graph_function, sources=sources)
             )
 
     return result
 
+
 MINUTE = 60
+
+
 def sd_work(ttt):
     with stopit.ThreadingTimeout(MINUTE * 10):
-        name, experiment, source_detector, threshold = ttt[0],ttt[1],ttt[2],ttt[3]
+        name, experiment, source_detector, threshold = ttt[0], ttt[1], ttt[2], ttt[3]
         source_detector.config.source_threshold = threshold
         print(f"Processing {name}")
         start = time.time()
-        sd_evaluation = source_detector.evaluate_sources(
-            experiment.sources
-        )
+        sd_evaluation = source_detector.evaluate_sources(experiment.sources)
         end = time.time()
-        sd_evaluation.additional_data[
-            "time"] = end - start
+        sd_evaluation.additional_data["time"] = end - start
         sd_evaluation.additional_data["experiment"] = experiment
         return sd_evaluation
-
 
 
 def do_evaluation():
@@ -122,16 +121,18 @@ def do_evaluation():
             aggregated_results = {}
             for experiment in experiments:
                 sd_configs = {
-                    name: config(None) for name, config in
-                    source_detectors.items()
+                    name: config(None) for name, config in source_detectors.items()
                 }
-                sd_local = {name: get_source_detector(
-                    algorithm=config.alg,
-                    G=experiment.G,
-                    IG=experiment.IG,
-                    config=config.config,
-                    # number_of_sources=number_of_sources,
-                ) for name, config in sd_configs.items()}
+                sd_local = {
+                    name: get_source_detector(
+                        algorithm=config.alg,
+                        G=experiment.G,
+                        IG=experiment.IG,
+                        config=config.config,
+                        # number_of_sources=number_of_sources,
+                    )
+                    for name, config in sd_configs.items()
+                }
                 sd_local_items = list(sd_local.items())
                 for threshold in THRESHOLDS:
 
@@ -142,18 +143,23 @@ def do_evaluation():
                     )
                     aggregated_results[threshold] = result
                     pool_obj = multiprocessing.Pool()
-                    evaluations = pool_obj.map(sd_work,[(name,experiment, source_detector, threshold) for name, source_detector in sd_local.items()])
+                    evaluations = pool_obj.map(
+                        sd_work,
+                        [
+                            (name, experiment, source_detector, threshold)
+                            for name, source_detector in sd_local.items()
+                        ],
+                    )
 
-                    for i,evaluation in enumerate(evaluations):
+                    for i, evaluation in enumerate(evaluations):
 
                         name = sd_local_items[i][0]
-                        source_detector= sd_local_items[i][1]
+                        source_detector = sd_local_items[i][1]
                         if evaluation is None:
                             print(f"NONE EVALUATION - {name}-{str(source_detector)}")
                             continue
                         result.add_result(
-                            name, copy(source_detector.config),
-                            evaluation
+                            name, copy(source_detector.config), evaluation
                         )
                     pool_obj.close()
 
@@ -170,15 +176,13 @@ def do_evaluation():
                         communities = data["communities"]
                         experiment = data["experiment"]
                         detected_communities = len(communities.keys())
-                        comm_difference += abs(
-                            detected_communities - number_of_sources)
+                        comm_difference += abs(detected_communities - number_of_sources)
                         avg_com_count += detected_communities
                         for cluster, nodes in communities.items():
                             if not any(s in nodes for s in experiment.sources):
                                 nr_of_missing_communities += 1
 
-                    detected_sources_sum = sum(
-                        [len(s) for s in rr.detected_sources])
+                    detected_sources_sum = sum([len(s) for s in rr.detected_sources])
 
                     avg_com_count /= 1.0 * len(rr.additional_data)
 
@@ -211,10 +215,11 @@ def do_evaluation():
 
 
 def sd_evaluation_with_static_propagations():
+    dir_name = "final_sd_results"
     for graph_function in graphs:
         G = graph_function()
 
-        filename = f"results/{DIR_NAME}/{graph_function.__name__}_ce_static_network.csv"
+        filename = f"results/{dir_name}/{graph_function.__name__}.csv"
         if WRITE_FROM_SCRATCH:
             file = open(filename, "w")
             csvwriter = csv.writer(file)
@@ -232,15 +237,7 @@ def sd_evaluation_with_static_propagations():
                         row["sources"],
                         row["infected_nodes"],
                     )
-                    infected_nodes = infected_nodes.split("|")
-                    sources = sources.split("|")
-                    number_of_sources = len(sources)
-
-                    IG = G.subgraph(infected_nodes)
-                    if len(IG.nodes) == 0:
-                        infected_nodes = [int(x) for x in infected_nodes]
-                        sources = [int(x) for x in sources]
-                        IG = G.subgraph(infected_nodes)
+                    IG, infected_nodes, sources = get_IG(G, infected_nodes, sources)
 
                     result = aggregated_result.get(
                         number_of_sources
@@ -250,8 +247,7 @@ def sd_evaluation_with_static_propagations():
                     aggregated_result[number_of_sources] = result
 
                     sd_local = {
-                        name: config(None) for name, config in
-                        source_detectors.items()
+                        name: config(None) for name, config in source_detectors.items()
                     }
 
                     for (
@@ -275,10 +271,15 @@ def sd_evaluation_with_static_propagations():
                                     sources
                                 )
                                 end = time.time()
+                                sd_evaluation.additional_data["time"] = end - start
                                 sd_evaluation.additional_data[
-                                    "time"] = end - start
-                                sd_evaluation.additional_data[
-                                    "experiment"] = Experiment(sources=sources,IG=IG,G=G,graph_function=graph_function)
+                                    "experiment"
+                                ] = Experiment(
+                                    sources=sources,
+                                    IG=IG,
+                                    G=G,
+                                    graph_function=graph_function,
+                                )
                                 result.add_result(
                                     name, source_detector_config, sd_evaluation
                                 )
@@ -320,8 +321,7 @@ def sd_evaluation_with_static_propagations():
                             avg_com_count,
                             rr.avg_execution_time,
                             rr.avg_error_distance,
-                            detected_sources_sum * 1.0 / len(
-                                rr.detected_sources),
+                            detected_sources_sum * 1.0 / len(rr.detected_sources),
                             nr_of_missing_communities,
                             rr.TP,
                             rr.TN,

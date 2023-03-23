@@ -1,5 +1,6 @@
 """Community detection methods."""
 import sys
+from functools import lru_cache
 from typing import Collection, Dict, List, Union
 
 from cdlib import algorithms
@@ -40,6 +41,7 @@ def _update_communities_kwarg(
             kwargs.pop(key)
 
 
+@lru_cache(maxsize=128)
 def find_communities(
     type: Union[str, CommunityOptionEnum],
     graph: Graph,

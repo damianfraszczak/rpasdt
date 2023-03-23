@@ -1,6 +1,7 @@
 # do sprawdzenia
 # https://orbifold.net/default/community-detection-using-networkx/
 import os
+from datetime import datetime
 
 import matplotlib
 import networkx as nx
@@ -17,6 +18,7 @@ from rpasdt.network.networkx_utils import (
     get_grouped_nodes,
     get_nodes_color,
 )
+from rpasdt.scripts.utils import configure_plot
 
 matplotlib.use("Qt5Agg")
 
@@ -257,7 +259,8 @@ def draw_community_results():
 
 
 if __name__ == "__main__":
-    draw_community_results()
+    pass
+    # draw_community_results()
 
 # L = louvain(G)
 # print(len(L))
@@ -278,3 +281,9 @@ if __name__ == "__main__":
 # plt.show()
 #
 # nx.draw(G, with_labels=True)
+G = facebook()
+print(datetime.now())
+print(df_node_similarity(G))
+print(datetime.now())
+print(df_node_similarity(G))
+print(datetime.now())
