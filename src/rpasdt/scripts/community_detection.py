@@ -29,8 +29,21 @@ from rpasdt.scripts.taxonomies import (
     graphs,
     sources_number,
 )
+from rpasdt.scripts.utils import get_real_communities
 
 matplotlib.use("Qt5Agg")
+
+
+def get_IG(G, infected_nodes, sources):
+    infected_nodes = infected_nodes.split("|")
+    sources = sources.split("|")
+
+    IG = G.subgraph(infected_nodes)
+    if len(IG.nodes) == 0:
+        infected_nodes = [int(x) for x in infected_nodes]
+        sources = [int(x) for x in sources]
+        IG = G.subgraph(infected_nodes)
+    return IG, infected_nodes, sources
 
 
 def cmodularity(G, communities, weight="weight", resolution=1):
@@ -61,7 +74,7 @@ def cmodularity(G, communities, weight="weight", resolution=1):
 results = []
 
 coverages = [0.5, 0.75]
-TIMEOUT = 60 * 2
+TIMEOUT = 60 * 5
 
 
 def network_stats():
@@ -81,27 +94,6 @@ def network_stats():
             f"degree:{min(degree)}/{round(sum(degree) / len(degree), 2)}/{max(degree)}"
         )
         print(f"{':'.join(data)}")
-
-
-def get_real_communities(IG, sources) -> dict:
-    bfs_map = {}
-    communities = {}
-    for source in sources:
-        bfs_map[source] = list(nx.bfs_tree(IG, source).nodes)
-        communities[source] = [source]
-
-    for node in IG.nodes:
-        if node in sources:
-            continue
-        source, mix_distance = -1, 100000
-        for key, distances in bfs_map.items():
-            distance = distances.index(node)
-            if distance < mix_distance:
-                mix_distance = distance
-                source = key
-        communities[source].append(node)
-
-    return {index: communities[source] for index, source in enumerate(communities)}
 
 
 def sd_communities():
@@ -498,7 +490,7 @@ def community_evaluation_with_static_propagations():
     for graph_function in graphs:
         G = graph_function()
 
-        filename = f"results/communities/outbreaks/{graph_function.__name__}.csv"
+        filename = f"results/communities/outbreaks/{graph_function.__name__}_df.csv"
         file = open(filename, "w")
         csvwriter = csv.writer(file)
         csvwriter.writerow(header)
@@ -512,20 +504,14 @@ def community_evaluation_with_static_propagations():
                     row["sources"],
                     row["infected_nodes"],
                 )
-                infected_nodes = infected_nodes.split("|")
-                sources = sources.split("|")
-
-                IG = G.subgraph(infected_nodes)
-                if len(IG.nodes) == 0:
-                    infected_nodes = [int(x) for x in infected_nodes]
-                    sources = [int(x) for x in sources]
-                    IG = G.subgraph(infected_nodes)
+                IG, infected_nodes, sources = get_IG(G, infected_nodes, sources)
                 real_communities = get_real_communities(IG, sources)
+
                 for key in communities:
                     try:
                         print(f"COM DETECTION {key}")
                         with stopit.ThreadingTimeout(TIMEOUT) as context_manager:
-
+                            IG = nx.Graph(IG)
                             start = time.time()
                             result = find_communities(type=key, graph=IG) or {}
                             end = time.time()
@@ -573,6 +559,7 @@ def community_evaluation_with_static_propagations():
                             csvwriter.writerow(row)
                             file.close()
                     except Exception as e:
+                        print(e)
                         log_error(exc=e, show_error_dialog=False)
 
 

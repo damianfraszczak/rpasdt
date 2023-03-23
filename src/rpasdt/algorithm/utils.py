@@ -49,8 +49,6 @@ def nmi(partition1, partition2):
 
     first_partition_c = _prepare_partition(partition1)
     second_partition_c = _prepare_partition(partition2)
-    print(len(first_partition_c))
-    print(len(second_partition_c))
 
     return normalized_mutual_info_score(first_partition_c, second_partition_c)
 
@@ -142,7 +140,7 @@ def filter_communities_by_size(communities, size, hard=True):
 def find_small_communities(
     communities,
     alg="mean",
-    remove_outliers=True,
+    remove_outliers=False,
     iteration=1,
     hard=True,
 ):

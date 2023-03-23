@@ -1,14 +1,13 @@
 # do sprawdzenia
 # https://orbifold.net/default/community-detection-using-networkx/
 import os
-from typing import Optional
 
 import matplotlib
 import networkx as nx
-from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 
-from rpasdt.algorithm.communities import df_node_similarity, find_communities
+from rpasdt.algorithm.communities import find_communities
+from rpasdt.algorithm.df_community import df_node_similarity
 from rpasdt.algorithm.similarity import jaccard_node_similarity
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.algorithm.utils import get_communities_size
@@ -20,19 +19,6 @@ from rpasdt.network.networkx_utils import (
 )
 
 matplotlib.use("Qt5Agg")
-
-
-def community_similarity_(G, c1, c2):
-    c1_n, c2_n = set(), set()
-    for node_c1 in c1:
-        c1_n.add(node_c1)
-        c1_n |= set(G.neighbors(node_c1))
-    for node_c2 in c2:
-        c1_n.add(node_c2)
-        c2_n |= set(G.neighbors(node_c2))
-    c1_c2_n_product = c1_n.intersection(c2_n)
-    c1_c2_sum = c1_n.union(c2_n)
-    return len(c1_c2_n_product) / len(c1_c2_sum)
 
 
 def karate_graph():
@@ -63,6 +49,31 @@ def divided_by_edge_community():
             (13, 14),
         ]
     )
+
+
+def florentine_graph():
+    G = nx.Graph()
+    G.add_edge(1, 3)
+    G.add_edge(2, 5)
+    G.add_edge(2, 7)
+    G.add_edge(2, 13)
+    G.add_edge(3, 13)
+    G.add_edge(3, 8)
+    G.add_edge(3, 9)
+    G.add_edge(3, 10)
+    G.add_edge(3, 4)
+    G.add_edge(4, 14)
+    G.add_edge(5, 7)
+    G.add_edge(5, 11)
+    G.add_edge(6, 8)
+    G.add_edge(7, 11)
+    G.add_edge(8, 9)
+    # G.add_edge(9,12)
+    G.add_edge(10, 15)
+    G.add_edge(10, 12)
+    G.add_edge(11, 12)
+    G.add_edge(12, 16)
+    return G
 
 
 def footbal():
@@ -140,42 +151,6 @@ def leiden(G, resolution=1.0):
     )
 
 
-NODE_SIZE = 3000
-NODE_COLOR = "#f0f8ff"
-NODE_COLOR = "lightgrey"
-NODE_LABEL_COLOR = "#000000"
-FONT_SIZE = 20
-NODE_LABEL_SIZE = FONT_SIZE
-AXIS_FONT_SIZE = int(FONT_SIZE * 0.6)
-LEGEND_FONT_SIZE = int(FONT_SIZE * 0.4)
-FIG_SIZE = (8, 8)
-
-
-def configure_plot(
-    title: Optional[str] = None,
-    ylabel: Optional[str] = None,
-    xlabel: Optional[str] = None,
-):
-    title = title or plt.gca().get_title()
-    ylabel = ylabel or plt.gca().get_ylabel()
-    xlabel = xlabel or plt.gca().get_xlabel()
-
-    plt.title(title, fontsize=AXIS_FONT_SIZE)
-    plt.xlabel(xlabel, fontsize=AXIS_FONT_SIZE)
-    plt.ylabel(ylabel, fontsize=AXIS_FONT_SIZE)
-    # plt.legend(loc="best", fontsize=LEGEND_FONT_SIZE)
-
-    plt.box(False)
-    plt.margins(0.15, 0.15)
-    # plt.axis("off")
-    fig = plt.gcf()
-    ax = fig.axes[0]
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
-
-    fig.set_frameon(False)
-
-
 def draw_communities(G, partition, name=""):
     from matplotlib import pyplot as plt
 
@@ -240,6 +215,7 @@ def draw_communities(G, partition, name=""):
 
 GRAPHS = {
     # "divided": divided_by_edge_community,
+    "florentine_graph": florentine_graph,
     # "karate": karate_graph,
     # "windmil": windmil,
     # "football": footbal,
@@ -248,7 +224,7 @@ GRAPHS = {
     # # "barabasi": barabasi,
     # "cg": cg,
     # "radnom_partition": random_partition,
-    "facebook": facebook,
+    # "facebook": facebook,
 }
 similarity_functions = [
     jaccard_node_similarity,
@@ -259,7 +235,9 @@ similarity_functions = [
     # leicht_holme_node_similarity,
     # resource_allocation_index_node_similarity
 ]
-if __name__ == "__main__":
+
+
+def draw_community_results():
     for G_name in GRAPHS:
         G = GRAPHS[G_name]()
         for sim_f in similarity_functions:
@@ -269,13 +247,17 @@ if __name__ == "__main__":
                 index: community
                 for index, community in enumerate(get_object_value(comm, "communities"))
             }
-            # draw_communities(G, comm, name=f"df_{G_name}")
-            # comm = leiden(G)
+            draw_communities(G, comm, name=f"df_{G_name}")
+            comm = leiden(G)
             print(
                 f"{G_name}-{len(comm.keys())}-{[len(nodes) for nodes in comm.values()]}: {comm}"
             )
             # print(comm)
-            # draw_communities(G, comm, name=f"leiden_{G_name}")
+            draw_communities(G, comm, name=f"leiden_{G_name}")
+
+
+if __name__ == "__main__":
+    draw_community_results()
 
 # L = louvain(G)
 # print(len(L))

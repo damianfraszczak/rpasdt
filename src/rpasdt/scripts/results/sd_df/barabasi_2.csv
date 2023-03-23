@@ -1,0 +1,2 @@
+type,sources,avg_distance,TP,TN,FP,FN,SUM,TPR,TNR,PPV,ACC,F1
+centrality:betweenness,2,0.0,2,631,0,0,633,1.0,1.0,1.0,1.0,1.0

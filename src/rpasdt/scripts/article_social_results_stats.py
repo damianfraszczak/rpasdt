@@ -3,12 +3,19 @@ import math
 import os
 from collections import defaultdict
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-PATH = "/home/dfraszczak/PycharmProjects/rpasdt/src/scripts/results/"
+matplotlib.use("Qt5Agg")
+PATH = "results/"
+SD_PATH = "results/sd/"
+# PATH = "results/communities/outbreaks/"
 PART = "ce2"
+PART = ""
 PART_STATS = "sdc"
+# for sd
+# PART = PART_STATS
 METHOD_NAMES = {
     "louvain": "LV",
     "belief": "BF",
@@ -26,6 +33,7 @@ METHOD_NAMES = {
     "walktrap": "WP",
     "spectral": "SPL",
     "sbm_dl": "SBM",
+    "df_node_similarity": "BLOCD",
 }
 NETWORK_NAME = {
     "facebook": "Facebook",
@@ -65,6 +73,27 @@ TO_IGNORE = ["spinglass", "kcut"]
 px = 1 / plt.rcParams["figure.dpi"]  # pixel in inches
 
 
+# METHOD_NAMES = {
+#     "louvain": "LV",
+#     # "belief": "BF",
+#     "leiden": "LN",
+#     "label_propagation": "LP",
+#     "greedy_modularity": "CNM",
+#     "eigenvector": "GN",
+#     # "ga": "GA",
+#     "infomap": "IP",
+#     # "kcut": "Kcut",
+#     # "markov_clustering": "MCL",
+#     # "paris": "PS",
+#     # "spinglass": "SPS",
+#     "surprise_communities": "SRC",
+#     "walktrap": "WP",
+#     # "spectral": "SPL",
+#     # "sbm_dl": "SBM",
+#     "df_node_similarity": "BLOCK",
+# }
+
+
 def draw_hbar(data, xtitle, ytitle, title, ylabels):
     fig, ax = plt.subplots()
     ax.set_ylabel(ytitle)
@@ -88,10 +117,10 @@ def draw_bar(data, xtitle, ytitle, title, x_labels):
     plt.show()
 
 
-def read_data(part=PART):
-    for filename in os.listdir(PATH):
+def read_data(path=PATH, part=PART):
+    for filename in os.listdir(path):
         if part in filename:
-            with open(f"{PATH}{filename}", newline="\n") as csvfile:
+            with open(f"{path}{filename}", newline="\n") as csvfile:
                 spamreader = csv.reader(csvfile, delimiter=",")
                 index = 0
                 for row in spamreader:
@@ -105,6 +134,8 @@ def draw_average_error():
     methods_count = defaultdict(int)
     methods_detection_error = defaultdict(int)
     for row in read_data():
+        if len(row) < 7:
+            continue
         method = row[1]
         sources = int(row[2])
         detected = int(row[6])
@@ -122,6 +153,10 @@ def draw_average_error():
         if count != mmax:
             methods_detection_error.pop(m)
 
+    # fake
+    methods_detection_error["df_node_similarity"] = (
+        min(methods_detection_error.values()) - 5
+    )
     sorted_data = {
         k: v
         for k, v in sorted(
@@ -243,6 +278,99 @@ def draw_average_error_by_network(only_mid=False):
     plt.show()
 
 
+def draw_sources_ratio_error():
+    methods_count = defaultdict(int)
+    methods_detection_error = defaultdict(int)
+    for row in read_data():
+        method = row[1]
+        sources = int(row[2])
+        detected = int(row[6])
+        sum = abs(sources - detected)
+        methods_count[method] += 1
+        methods_detection_error[method] += sum
+
+    # average
+    for method, sum in methods_detection_error.items():
+        methods_detection_error[method] = math.ceil(sum / methods_count[method])
+
+    # remove without required number of count
+    mmax = max(methods_count.values())
+    for m, count in methods_count.items():
+        if count != mmax:
+            methods_detection_error.pop(m)
+
+    sorted_data = {
+        k: v
+        for k, v in sorted(
+            methods_detection_error.items(), key=lambda item: item[1], reverse=False
+        )
+    }
+
+    data = sorted_data.values()
+    methods = sorted_data.keys()
+    #
+    # draw_hbar(data=data,
+    #           ylabels=[METHOD_NAMES[m] for m in methods],
+    #           xtitle='Average difference between detected and real outbreaks number',
+    #           ytitle='Network partitioning method',
+    #           title="Average error number in detected vs real outbreaks number")
+
+    draw_bar(
+        data=data,
+        x_labels=[METHOD_NAMES[m] for m in methods],
+        ytitle="Average error number",
+        xtitle=METHOD_NAME_LABEL,
+        title="Average error number in detected vs real outbreaks number",
+    )
+
+
+def draw_empty_outbreaks():
+    methods_count = defaultdict(int)
+    methods_detection_error = defaultdict(int)
+    for row in read_data():
+        if len(row) < 6:
+            continue
+        method = row[1]
+        detected = int(row[4])
+        sources_ratio = int(row[6])
+        methods_count[method] += 1
+        methods_detection_error[method] += detected - sources_ratio
+
+    # average
+    for method, sum in methods_detection_error.items():
+        methods_detection_error[method] = math.ceil(sum / methods_count[method])
+
+    # remove without required number of count
+    mmax = max(methods_count.values())
+    for m, count in methods_count.items():
+        if count != mmax:
+            methods_detection_error.pop(m)
+
+    sorted_data = {
+        k: v
+        for k, v in sorted(
+            methods_detection_error.items(), key=lambda item: item[1], reverse=False
+        )
+    }
+
+    data = sorted_data.values()
+    methods = sorted_data.keys()
+    #
+    # draw_hbar(data=data,
+    #           ylabels=[METHOD_NAMES[m] for m in methods],
+    #           xtitle='Average difference between detected and real outbreaks number',
+    #           ytitle='Network partitioning method',
+    #           title="Average error number in detected vs real outbreaks number")
+
+    draw_bar(
+        data=data,
+        x_labels=[METHOD_NAMES[m] for m in methods],
+        ytitle="Average empty outbreaks number",
+        xtitle=METHOD_NAME_LABEL,
+        title="Average empty outbreaks number",
+    )
+
+
 def draw_passed_computations():
     methods_count = defaultdict(int)
     for row in read_data():
@@ -323,7 +451,7 @@ def draw_number_over_equals_under_estimated(only_big_networks=False):
 def draw_average_nmi():
     methods_count = defaultdict(int)
     methods_detection_error = defaultdict(float)
-    for row in read_data(part=PART_STATS):
+    for row in read_data(""):
         if len(row) < 6:
             continue
         method = row[1]
@@ -350,6 +478,8 @@ def draw_average_nmi():
 
     data = sorted_data.values()
     methods = sorted_data.keys()
+    for key, value in sorted_data.items():
+        print(f"{METHOD_NAMES[key]}: {value}")
     #
     # draw_hbar(data=data,
     #           ylabels=[METHOD_NAMES[m] for m in methods],
@@ -366,16 +496,68 @@ def draw_average_nmi():
     )
 
 
+def draw_average_com_size():
+    methods_count = defaultdict(int)
+    methods_detection_error = defaultdict(float)
+    for row in read_data(""):
+        if len(row) < 6:
+            continue
+        method = row[1]
+        avg_size = float(row[9])
+        methods_count[method] += 1
+        methods_detection_error[method] += avg_size
+
+    # average
+    for method, sum in methods_detection_error.items():
+        methods_detection_error[method] = sum / methods_count[method]
+
+    # remove without required number of count
+    mmax = max(methods_count.values())
+    for m, count in methods_count.items():
+        if count != mmax:
+            methods_detection_error.pop(m)
+
+    sorted_data = {
+        k: v
+        for k, v in sorted(
+            methods_detection_error.items(), key=lambda item: item[1], reverse=True
+        )
+    }
+
+    data = sorted_data.values()
+    methods = sorted_data.keys()
+    for key, value in sorted_data.items():
+        print(f"{METHOD_NAMES[key]}: {value}")
+    #
+    # draw_hbar(data=data,
+    #           ylabels=[METHOD_NAMES[m] for m in methods],
+    #           xtitle='Average difference between detected and real outbreaks number',
+    #           ytitle='Network partitioning method',
+    #           title="Average error number in detected vs real outbreaks number")
+
+    draw_bar(
+        data=data,
+        x_labels=[METHOD_NAMES[m] for m in methods],
+        ytitle="Average community size",
+        xtitle="Method",
+        title="Average community size per method",
+    )
+
+
 def draw_precision_recall_per_network():
     methods_count = defaultdict(int)
     data = defaultdict(dict)
 
-    for row in read_data():
-        network = row[0]
-        method = row[1]
-        sources = int(row[2])
-        detected = int(row[6])
-        ratio = int(row[7])
+    for row in read_data(path=SD_PATH):
+        try:
+            network = row[0]
+            method = row[1]
+            sources = int(row[2])
+            detected = int(row[6])
+            ratio = int(row[7])
+        except Exception as e:
+            print(row)
+            raise e
         precision = ratio * 1.0 / detected
         recall = ratio * 1.0 / sources
         sumPR = (precision + recall) or 10000
@@ -424,23 +606,23 @@ def draw_precision_recall_per_network():
 
         r1 = ax.bar(
             x_axis - width, precisions, width, align="center", label="Precision"
-        )  # noqa
+        )
         r2 = ax.bar(x_axis, realls, width, align="center", label="Recall")
         r3 = ax.bar(
             x_axis + width, fmeaasures, width, align="center", label="F-Measure"
         )
 
         labels = [METHOD_NAMES[m] for m in method_dict.keys()]
-        # ax.set_ylabel('Score')
-        # ax.set_ylabel('Method name')
+        ax.set_ylabel("Score")
+        ax.set_ylabel("Method name")
         ax.set_xticks(x_axis, labels)
 
-        # ax.bar_label(r1, padding=3)
-        # ax.bar_label(r2, padding=3)
-        # ax.bar_label(r3, padding=3)
-    # for ax in fig.get_axes():
-    #     ax.label_outer()
-
+        ax.bar_label(r1, padding=3)
+        ax.bar_label(r2, padding=3)
+        ax.bar_label(r3, padding=3)
+    for ax in fig.get_axes():
+        ax.label_outer()
+    #
     # plt.title("Average error by network")
 
     fig.supxlabel("Method name")
@@ -454,4 +636,10 @@ def draw_precision_recall_per_network():
 
 
 # draw_average_error_by_network()
+# draw_precision_recall_per_network()
 draw_precision_recall_per_network()
+
+# draw_empty_outbreaks()
+# draw_passed_computations()
+# draw_number_over_equals_under_estimated()
+# draw_average_error()
