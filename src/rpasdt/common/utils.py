@@ -102,9 +102,11 @@ def sort_dict_by_value(data: Dict[any, any], reverse=True) -> Dict[any, any]:
 
 def normalize_dict_values(data: Dict[any, float]) -> Dict[any, float]:
     maxv = max(data.values())
-    if maxv == 0:
-        maxv = 1.0
-    return {key: value / maxv for key, value in data.items()}
+    minv = min(data.values())
+    divider = maxv - minv
+    if divider == 0:
+        divider = 1
+    return {key: (value - minv) / divider for key, value in data.items()}
 
 
 def eval_if_str(val: Any):

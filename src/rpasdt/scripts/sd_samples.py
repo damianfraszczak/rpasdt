@@ -4,13 +4,15 @@ import time
 from collections import defaultdict
 from copy import copy
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from multiprocessing import Pool
+from typing import Any, Callable, Dict, List
 
 import numpy as np
 import stopit
 from networkx import Graph
 
 from rpasdt.algorithm.models import (
+    SingleSourceDetectionEvaluation,
     SourceDetectionSimulationConfig,
     SourceDetectionSimulationResult,
 )
@@ -21,8 +23,10 @@ from rpasdt.common.exceptions import log_error
 from rpasdt.scripts.taxonomies import graphs, source_detectors
 from rpasdt.scripts.utils import get_IG
 
-THRESHOLDS = np.arange(0, 1, 0.1).round(2)
+THRESHOLDS = np.arange(0, 1.05, 0.1).round(2)
 
+MINUTE = 60
+TIMEOUT = 5 * MINUTE
 WRITE_FROM_SCRATCH = False
 DIR_NAME = "sd_samples"
 
@@ -30,13 +34,36 @@ header = [
     "type",
     "experiments",
     "sources",
+    "detected",
     "threshold",
     "comm_difference",
     "avg_com_count",
     "avg_time",
     "avg_distance",
     "avg_detected_sources",
-    "nr_of_missing_communities",
+    "nr_of_empty_communities",
+    "TP",
+    "TN",
+    "FP",
+    "FN",
+    "SUM",
+    "TPR",
+    "TNR",
+    "PPV",
+    "ACC",
+    "F1",
+]
+
+header2 = [
+    "type",
+    "experiment",
+    "sources",
+    "detected",
+    "normalized",
+    "per_community",
+    "time",
+    "nr_of_empty_communities",
+    "error_distance",
     "TP",
     "TN",
     "FP",
@@ -86,9 +113,6 @@ def get_experiments(graph_function) -> Dict[int, List[Experiment]]:
             )
 
     return result
-
-
-MINUTE = 60
 
 
 def sd_work(ttt):
@@ -320,7 +344,7 @@ def sd_evaluation_with_static_propagations():
                             comm_difference,
                             avg_com_count,
                             rr.avg_execution_time,
-                            rr.avg_error_distance,
+                            rr.error_distance,
                             detected_sources_sum * 1.0 / len(rr.detected_sources),
                             nr_of_missing_communities,
                             rr.TP,
@@ -340,5 +364,139 @@ def sd_evaluation_with_static_propagations():
                         file.close()
 
 
+def array_to_str(array):
+    return ",".join([str(x) for x in array])
+
+
+def is_in_file(filename, line):
+    with open(filename) as f:
+        for l in f:
+            if line == l:
+                return True
+    return False
+
+
+@dataclass
+class DataToProcess:
+    index: int
+    row: List
+    graph_function: Callable
+
+
+def process_experiment(dp: DataToProcess):
+    index = dp.index
+    graph_function = dp.graph_function
+    row = dp.row
+    print(f"PROCESSING {index}-{graph_function.__name__}")
+    G = graph_function()
+    dir_name = "final_sd_results"
+    filename = f"results/{dir_name}/{graph_function.__name__}_{index}.csv"
+    executed_experiments = set()
+    if WRITE_FROM_SCRATCH:
+        file = open(filename, "w")
+        csvwriter = csv.writer(file)
+        csvwriter.writerow(header2)
+        file.close()
+    else:
+        with open(filename) as f:
+            for line in f:
+                splitted = line.split(",")
+                executed_experiments.add(f"{splitted[0]}-{splitted[1]}")
+
+    sources, infected_nodes = (
+        row["sources"],
+        row["infected_nodes"],
+    )
+    IG, infected_nodes, sources = get_IG(G, infected_nodes, sources)
+    number_of_sources = len(sources)
+
+    sd_local = {name: config(None) for name, config in source_detectors.items()}
+
+    for (
+        name,
+        source_detector_config,
+    ) in sd_local.items():
+        code = f"{name}-{index}"
+        print(f"PROCESSING {code}")
+        if code in executed_experiments:
+            print(f"skipping {code}")
+            continue
+
+        source_detector = get_source_detector(
+            algorithm=source_detector_config.alg,
+            G=G,
+            IG=IG,
+            config=source_detector_config.config,
+            # number_of_sources=number_of_sources,
+        )
+
+        start = time.time()
+        sd_evaluation: SingleSourceDetectionEvaluation = (
+            source_detector.evaluate_sources(sources)
+        )
+        end = time.time()
+        final_time = end - start
+        communities = sd_evaluation.additional_data["communities"]
+        experiment = Experiment(
+            sources=sources,
+            IG=IG,
+            G=G,
+            graph_function=graph_function,
+        )
+        nr_of_missing_communities = 0
+        for cluster, nodes in communities.items():
+            if not any(s in nodes for s in experiment.sources):
+                nr_of_missing_communities += 1
+
+        normalized_node_estimations = sd_evaluation.additional_data.get(
+            "normalized_node_estimations", {}
+        )
+        estimations_per_community = sd_evaluation.additional_data.get(
+            "estimation_per_community", {}
+        )
+        row = [
+            name,
+            index,
+            array_to_str(sorted(sources)),
+            array_to_str(sorted(sd_evaluation.detected_sources)),
+            normalized_node_estimations,
+            estimations_per_community,
+            final_time,
+            nr_of_missing_communities,
+            sd_evaluation.error_distance,
+            sd_evaluation.TP,
+            sd_evaluation.TN,
+            sd_evaluation.FP,
+            sd_evaluation.FN,
+            sd_evaluation.P + sd_evaluation.N,
+            sd_evaluation.TPR,
+            sd_evaluation.TNR,
+            sd_evaluation.PPV,
+            sd_evaluation.ACC,
+            sd_evaluation.F1,
+        ]
+        file = open(filename, "a")
+        csvwriter = csv.writer(file)
+        csvwriter.writerow(row)
+        file.close()
+
+
+def sd_evaluation_final():
+    for graph_function in graphs:
+        print(f"############### {graph_function.__name__}")
+        source_file = f"results/propagations/{graph_function.__name__}.csv"
+        with open(source_file) as csvfile:
+            with Pool(processes=4) as pool:
+                spamreader = csv.DictReader(csvfile)
+                for index, row in enumerate(spamreader):
+                    data = [
+                        DataToProcess(
+                            index=index, row=row, graph_function=graph_function
+                        )
+                    ]
+                    pool.map(process_experiment, data)
+
+
 # do_evaluation()
 # sd_evaluation_with_static_propagations()
+sd_evaluation_final()

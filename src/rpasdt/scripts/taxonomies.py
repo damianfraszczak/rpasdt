@@ -152,6 +152,47 @@ communities = [
     # CommunityOptionEnum.SBM_DL,
 ]
 communities = [CommunityOptionEnum.NODE_SIMILARITY]
+# LN
+# GN
+# LV
+# CNM
+# LP
+# IP
+# SRC
+# WP
+METHOD_NAMES = {
+    "louvain": "LV",
+    "belief": "BF",
+    "leiden": "LN",
+    "label_propagation": "LP",
+    "greedy_modularity": "CNM",
+    "eigenvector": "GN",
+    "ga": "GA",
+    "infomap": "IP",
+    "kcut": "Kcut",
+    "markov_clustering": "MCL",
+    "paris": "PS",
+    "spinglass": "SPS",
+    "surprise_communities": "SRC",
+    "walktrap": "WP",
+    "spectral": "SPL",
+    "sbm_dl": "SBM",
+}
+
+
+# communites ktore maja sukcesy xd
+
+communities = [
+    # CommunityOptionEnum.LEIDEN,
+    # CommunityOptionEnum.EIGENVECTOR,
+    # CommunityOptionEnum.LOUVAIN,
+    # CommunityOptionEnum.GREEDY_MODULARITY,
+    # CommunityOptionEnum.LABEL_PROPAGATION,
+    # CommunityOptionEnum.INFOMAP,
+    # CommunityOptionEnum.SURPRISE_COMMUNITIES,
+    # CommunityOptionEnum.WALKTRAP,
+    CommunityOptionEnum.NODE_SIMILARITY
+]
 sources_number = [0.001, 0.01, 0.1]
 # sources_number = [0.1]
 fallback_sources_number = 0.05
@@ -224,17 +265,17 @@ source_detectors.update(
 #         for cm in communities
 #     }
 # )
-source_detectors.update(
-    {
-        f"rumor:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
-            alg=SourceDetectionAlgorithm.RUMOR_CENTER,
-            config=CommunitiesBasedSourceDetectionConfig(
-                number_of_sources=x, communities_algorithm=cm
-            ),
-        )
-        for cm in communities
-    }
-)
+# source_detectors.update(
+#     {
+#         f"rumor:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
+#             alg=SourceDetectionAlgorithm.RUMOR_CENTER,
+#             config=CommunitiesBasedSourceDetectionConfig(
+#                 number_of_sources=x, communities_algorithm=cm
+#             ),
+#         )
+#         for cm in communities
+#     }
+# )
 source_detectors.update(
     {
         f"jordan:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
@@ -281,12 +322,6 @@ source_detectors.update(
                 source_detectors_config={
                     "JORDAN": (
                         SourceDetectionAlgorithm.JORDAN_CENTER,
-                        CommunitiesBasedSourceDetectionConfig(
-                            number_of_sources=x, communities_algorithm=cm
-                        ),
-                    ),
-                    "RUMOR": (
-                        SourceDetectionAlgorithm.RUMOR_CENTER,
                         CommunitiesBasedSourceDetectionConfig(
                             number_of_sources=x, communities_algorithm=cm
                         ),

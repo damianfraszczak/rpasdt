@@ -15,35 +15,50 @@ from rpasdt.algorithm.taxonomies import (
 from rpasdt.scripts.taxonomies import communities
 
 source_detectors = {}
+# source_detectors.update(
+#     {
+#         f"ensemble-centralities:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
+#             alg=SourceDetectionAlgorithm.COMMUNITY_ENSEMBLE_LEARNER,
+#             config=EnsembleCommunityBasedSourceDetectionConfig(
+#                 number_of_sources=x,
+#                 communities_algorithm=cm,
+#                 source_detectors_config={
+#                     "DEGREE": (
+#                         SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
+#                         CentralityCommunityBasedSourceDetectionConfig(
+#                             number_of_sources=x,
+#                             centrality_algorithm=CentralityOptionEnum.DEGREE,
+#                             communities_algorithm=cm,
+#                             normalize_results=False,
+#                         ),
+#                     ),
+#                     "BETWEENNESS": (
+#                         SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
+#                         CentralityCommunityBasedSourceDetectionConfig(
+#                             number_of_sources=x,
+#                             centrality_algorithm=CentralityOptionEnum.BETWEENNESS,
+#                             communities_algorithm=cm,
+#                             normalize_results=False,
+#                         ),
+#                     ),
+#                 },
+#             ),
+#         )
+#         for cm in communities
+#     }
+# )
 source_detectors.update(
     {
-        f"ensemble-centralities:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
-            alg=SourceDetectionAlgorithm.COMMUNITY_ENSEMBLE_LEARNER,
-            config=EnsembleCommunityBasedSourceDetectionConfig(
+        f"centrality-cm:{centrality}:{cm}": lambda x, centrality=centrality, cm=cm: SourceDetectorSimulationConfig(
+            alg=SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
+            config=CentralityCommunityBasedSourceDetectionConfig(
                 number_of_sources=x,
+                centrality_algorithm=centrality,
                 communities_algorithm=cm,
-                source_detectors_config={
-                    "DEGREE": (
-                        SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
-                        CentralityCommunityBasedSourceDetectionConfig(
-                            number_of_sources=x,
-                            centrality_algorithm=CentralityOptionEnum.DEGREE,
-                            communities_algorithm=cm,
-                            normalize_results=False,
-                        ),
-                    ),
-                    "BETWEENNESS": (
-                        SourceDetectionAlgorithm.COMMUNITY_CENTRALITY_BASED,
-                        CentralityCommunityBasedSourceDetectionConfig(
-                            number_of_sources=x,
-                            centrality_algorithm=CentralityOptionEnum.BETWEENNESS,
-                            communities_algorithm=cm,
-                            normalize_results=False,
-                        ),
-                    ),
-                },
+                source_threshold=1,
             ),
         )
+        for centrality in [CentralityOptionEnum.DEGREE]
         for cm in communities
     }
 )
@@ -63,8 +78,12 @@ def detectors_test():
         )
 
         print(name)
+
         print(source_detector.detected_sources_estimation)
         print(source_detector.detected_sources)
+        print(
+            source_detector.get_additional_data_for_source_evaluation()["communities"]
+        )
         # for key, value in source_detector.get_additional_data_for_source_evaluation().items():
         #     print("$$$$$$$$")
         #     print(key)

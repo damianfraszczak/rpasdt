@@ -1,5 +1,4 @@
 from collections import defaultdict
-from functools import cached_property
 from typing import Any, Dict, List, Union
 
 from networkx import Graph
@@ -42,11 +41,13 @@ class EnsembleLearnerSourceDetector(SourceDetector):
             result = sd.estimate_sources(G=G, IG=IG)
             result = sd.process_estimation(result)
             result = normalize_dict_values(result)
+
             for key, value in result.items():
                 results[key] += value
         results = {
             key: value / len(self.source_detectors) for key, value in results.items()
         }
+        self._normalized_node_estimations.update(results)
         return results
 
     def get_additional_data_for_source_evaluation(self) -> Dict[str, Any]:

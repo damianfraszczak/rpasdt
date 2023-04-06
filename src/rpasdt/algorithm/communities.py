@@ -1,8 +1,8 @@
 """Community detection methods."""
 import sys
-from functools import lru_cache
 from typing import Collection, Dict, List, Union
 
+import networkx as nx
 from cdlib import algorithms
 from networkx import Graph
 
@@ -41,7 +41,9 @@ def _update_communities_kwarg(
             kwargs.pop(key)
 
 
-@lru_cache(maxsize=128)
+COMMUNITY_CACHE = {}
+
+
 def find_communities(
     type: Union[str, CommunityOptionEnum],
     graph: Graph,
@@ -49,6 +51,14 @@ def find_communities(
     **alg_kwargs,
 ) -> Dict[int, List[int]]:
     alg_function_name = get_enum(type, CommunityOptionEnum).value
+    cache_key = (
+        f"{alg_function_name}-{nx.weisfeiler_lehman_graph_hash(graph)}-{alg_kwargs}"
+    )
+
+    result = COMMUNITY_CACHE.get(cache_key)
+    if result:
+        return result
+
     alg = getattr(algorithms, alg_function_name, None) or getattr(
         thismodule, alg_function_name
     )
@@ -56,9 +66,13 @@ def find_communities(
     _update_communities_kwarg(
         graph=graph, type=type, kwargs=kwargs, number_communities=number_communities
     )
-    result = alg(**kwargs)
 
-    return {
+    result = alg(**kwargs)
+    communities = {
         index: community
         for index, community in enumerate(get_object_value(result, "communities"))
     }
+
+    COMMUNITY_CACHE[cache_key] = communities
+
+    return communities

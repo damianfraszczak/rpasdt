@@ -7,7 +7,7 @@ import networkx as nx
 from networkx import Graph
 from scipy.stats import tmean
 
-DEBUG = True
+DEBUG = False
 MOD_THRESHOLD = 0.002
 # MOD_THRESHOLD = 0.01  # florentine
 
@@ -483,7 +483,8 @@ def initial_communities_improved(
     #     for key, value in neighbours_of_biggest.items()
     #     if sorted_by_degree[key] < average_degree
     # }
-    print(f"AFTER BIG NEIG {len(neighbours_of_biggest)}")
+    if DEBUG:
+        print(f"AFTER BIG NEIG {len(neighbours_of_biggest)}")
     # dzialam od najmniejszych
     for small_node, big_neighbours in sorted(
         neighbours_of_biggest.items(), key=lambda k: len(k[1]), reverse=True

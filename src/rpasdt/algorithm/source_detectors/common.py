@@ -68,12 +68,12 @@ class SourceDetector(ABC):
         self, result: Dict[int, float]
     ) -> Dict[int, float]:
         """Return estimated sources with scores."""
-        max_estimation = max(result.values())
-        if self.config.source_threshold:
+
+        if self.config.source_threshold is not None:
             return {
                 node: value
                 for node, value in result.items()
-                if max_estimation - value <= self.config.source_threshold and value >= 0
+                if value >= self.config.source_threshold and value >= 0
             }
         else:
             return {
