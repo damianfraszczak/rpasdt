@@ -27,6 +27,7 @@ from rpasdt.algorithm.propagation_reconstruction import (
 )
 from rpasdt.scripts.sd_samples import get_experiments
 from rpasdt.scripts.taxonomies import (
+    NETWORK_NAMES,
     barabasi_1,
     barabasi_2,
     dolphin,
@@ -565,6 +566,10 @@ def _draw_scatter_plots():
         )
 
 
+def _format_number(val, rounds=3):
+    return f"{round(val, rounds)}"
+
+
 def logistic_regression_with_roc(case=""):
     dir = "results/reconstruction/regression/"
     data = _read_data(dir, case)
@@ -687,7 +692,169 @@ def logistic_regression_with_roc(case=""):
     ax2.set_xlabel("False Positive Rate")
 
     plt.legend(loc=4)
-    # plt.show()
+    plt.tight_layout()
+    plt.show()
+
+
+CASE_TITLES = {"": "ogólnie", **NETWORK_NAMES}
+
+
+def logistic_regression_with_roc_and_pr(case=""):
+    dir = "results/reconstruction/regression/"
+    data = _read_data(dir, case)
+    case_title = f"dla sieci {CASE_TITLES[case]}" if case else "ogólnie"
+    # print(data["infected"].value_counts())
+    # rozklad
+    print(case)
+    print(data["infected"].value_counts())
+    print(data["infected"].value_counts() / data.shape[0])
+
+    data["neighbors_probability"] = data["neighbors_probability"] * data["degree"]
+    data["node_on_path"] = data["node_on_path"] * data["degree"]
+    X = data[["neighbors_probability", "node_on_path"]]
+    y = data["infected"]
+    # scatter plot
+    # _plot_scatter_for_data(case, data, "neighbors_probability", "node_on_path", "infected")
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=0
+    )
+    # by znalezsc najlepszy class weight https://towardsdatascience.com/weighted-logistic-regression-for-imbalanced-dataset-9a5cd88e68b
+    # define weight hyperparameter
+    # w = [
+    #     {0: 1000, 1: 100},
+    #     {0: 1000, 1: 10},
+    #     {0: 1000, 1: 1.0},
+    #     {0: 500, 1: 1.0},
+    #     {0: 400, 1: 1.0},
+    #     {0: 300, 1: 1.0},
+    #     {0: 200, 1: 1.0},
+    #     {0: 150, 1: 1.0},
+    #     {0: 100, 1: 1.0},
+    #     {0: 99, 1: 1.0},
+    #     {0: 10, 1: 1.0},
+    #     {0: 0.01, 1: 1.0},
+    #     {0: 0.01, 1: 10},
+    #     {0: 0.01, 1: 100},
+    #     {0: 0.001, 1: 1.0},
+    #     {0: 0.005, 1: 1.0},
+    #     {0: 1.0, 1: 1.0},
+    #     {0: 1.0, 1: 0.1},
+    #     {0: 10, 1: 0.1},
+    #     {0: 100, 1: 0.1},
+    #     {0: 10, 1: 0.01},
+    #     {0: 1.0, 1: 0.01},
+    #     {0: 1.0, 1: 0.001},
+    #     {0: 1.0, 1: 0.005},
+    #     {0: 1.0, 1: 10},
+    #     {0: 1.0, 1: 99},
+    #     {0: 1.0, 1: 100},
+    #     {0: 1.0, 1: 150},
+    #     {0: 1.0, 1: 200},
+    #     {0: 1.0, 1: 300},
+    #     {0: 1.0, 1: 400},
+    #     {0: 1.0, 1: 500},
+    #     {0: 1.0, 1: 1000},
+    #     {0: 10, 1: 1000},
+    #     {0: 100, 1: 1000},
+    # ]
+    # hyperparam_grid = {"class_weight": w}
+    # {'class_weight': {0: 500, 1: 1.0}}
+    logreg = LogisticRegressionWithThreshold(random_state=0, class_weight="balanced")
+    # grid = GridSearchCV(logreg, hyperparam_grid, scoring="roc_auc", cv=100,
+    #                     n_jobs=-1, refit=True)
+    # grid.fit(X_train, y_train)
+    # print(f'Best score: {grid.best_score_} with param: {grid.best_params_}')
+
+    logreg.fit(X_train, y_train)
+    y_scores = logreg.predict_proba(X_test)[:, 1]
+
+    fpr, tpr, thresholds = roc_curve(y_test, y_scores)
+
+    threshold, optimal_val, optimal_id = logreg.threshold_from_optimal_tpr_minus_fpr(
+        X_test, y_test
+    )
+    optimal_id = np.argmax(tpr - fpr)
+    gmeans = sqrt(tpr * (1 - fpr))
+    # locate the index of the largest g-mean
+    ix = argmax(gmeans)
+    threshold2 = thresholds[ix]
+
+    precision, recall, pr_thresholds = precision_recall_curve(y_test, y_scores)
+    # convert to f score
+    pr_threshold, pre, ix_rc = logreg.threshold_from_optimal_f_score(X_test, y_test)
+
+    y_pred = logreg.predict(X_test, threshold)
+    y_pred2 = logreg.predict(X_test, threshold2)
+    y_pred3 = logreg.predict(X_test, pr_threshold)
+
+    # create ROC curve
+    auc = metrics.roc_auc_score(y_test, y_pred)
+    auc2 = metrics.roc_auc_score(y_test, y_pred2)
+    auc3 = metrics.auc(recall, precision)
+
+    print("CASE", case)
+    print(
+        f"Accuracy: ({metrics.accuracy_score(y_test, y_pred)}) vs ({metrics.accuracy_score(y_test, y_pred3)})",
+    )
+    print(
+        f"Precision: ({metrics.precision_score(y_test, y_pred)}) vs ({metrics.precision_score(y_test, y_pred3)})"
+    )
+    print(
+        f"Recall: ({metrics.recall_score(y_test, y_pred)}) vs ({metrics.recall_score(y_test, y_pred3)})"
+    )
+    print(
+        f"F1:  ({metrics.f1_score(y_test, y_pred)}) vs ({metrics.f1_score(y_test, y_pred3)})"
+    )
+    print(f"AUC: ({auc}) vs ({auc3})")
+
+    fig, (ax1, ax2) = plt.subplots(2)
+
+    ax1.plot([0, 1], [0, 1], linestyle="--", label="Losowy")
+    ax1.plot(fpr, tpr, label="AUC=" + _format_number(auc))
+    ax1.scatter(
+        fpr[optimal_id],
+        tpr[optimal_id],
+        marker="o",
+        color="black",
+        label="Optymalny threshold",
+    )
+    ax1.set_title(
+        "Krzywa ROC " + case_title + ", threshold  " + _format_number(threshold)
+    )
+    ax1.set_ylabel("TPR")
+    ax1.set_xlabel("FPR")
+    ax1.legend(loc=4)
+
+    # ax2.plot(fpr, tpr, label="AUC=" + str(auc2))
+    # ax2.plot([0, 1], [0, 1], linestyle="--", label="No Skill")
+    # ax2.scatter(fpr[ix], tpr[ix], marker="o", color="black", label="Best")
+    # ax2.set_title("ROC Curve RECALL " + case + " threshold  " + str(threshold2))
+    # ax2.set_ylabel("True Positive Rate")
+    # ax2.set_xlabel("False Positive Rate")
+    no_skill = len(y_test[y_test == 1]) / len(y_test)
+    ax2.plot([0, 1], [no_skill, no_skill], linestyle="--", label="Losowy")
+    ax2.plot(recall, precision, marker=".", label="AUC=" + _format_number(auc3))
+    ax2.scatter(
+        recall[ix_rc],
+        precision[ix_rc],
+        marker="o",
+        color="black",
+        label="Optymalny threshold",
+    )
+    # axis labels
+    ax2.set_xlabel("Recall")
+    ax2.set_ylabel("Precyzja")
+    ax2.set_title(
+        "Krzywa precyzji/czułość "
+        + case_title
+        + ", threshold  "
+        + _format_number(pr_threshold)
+    )
+    ax2.legend(loc=1)
+    # plt.legend(loc=4)
+    plt.tight_layout()
+    plt.show()
 
 
 def logistic_regression_with_recall(case=""):
@@ -702,7 +869,7 @@ def logistic_regression_with_recall(case=""):
     X = data[["neighbors_probability", "node_on_path"]]
     y = data["infected"]
     # scatter plot
-    _plot_scatter_for_data(data, "neighbors_probability", "node_on_path", "infected")
+    # _plot_scatter_for_data(data, "neighbors_probability", "node_on_path", "infected")
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=0
@@ -871,10 +1038,11 @@ def logistic_regression(case=""):
     print("AUC:", auc)
 
 
-def evaluation():
-    for graph in graphs:
-        logistic_regression_with_roc(graph.__name__)
-    logistic_regression_with_roc()
+def evaluation(skip_graphs=False):
+    if not skip_graphs:
+        for graph in graphs:
+            logistic_regression_with_roc_and_pr(graph.__name__)
+    # logistic_regression_with_roc_and_pr()
 
 
 # generate_data_for_regression(False)
@@ -886,8 +1054,8 @@ def evaluation_grid():
         grid_search_function(graph.__name__)
 
 
-# evaluation()
+evaluation()
 # evaluation_grid()
 
 # generate_data_for_regression()
-_draw_scatter_plots()
+# _draw_scatter_plots()

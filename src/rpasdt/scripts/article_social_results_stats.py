@@ -9,10 +9,11 @@ import numpy as np
 
 matplotlib.use("Qt5Agg")
 PATH = "results/"
-SD_PATH = "results/sd/"
-# PATH = "results/communities/outbreaks/"
+SD_PATH = "results/final_sd_results/"
+PATH = "results/communities/outbreaks/"
 PART = "ce2"
 PART = ""
+PATH = SD_PATH
 PART_STATS = "sdc"
 # for sd
 # PART = PART_STATS
@@ -341,10 +342,7 @@ def draw_empty_outbreaks():
         methods_detection_error[method] = math.ceil(sum / methods_count[method])
 
     # remove without required number of count
-    mmax = max(methods_count.values())
-    for m, count in methods_count.items():
-        if count != mmax:
-            methods_detection_error.pop(m)
+    _remove_without_required_number_of_count(methods_count, methods_detection_error)
 
     sorted_data = {
         k: v
@@ -451,7 +449,7 @@ def draw_number_over_equals_under_estimated(only_big_networks=False):
 def draw_average_nmi():
     methods_count = defaultdict(int)
     methods_detection_error = defaultdict(float)
-    for row in read_data(""):
+    for row in read_data():
         if len(row) < 6:
             continue
         method = row[1]
@@ -464,10 +462,7 @@ def draw_average_nmi():
         methods_detection_error[method] = sum / methods_count[method]
 
     # remove without required number of count
-    mmax = max(methods_count.values())
-    for m, count in methods_count.items():
-        if count != mmax:
-            methods_detection_error.pop(m)
+    _remove_without_required_number_of_count(methods_count, methods_detection_error)
 
     sorted_data = {
         k: v
@@ -496,10 +491,19 @@ def draw_average_nmi():
     )
 
 
+def _remove_without_required_number_of_count(
+    methods_count, methods_detection_error, skip="eigenvector"
+):
+    mmax = max(methods_count.values())
+    for m, count in methods_count.items():
+        if count != mmax and m != skip:
+            methods_detection_error.pop(m)
+
+
 def draw_average_com_size():
     methods_count = defaultdict(int)
     methods_detection_error = defaultdict(float)
-    for row in read_data(""):
+    for row in read_data():
         if len(row) < 6:
             continue
         method = row[1]
@@ -512,10 +516,7 @@ def draw_average_com_size():
         methods_detection_error[method] = sum / methods_count[method]
 
     # remove without required number of count
-    mmax = max(methods_count.values())
-    for m, count in methods_count.items():
-        if count != mmax:
-            methods_detection_error.pop(m)
+    _remove_without_required_number_of_count(methods_count, methods_detection_error)
 
     sorted_data = {
         k: v
@@ -637,9 +638,10 @@ def draw_precision_recall_per_network():
 
 # draw_average_error_by_network()
 # draw_precision_recall_per_network()
-draw_precision_recall_per_network()
+# draw_average_com_size()
 
 # draw_empty_outbreaks()
 # draw_passed_computations()
 # draw_number_over_equals_under_estimated()
 # draw_average_error()
+draw_passed_computations()

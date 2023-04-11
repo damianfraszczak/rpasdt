@@ -499,4 +499,5 @@ def sd_evaluation_final():
 
 # do_evaluation()
 # sd_evaluation_with_static_propagations()
-sd_evaluation_final()
+if __name__ == "__main__":
+    sd_evaluation_final()

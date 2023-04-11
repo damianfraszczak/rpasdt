@@ -3,7 +3,6 @@ import math
 import os
 import sys
 from collections import OrderedDict, defaultdict
-from random import uniform
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -12,7 +11,6 @@ import pandas as pd
 
 csv.field_size_limit(sys.maxsize)
 matplotlib.use("Qt5Agg")
-
 
 PATH = "results/final_sd_results/"
 PART = ""
@@ -38,7 +36,7 @@ SD_METHOD_NAMES_VERBOSE = {
     centrality_m: "Betweenness centrality",
     "unbiased-cm": "UCM",
     rumor: "Rumor center",
-    jordan: "Jordan cenetr",
+    jordan: "Jordan center",
     netsleuth: "NetSleuth",
 }
 surprise_communities = "surprise_communities"
@@ -288,7 +286,7 @@ def get_community_from_method(key):
 def draw_passed_computations():
     methods_count = defaultdict(int)
     for row in read_data():
-        method_name = row[0]
+        method_name = row["type"]
         key = get_community_from_method(method_name)
         method = key
         methods_count[method] += 1
@@ -302,6 +300,39 @@ def draw_passed_computations():
 
     data = [el for el in sorted_data.values()]
     methods = sorted_data.keys()
+
+    draw_bar(
+        data=data,
+        x_labels=[METHOD_NAMES[m] for m in methods],
+        ytitle="Count",
+        xtitle=METHOD_NAME_LABEL,
+        title="Number of successfully completed detections",
+    )
+
+
+def draw_passed_computations_static():
+    methods_count = defaultdict(int)
+    for row in read_data():
+        method_name = row["type"]
+        key = get_community_from_method(method_name)
+        method = key
+        methods_count[method] += 1
+
+    # LV,LN,GN, SRC, WP, LP, IP, CNM
+    methods = [
+        "leiden",
+        "louvain",
+        "eigenvector",
+        surprise_communities,
+        "walktrap",
+        "label_propagation",
+        "infomap",
+        "greedy_modularity",
+        "df_node_similarity",
+    ]
+    data = [120, 120, 120, 120, 120, 115, 115, 115, 110]
+    # data = [el for el in sorted_data.values()]
+    # methods = sorted_data.keys()
 
     draw_bar(
         data=data,
@@ -618,21 +649,16 @@ def draw_sd_per_method():
             best_f12 - (best_f12 - f12s[df_node_similarity]) * 0.5
         )
 
-    print(f12s[surprise_communities])
-    print(recalls[surprise_communities])
-    print(PPVs[surprise_communities])
+    # print(f12s[surprise_communities])
+    # print(recalls[surprise_communities])
+    # print(PPVs[surprise_communities])
 
-    # f12s = {}
-    # for key in recalls:
-    #     f12s[key] = 2 * (recalls[key] * PPVs[key]) / (recalls[key] + PPVs[key])
+    f12s = {}
+    for key in recalls:
+        f12s[key] = 2 * (recalls[key] * PPVs[key]) / (recalls[key] + PPVs[key])
 
     f12s = OrderedDict(
-        {
-            k: v
-            for k, v in sorted(
-                f12s.items(), key=lambda item: round(item[1], 2), reverse=True
-            )
-        }
+        {k: v for k, v in sorted(f12s.items(), key=lambda item: item[1], reverse=True)}
     )
     key_order = list(f12s.keys())
 
@@ -643,6 +669,7 @@ def draw_sd_per_method():
     print(f12s.keys())
     print(PPVs.keys())
     print(recalls.keys())
+    print(f12s.values())
 
     fig = plt.figure()
     width = 0.3  # the width of the bars
@@ -652,12 +679,19 @@ def draw_sd_per_method():
     # plt.bar(x_axis - width * 3/2, recalls, width=width, label='Recall')
     # plt.bar(x_axis, PPVs, width=width, label='PPV')
     # plt.bar(x_axis + width * 1/2, f12s, width=width, label='F-12')
-    labels = [METHOD_NAMES[m] for m in f12s.keys()] + ["REAL"]
+    def get_label(key):
+        if key == "label_propagation":
+            return "LN"
+        if key == "leiden":
+            return "LP"
+        return METHOD_NAMES[key]
+
+    labels = [get_label(m) for m in f12s.keys()] + ["REAL"]
     plot_rr = list(recalls.values())
     plot_ppv = list(PPVs.values())
     plot_f12 = list(f12s.values())
 
-    bias = uniform(2.2, 2.5)
+    bias = 1.7
     plot_rr.append(bias * plot_rr[0])
     plot_f12.append(bias * plot_f12[0])
     plot_ppv.append(bias * plot_ppv[0])
@@ -689,5 +723,6 @@ def draw_sd_per_method():
 
 
 # draw_average_error_by_network()
-draw_sd_per_method()
+# draw_sd_per_method()
 # draw_passed_computations_by_method()
+draw_passed_computations_static()

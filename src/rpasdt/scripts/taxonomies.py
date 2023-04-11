@@ -16,6 +16,19 @@ from rpasdt.algorithm.taxonomies import (
     SourceDetectionAlgorithm,
 )
 
+NETWORK_NAMES = {
+    "facebook": "Facebook",
+    "barabasi_1": "SF-1",
+    "barabasi_2": "SF-2",
+    "watts_strogatz_graph_1": "SM-1",
+    "watts_strogatz_graph_2": "SM-2",
+    "soc_anybeat": "Social",
+    # "football": "Football",
+    "footbal": "Football",
+    "karate_graph": "Karate club",
+    "dolphin": "Dolphin",
+}
+
 
 def get_project_root():
     return "../../../"
@@ -178,7 +191,6 @@ METHOD_NAMES = {
     "spectral": "SPL",
     "sbm_dl": "SBM",
 }
-
 
 # communites ktore maja sukcesy xd
 
