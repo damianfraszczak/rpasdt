@@ -16,18 +16,58 @@ from rpasdt.algorithm.taxonomies import (
     SourceDetectionAlgorithm,
 )
 
-NETWORK_NAMES = {
+METHOD_NAMES = {
+    "louvain": "LV",
+    "belief": "BF",
+    "leiden": "LN",
+    "label_propagation": "LP",
+    "greedy_modularity": "CNM",
+    "eigenvector": "GN",
+    "ga": "GA",
+    "infomap": "IP",
+    "kcut": "Kcut",
+    "markov_clustering": "MCL",
+    "paris": "PS",
+    "spinglass": "SPS",
+    "surprise_communities": "SRC",
+    "walktrap": "WP",
+    "spectral": "SPL",
+    "sbm_dl": "SBM",
+    "df_node_similarity": "BLOCD",
+}
+NETWORK_NAME = {
     "facebook": "Facebook",
-    "barabasi_1": "SF-1",
+    "barabasi_1": "SF-2",
     "barabasi_2": "SF-2",
-    "watts_strogatz_graph_1": "SW-1",
-    "watts_strogatz_graph_2": "SW-2",
+    "watts_strogatz_graph_1": "SM-1",
+    "watts_strogatz_graph_2": "SM-2",
     "soc_anybeat": "Social",
     # "football": "Football",
     "footbal": "Football",
     "karate_graph": "Karate club",
     "dolphin": "Dolphin",
 }
+METHOD_NAME_LABEL = "Method name"
+
+BIG_NETWORKS = [
+    "facebook",
+    "barabasi_1",
+    "barabasi_2",
+    "watts_strogatz_graph_1",
+    "watts_strogatz_graph_2",
+    "soc_anybeat",
+]
+NETWORKS_ORDER = [
+    "karate_graph",
+    "footbal",
+    "dolphin",
+    "soc_anybeat",
+    "facebook",
+    "watts_strogatz_graph_1",
+    "watts_strogatz_graph_2",
+    "barabasi_1",
+    "barabasi_2",
+]
 
 
 def get_project_root():

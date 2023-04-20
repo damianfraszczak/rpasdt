@@ -723,6 +723,6 @@ def draw_sd_per_method():
 
 
 # draw_average_error_by_network()
-# draw_sd_per_method()
+draw_sd_per_method()
 # draw_passed_computations_by_method()
-draw_passed_computations_static()
+# draw_passed_computations_static()
