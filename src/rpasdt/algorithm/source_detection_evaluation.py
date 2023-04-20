@@ -5,6 +5,7 @@ import networkx as nx
 from networkx import Graph
 
 from rpasdt.algorithm.models import (
+    ClassificationMetrics,
     ExperimentSourceDetectionEvaluation,
     SingleSourceDetectionEvaluation,
 )
@@ -32,6 +33,29 @@ def compute_error_distance(
             for source in bigger
         ]
     )
+
+
+def compute_confusion_matrix(
+    real_sources: List[int],
+    detected_sources: Union[int, List[int]],
+    all_nodes_count: int,
+) -> ClassificationMetrics:
+    detected_sources = (
+        detected_sources if isinstance(detected_sources, list) else [detected_sources]
+    )
+    correctly_detected_sources = set(real_sources).intersection(detected_sources)
+    invalid_detected_sources = set(detected_sources).difference(
+        correctly_detected_sources
+    )
+    not_detected_sources = set(real_sources).difference(correctly_detected_sources)
+    P = len(real_sources)
+    N = all_nodes_count - P
+    FP = len(invalid_detected_sources)
+    TP = len(correctly_detected_sources)
+    FN = len(real_sources) - TP
+    TN = N - FN
+
+    return ClassificationMetrics(TP=TP, FP=FP, TN=TN, FN=FN, P=P, N=N)
 
 
 def compute_source_detection_evaluation(
