@@ -23,10 +23,13 @@ matplotlib.use("Qt5Agg")
 PATH = "results/final_sd_results/"
 PART = ""
 PART_STATS = ""
+
 netsleuth = "netsleuth-cm"
 jordan = "jordan"
 rumor = "rumor"
 centrality_m = "centrality-cm"
+ensemble = "ensemble"
+ensemble_centralities = "ensemble-centralities"
 
 SD_METHOD_NAMES = {
     "betweenness": "B",
@@ -47,7 +50,17 @@ SD_METHOD_NAMES_VERBOSE = {
     rumor: "RC",
     jordan: "JC",
     netsleuth: "NS",
+    ensemble: "Ensemble JRN",
+    ensemble_centralities: "Ensemble BDł",
 }
+SD_METHODS_TO_CHECK = [
+    centrality_m,
+    rumor,
+    jordan,
+    # netsleuth,
+    # ensemble,
+    # ensemble_centralities
+]
 surprise_communities = "surprise_communities"
 df_node_similarity = "df_node_similarity"
 METHOD_NAMES = {
@@ -146,17 +159,21 @@ def draw_bar(data, xtitle, ytitle, title, x_labels):
     plt.show()
 
 
+def read_file(filename):
+    with open(f"{filename}", newline="\n") as csvfile:
+        spamreader = csv.DictReader(csvfile, delimiter=",")
+        index = 0
+        for row in spamreader:
+            if index == 0:
+                index += 1
+                continue
+            yield row
+
+
 def read_data(path=PATH, part=PART):
     for filename in os.listdir(path):
         if part in filename:
-            with open(f"{path}{filename}", newline="\n") as csvfile:
-                spamreader = csv.DictReader(csvfile, delimiter=",")
-                index = 0
-                for row in spamreader:
-                    if index == 0:
-                        index += 1
-                        continue
-                    yield row
+            return read_file(f"{path}{filename}")
 
 
 def draw_average_error():
@@ -799,14 +816,12 @@ class DataToProcess:
         return [self.nodes_normalized[node] for node in self.sorted_notes]
 
 
-def draw_sd_per_method_final_data(part="", draw_plot=False):
+def draw_sd_per_method_final_data(sd_method=centrality_m, part="", draw_plot=False):
     threshold = 1.0
-    find_optimal_threshold = True
-    sd_method = centrality_m
     methods_count = defaultdict(int)
 
     improve = True
-    skip_ensemble = True
+    skip_ensemble = False
     title = f"SD evaluation based on outbreaks, TH={threshold}, {SD_METHOD_NAMES_VERBOSE[sd_method]}"
     if part:
         title += f", {NETWORK_NAME[part]}"
@@ -842,26 +857,45 @@ def draw_sd_per_method_final_data(part="", draw_plot=False):
         )
         methods_count[cm_m] = methods_count[cm_m] + 1
 
-    stats_filename = "results/final_sd_stats.csv"
+    thresholds = [
+        None,
+        0.05,
+        0.1,
+        0.15,
+        0.2,
+        0.25,
+        0.3,
+        0.35,
+        0.4,
+        0.45,
+        0.5,
+        0.55,
+        0.6,
+        0.65,
+        0.7,
+        0.75,
+        0.8,
+        0.85,
+        0.9,
+        0.95,
+        1,
+    ]
+    stats_filename = (
+        f"results/final_sd_results_stats/basic_threshold_{sd_method}_{part}.csv"
+    )
     # bez optimum
     _write_to_file(
         filename=stats_filename,
         header=[
-            "network",
             "method",
             "threshold",
             "ACC",
             "recall",
             "PPV",
             "f12",
-            "TP",
-            "TN",
-            "FP",
-            "FN",
         ],
     )
 
-    thresholds = [None, 1.0]
     for th in thresholds:
         data_for_threshold = {}
         for data_to_process in to_process:
@@ -896,7 +930,7 @@ def draw_sd_per_method_final_data(part="", draw_plot=False):
             ACC = (tp + tn) / (tp + tn + fp + fn)
             recall = tp / (tp + fn) if tp + fn > 0 else 0
             PPV = tp / (tp + fp) if tp + fp > 0 else 0
-            f12 = 2 * (PPV * recall) / (PPV + recall)
+            f12 = 2 * (PPV * recall) / (PPV + recall) if PPV + recall > 0 else 0
 
             data_for_threshold[method]["ACC"].append(ACC)
             data_for_threshold[method]["recall"].append(recall)
@@ -955,23 +989,87 @@ def draw_sd_per_method_final_data(part="", draw_plot=False):
                 best_f12 - (best_f12 - f12s[df_node_similarity]) * 0.5
             )
 
-        print(f12s[surprise_communities])
-        print(recalls[surprise_communities])
-        print(PPVs[surprise_communities])
-
         f12s = {}
         for key in recalls:
             f12s[key] = 2 * (recalls[key] * PPVs[key]) / (recalls[key] + PPVs[key])
 
-        print(f12s)
+        for method in methods_count.keys():
+            _write_to_file(
+                filename=stats_filename,
+                data=[
+                    method,
+                    th,
+                    acc[method],
+                    recalls[method],
+                    PPVs[method],
+                    f12s[method],
+                ],
+            )
 
 
-# draw_sd_per_method_final_data()
+def generate_finals_sd_report():
+    networks = ["", *NETWORK_NAME.keys()]
+    final_file = "results/final_sd_results_stats/final_sd_results.csv"
+    _write_to_file(
+        filename=final_file,
+        header=[
+            "network",
+            "method",
+            "threshold",
+            "ACC",
+            "recall",
+            "PPV",
+            "f12",
+        ],
+    )
+    for sd_method in SD_METHODS_TO_CHECK:
+        for network in networks:
+            filename = f"results/final_sd_results_stats/basic_threshold_{sd_method}_{network}.csv"
+            def_per_method = {}
+            one_per_method = {}
+            optimal_for_method = {}
+
+            for row in read_file(filename):
+
+                method = row["method"]
+                th = float(row["threshold"]) if row["threshold"] else None
+                acc = float(row["ACC"])
+                recall = float(row["recall"])
+                ppv = float(row["PPV"])
+                f12 = float(row["f12"])
+                if th is None or not th:
+                    def_per_method[method] = [None, acc, recall, ppv, f12]
+                elif th == 1.0:
+                    one_per_method[method] = [1.0, acc, recall, ppv, f12]
+                else:
+                    best_f1 = optimal_for_method.get(method, [0, 0, 0, 0, 0])[4]
+                    if f12 > best_f1:
+                        optimal_for_method[method] = [th, acc, recall, ppv, f12]
+
+            for method in def_per_method.keys():
+                _write_to_file(
+                    filename=final_file, data=[network, method, *def_per_method[method]]
+                )
+                _write_to_file(
+                    filename=final_file, data=[network, method, *one_per_method[method]]
+                )
+                _write_to_file(
+                    filename=final_file,
+                    data=[network, method, *optimal_for_method[method]],
+                )
+
+                # draw_sd_per_method_final_data()
+
+
 f_to_process = draw_sd_per_method_final_data
-# for n in NETWORK_NAME.keys():
-#     f_to_process(n)
-f_to_process("karate_graph")
+# # for sd_method in SD_METHODS_TO_CHECK:
+# #     for n in NETWORK_NAME.keys():
+# #         f_to_process(sd_method,n)
+# #     f_to_process(sd_method)
+f_to_process(netsleuth)
 # draw_average_error_by_network()
 # draw_sd_per_method_final_data()
 # draw_passed_computations_by_method()
 # draw_passed_computations_static()
+
+# generate_finals_sd_report()
