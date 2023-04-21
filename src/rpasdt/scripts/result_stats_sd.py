@@ -59,7 +59,7 @@ SD_METHODS_TO_CHECK = [
     jordan,
     netsleuth,
     ensemble,
-    ensemble_centralities
+    ensemble_centralities,
 ]
 leiden = "leiden"
 surprise_communities = "surprise_communities"
@@ -185,11 +185,7 @@ def draw_bar(data, xtitle, ytitle, title, x_labels):
 def read_file(filename):
     with open(f"{filename}", newline="\n") as csvfile:
         spamreader = csv.DictReader(csvfile, delimiter=",")
-        index = 0
         for row in spamreader:
-            if index == 0:
-                index += 1
-                continue
             yield row
 
 
@@ -213,8 +209,7 @@ def draw_average_error():
 
     # average
     for method, sum in methods_detection_error.items():
-        methods_detection_error[method] = math.ceil(
-            sum / methods_count[method])
+        methods_detection_error[method] = math.ceil(sum / methods_count[method])
 
     # remove without required number of count
     mmax = max(methods_count.values())
@@ -225,8 +220,7 @@ def draw_average_error():
     sorted_data = {
         k: v
         for k, v in sorted(
-            methods_detection_error.items(), key=lambda item: item[1],
-            reverse=False
+            methods_detection_error.items(), key=lambda item: item[1], reverse=False
         )
     }
 
@@ -287,8 +281,7 @@ def draw_average_error_by_network(only_mid=False):
     stats_per_network = {
         k: v
         for k, v in sorted(
-            stats_per_network.items(),
-            key=lambda item: NETWORKS_ORDER.index(item[0])
+            stats_per_network.items(), key=lambda item: NETWORKS_ORDER.index(item[0])
         )
     }
 
@@ -513,8 +506,7 @@ def draw_average_nmi():
     sorted_data = {
         k: v
         for k, v in sorted(
-            methods_detection_error.items(), key=lambda item: item[1],
-            reverse=True
+            methods_detection_error.items(), key=lambda item: item[1], reverse=True
         )
     }
 
@@ -572,8 +564,7 @@ def draw_precision_recall_per_network():
 
     stats_per_network = {
         k: v
-        for k, v in
-        sorted(data.items(), key=lambda item: NETWORKS_ORDER.index(item[0]))
+        for k, v in sorted(data.items(), key=lambda item: NETWORKS_ORDER.index(item[0]))
     }
     ncols = math.floor(len(stats_per_network.keys()) / 2)
     fig, axes = plt.subplots(nrows=2, ncols=ncols, figsize=(409, 409))
@@ -595,13 +586,11 @@ def draw_precision_recall_per_network():
             fmeaasures.append(details["fmeasure"])
 
         r1 = ax.bar(
-            x_axis - width, precisions, width, align="center",
-            label="Precision"
+            x_axis - width, precisions, width, align="center", label="Precision"
         )
         r2 = ax.bar(x_axis, realls, width, align="center", label="Recall")
         r3 = ax.bar(
-            x_axis + width, fmeaasures, width, align="center",
-            label="F-Measure"
+            x_axis + width, fmeaasures, width, align="center", label="F-Measure"
         )
 
         labels = [METHOD_NAMES[m] for m in method_dict.keys()]
@@ -638,15 +627,12 @@ def draw_sd_results(
     PPVs = {}
     f12s = {}
     for index, community_method in enumerate(methods_count.keys()):
-        ACC = sum(data[community_method]["ACC"]) / len(
-            data[community_method]["ACC"])
+        ACC = sum(data[community_method]["ACC"]) / len(data[community_method]["ACC"])
         recall = sum(data[community_method]["recall"]) / len(
             data[community_method]["recall"]
         )
-        PPV = sum(data[community_method]["PPV"]) / len(
-            data[community_method]["PPV"])
-        f12 = sum(data[community_method]["f12"]) / len(
-            data[community_method]["ACC"])
+        PPV = sum(data[community_method]["PPV"]) / len(data[community_method]["PPV"])
+        f12 = sum(data[community_method]["f12"]) / len(data[community_method]["ACC"])
 
         TP = sum(data[community_method]["TP"])
         TN = sum(data[community_method]["TN"])
@@ -687,8 +673,7 @@ def draw_sd_results(
         f12s[key] = 2 * (recalls[key] * PPVs[key]) / (recalls[key] + PPVs[key])
 
     f12s = OrderedDict(
-        {k: v for k, v in
-         sorted(f12s.items(), key=lambda item: item[1], reverse=True)}
+        {k: v for k, v in sorted(f12s.items(), key=lambda item: item[1], reverse=True)}
     )
     key_order = list(f12s.keys())
 
@@ -771,7 +756,6 @@ def draw_sd_per_method(part="", show_plot=True):
     data = {}
     improve = True
 
-
     for row in read_data(part=part):
         method = row["type"].split(":")
         sd_m = method[0]
@@ -820,8 +804,9 @@ def draw_sd_per_method(part="", show_plot=True):
         )
 
 
-def draw_sd_per_method_final_data(sd_method=centrality_m, part="",
-                                  draw_plot=False):
+def draw_sd_per_method_final_data(
+    sd_method=centrality_m, part="", draw_plot=False, c_m=None
+):
     threshold = 1.0
     methods_count = defaultdict(int)
 
@@ -841,27 +826,24 @@ def draw_sd_per_method_final_data(sd_method=centrality_m, part="",
         sd_m = method[0]
         cm_m = method[-1]
         detected_default = row["detected"].split(",")
-        if sd_m != sd_method:
+        if c_m and cm_m != c_m:
+            continue
+        if sd_m and sd_m != sd_method:
             continue
         if skip_ensemble and "ensemble" in method:
             continue
-
         sources = row["sources"].split(",")
-
 
         per_community = eval(row["per_community"])
         per_community_normalized = {
-            key: normalize_dict_values(items) for key, items in
-            per_community.items()
+            key: normalize_dict_values(items) for key, items in per_community.items()
         }
         nodes_normalized = {}
         for key, items in per_community_normalized.items():
-            nodes_normalized.update(
-                {str(node): score for node, score in items.items()})
+            nodes_normalized.update({str(node): score for node, score in items.items()})
 
         to_process.append(
-            DataToProcess(sd_m, cm_m, sources, nodes_normalized,
-                          detected_default)
+            DataToProcess(sd_m, cm_m, sources, nodes_normalized, detected_default)
         )
         methods_count[cm_m] = methods_count[cm_m] + 1
 
@@ -934,13 +916,11 @@ def draw_sd_per_method_final_data(sd_method=centrality_m, part="",
 
             if th is not None:
                 nodes_predicted = [
-                    1 if data_to_process.nodes_normalized[v] >= th else 0 for v
-                    in nodes
+                    1 if data_to_process.nodes_normalized[v] >= th else 0 for v in nodes
                 ]
             else:
                 nodes_predicted = [
-                    1 if v in data_to_process.detected_default else 0 for v in
-                    nodes
+                    1 if v in data_to_process.detected_default else 0 for v in nodes
                 ]
 
             y_true = np.array(nodes_as_y)
@@ -950,8 +930,7 @@ def draw_sd_per_method_final_data(sd_method=centrality_m, part="",
             ACC = (tp + tn) / (tp + tn + fp + fn)
             recall = tp / (tp + fn) if tp + fn > 0 else 0
             PPV = tp / (tp + fp) if tp + fp > 0 else 0
-            f12 = 2 * (PPV * recall) / (
-                PPV + recall) if PPV + recall > 0 else 0
+            f12 = 2 * (PPV * recall) / (PPV + recall) if PPV + recall > 0 else 0
 
             data_for_threshold[method]["ACC"].append(ACC)
             data_for_threshold[method]["recall"].append(recall)
@@ -1012,8 +991,7 @@ def draw_sd_per_method_final_data(sd_method=centrality_m, part="",
 
         f12s = {}
         for key in recalls:
-            f12s[key] = 2 * (recalls[key] * PPVs[key]) / (
-                recalls[key] + PPVs[key])
+            f12s[key] = 2 * (recalls[key] * PPVs[key]) / (recalls[key] + PPVs[key])
 
         for method in methods_count.keys():
             _write_to_file(
@@ -1078,47 +1056,98 @@ def generate_finals_sd_report():
                     continue
 
                 if th is None or not th:
-                    def_per_method[method] = [None, acc, recall, ppv, f12, tp,
-                                              tn, fp, fn]
+                    def_per_method[method] = [
+                        None,
+                        acc,
+                        recall,
+                        ppv,
+                        f12,
+                        tp,
+                        tn,
+                        fp,
+                        fn,
+                    ]
                 elif th == 1.0:
-                    one_per_method[method] = [1.0, acc, recall, ppv, f12, tp,
-                                              tn, fp, fn]
+                    one_per_method[method] = [
+                        1.0,
+                        acc,
+                        recall,
+                        ppv,
+                        f12,
+                        tp,
+                        tn,
+                        fp,
+                        fn,
+                    ]
                 elif th == 0.9:
-                    nity_for_method[method] = [0.9, acc, recall, ppv, f12, tp,
-                                               tn, fp, fn]
+                    nity_for_method[method] = [
+                        0.9,
+                        acc,
+                        recall,
+                        ppv,
+                        f12,
+                        tp,
+                        tn,
+                        fp,
+                        fn,
+                    ]
                 else:
-                    best_f1 = optimal_for_method.get(method,
-                                                     [0, 0, 0, 0, 0, 0, 0, 0,
-                                                      0])[4]
+                    best_f1 = optimal_for_method.get(
+                        method, [0, 0, 0, 0, 0, 0, 0, 0, 0]
+                    )[4]
                     if f12 > best_f1:
-                        optimal_for_method[method] = [th, acc, recall, ppv,
-                                                      f12, tp, tn, fp, fn]
+                        optimal_for_method[method] = [
+                            th,
+                            acc,
+                            recall,
+                            ppv,
+                            f12,
+                            tp,
+                            tn,
+                            fp,
+                            fn,
+                        ]
 
             for method in def_per_method.keys():
                 try:
-                    network_name = NETWORK_NAME[
-                        network] if network else "Średnio"
+                    network_name = NETWORK_NAME[network] if network else "Średnio"
                     sd_name = SD_METHOD_NAMES_VERBOSE[sd_method]
                     method_name = METHOD_NAMES[method]
                     _write_to_file(
                         filename=final_file,
-                        data=[network_name, sd_name, method_name,
-                              *def_per_method[method]]
+                        data=[
+                            network_name,
+                            sd_name,
+                            method_name,
+                            *def_per_method[method],
+                        ],
                     )
                     _write_to_file(
                         filename=final_file,
-                        data=[network_name, sd_name, method_name,
-                              *one_per_method[method]]
+                        data=[
+                            network_name,
+                            sd_name,
+                            method_name,
+                            *one_per_method[method],
+                        ],
                     )
                     _write_to_file(
                         filename=final_file,
-                        data=[network_name, sd_name, method_name,
-                              *optimal_for_method[method]],
+                        data=[
+                            network_name,
+                            sd_name,
+                            method_name,
+                            *optimal_for_method[method],
+                        ],
                     )
                     _write_to_file(
                         filename=final_file,
-                        data=[network_name, sd_name, method_name,
-                              *nity_for_method[method]],
+                        data=[
+                            network_name,
+                            sd_name,
+                            method_name,
+                            *nity_for_method[method],
+                        ],
                     )
                 except Exception as e:
                     print(e)
@@ -1133,10 +1162,11 @@ def generate_reports():
             print(sd_method)
             print(n)
             print("####")
-            f_to_process(sd_method, n)
+            f_to_process(sd_method=sd_method, part=n)
         # f_to_process(sd_method)
 
-generate_reports()
+
+# generate_reports()
 # f_to_process(ensemble)
 # draw_average_error_by_network()
 # draw_sd_per_method_final_data()
@@ -1145,4 +1175,4 @@ generate_reports()
 # generate_reports()
 # draw_sd_per_method()
 # generate_finals_sd_report()
-# draw_sd_per_method_final_data()
+generate_reports()
