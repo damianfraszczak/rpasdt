@@ -93,7 +93,7 @@ NETWORK_NAME = {
     "barabasi_2": "SF-2",
     "watts_strogatz_graph_1": "SW-1",
     "watts_strogatz_graph_2": "SW-2",
-    "soc_anybeat": "Social",
+    # "soc_anybeat": "Social",
     "karate_graph": "Karate club",
     # "dolphin": "Dolphin",
 }
@@ -1175,4 +1175,6 @@ def generate_reports():
 # generate_reports()
 # draw_sd_per_method()
 # generate_finals_sd_report()
-generate_reports()
+# generate_reports()
+
+draw_sd_per_method_final_data(sd_method=rumor)
