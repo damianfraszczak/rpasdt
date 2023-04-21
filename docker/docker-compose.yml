@@ -5,3 +5,5 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     command: run
+    ports:
+      - "8050:8050"

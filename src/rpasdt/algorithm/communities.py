@@ -12,6 +12,8 @@ from rpasdt.common.utils import (
     get_function_default_kwargs,
     get_object_value,
 )
+# noqa: F401
+from rpasdt.algorithm.df_community import df_node_similarity
 
 thismodule = sys.modules[__name__]
 NUMBER_OF_COMMUNITIES_KWARG_NAMES = ["k", "number_communities", "level"]

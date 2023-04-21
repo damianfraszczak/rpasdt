@@ -384,13 +384,17 @@ class DataToProcess:
 
 
 def process_experiment(dp: DataToProcess):
+    splitted_networks = ["facebook", "soc_anybeat"]
     index = dp.index
     graph_function = dp.graph_function
     row = dp.row
     print(f"PROCESSING {index}-{graph_function.__name__}")
     G = graph_function()
     dir_name = "final_sd_results"
-    filename = f"results/{dir_name}/{graph_function.__name__}_{index}.csv"
+    network_file_name = graph_function.__name__
+    if network_file_name in splitted_networks:
+        network_file_name = f"{network_file_name}_{index}"
+    filename = f"results/{dir_name}/{network_file_name}.csv"
     executed_experiments = set()
     if WRITE_FROM_SCRATCH:
         file = open(filename, "w")

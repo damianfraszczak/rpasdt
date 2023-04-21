@@ -13,7 +13,7 @@ MOD_THRESHOLD = 0.002
 
 
 # dla soc anybeat
-MOD_THRESHOLD = 0.0001
+# MOD_THRESHOLD = 0.0001
 
 
 def get_communities_size(communities):

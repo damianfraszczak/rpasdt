@@ -1,5 +1,6 @@
 """Common methods shared throughout the app."""
 import ast
+import cmath
 import collections
 import inspect
 import re
@@ -101,6 +102,7 @@ def sort_dict_by_value(data: Dict[any, any], reverse=True) -> Dict[any, any]:
 
 
 def normalize_dict_values(data: Dict[any, float]) -> Dict[any, float]:
+    data = {key: cmath.phase(value) if isinstance(value,complex) else value for key, value in data.items()}
     maxv = max(data.values())
     minv = min(data.values())
     divider = maxv - minv

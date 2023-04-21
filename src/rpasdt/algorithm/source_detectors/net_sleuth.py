@@ -18,4 +18,4 @@ class NetSleuthCommunityBasedSourceDetector(CommunityBasedSourceDetector):
         # max_val = np.max(v1)
         # sources = nodes[np.where(v1 == max_val)]
         # return {source: max_val for source in sources}
-        return {node: v1[node_to_index[node]] for node in nodes}
+        return {node: v1[node_to_index[node]].real for node in nodes}
