@@ -1,0 +1,287 @@
+network,method,sd_method,threshold
+Średnio,BC,LN,0.7
+Średnio,BC,LV,0.65
+Średnio,BC,IP,0.45
+Średnio,BC,BLOCD,0.45
+Średnio,BC,GN,0.7
+Średnio,BC,SRC,0.5
+Średnio,BC,CNM,0.7
+Średnio,BC,LP,0.5
+Średnio,BC,WP,0.45
+Facebook,BC,LN,0.95
+Facebook,BC,GN,0.95
+Facebook,BC,LV,0.95
+Facebook,BC,CNM,0.95
+Facebook,BC,LP,0.95
+Facebook,BC,IP,0.45
+Facebook,BC,SRC,0.95
+Facebook,BC,WP,0.95
+Facebook,BC,BLOCD,0.55
+SF-1,BC,LN,0.95
+SF-1,BC,GN,0.95
+SF-1,BC,LV,0.8
+SF-1,BC,CNM,0.85
+SF-1,BC,LP,0.6
+SF-1,BC,IP,0.6
+SF-1,BC,SRC,0.8
+SF-1,BC,WP,0.45
+SF-1,BC,BLOCD,0.6
+SF-2,BC,LN,0.55
+SF-2,BC,GN,0.65
+SF-2,BC,LV,0.7
+SF-2,BC,CNM,0.95
+SF-2,BC,LP,0.45
+SF-2,BC,IP,0.45
+SF-2,BC,SRC,0.8
+SF-2,BC,WP,0.45
+SF-2,BC,BLOCD,0.45
+SW-1,BC,LN,0.6
+SW-1,BC,GN,0.7
+SW-1,BC,LV,0.85
+SW-1,BC,CNM,0.8
+SW-1,BC,LP,0.65
+SW-1,BC,IP,0.6
+SW-1,BC,SRC,0.5
+SW-1,BC,WP,0.5
+SW-1,BC,BLOCD,0.8
+SW-2,BC,LN,0.8
+SW-2,BC,GN,0.95
+SW-2,BC,LV,0.65
+SW-2,BC,CNM,0.75
+SW-2,BC,LP,0.95
+SW-2,BC,IP,0.75
+SW-2,BC,SRC,0.85
+SW-2,BC,WP,0.6
+SW-2,BC,BLOCD,0.95
+Social,BC,LN,0.45
+Social,BC,LV,0.45
+Social,BC,IP,0.8
+Social,BC,BLOCD,0.45
+Social,BC,GN,0.95
+Social,BC,SRC,0.95
+Social,BC,WP,0.8
+Social,BC,CNM,0.45
+Social,BC,LP,0.85
+Karate club,BC,LN,0.45
+Karate club,BC,GN,0.45
+Karate club,BC,LV,0.45
+Karate club,BC,CNM,0.45
+Karate club,BC,LP,0.45
+Karate club,BC,IP,0.45
+Karate club,BC,SRC,0.5
+Karate club,BC,WP,0.45
+Karate club,BC,BLOCD,0.45
+Średnio,RC,SRC,0.65
+Średnio,RC,LN,0.65
+Średnio,RC,GN,0.5
+Średnio,RC,LV,0.5
+Średnio,RC,CNM,0.7
+Średnio,RC,LP,0.5
+Średnio,RC,IP,0.45
+Średnio,RC,WP,0.45
+Średnio,RC,BLOCD,0.45
+Facebook,RC,LN,0.85
+Facebook,RC,GN,0.95
+Facebook,RC,LV,0.95
+Facebook,RC,CNM,0.95
+Facebook,RC,LP,0.75
+Facebook,RC,IP,0.45
+Facebook,RC,SRC,0.75
+Facebook,RC,WP,0.8
+Facebook,RC,BLOCD,0.5
+SF-1,RC,LN,0.95
+SF-1,RC,GN,0.8
+SF-1,RC,LV,0.6
+SF-1,RC,CNM,0.75
+SF-1,RC,LP,0.45
+SF-1,RC,IP,0.45
+SF-1,RC,SRC,0.65
+SF-1,RC,WP,0.45
+SF-1,RC,BLOCD,0.45
+SF-2,RC,LN,0.5
+SF-2,RC,GN,0.55
+SF-2,RC,LV,0.45
+SF-2,RC,CNM,0.95
+SF-2,RC,LP,0.45
+SF-2,RC,IP,0.45
+SF-2,RC,SRC,0.65
+SF-2,RC,WP,0.85
+SF-2,RC,BLOCD,0.45
+SW-1,RC,LN,0.45
+SW-1,RC,GN,0.45
+SW-1,RC,LV,0.45
+SW-1,RC,CNM,0.7
+SW-1,RC,LP,0.45
+SW-1,RC,IP,0.7
+SW-1,RC,SRC,0.65
+SW-1,RC,WP,0.45
+SW-1,RC,BLOCD,0.45
+SW-2,RC,LN,0.65
+SW-2,RC,GN,0.95
+SW-2,RC,LV,0.75
+SW-2,RC,CNM,0.45
+SW-2,RC,LP,0.85
+SW-2,RC,IP,0.45
+SW-2,RC,SRC,0.95
+SW-2,RC,WP,0.85
+SW-2,RC,BLOCD,0.95
+Social,RC,SRC,0.95
+Social,RC,LN,0.75
+Social,RC,GN,0.95
+Social,RC,LV,0.7
+Social,RC,CNM,0.8
+Social,RC,IP,0.95
+Social,RC,WP,0.85
+Karate club,RC,LN,0.65
+Karate club,RC,GN,0.45
+Karate club,RC,LV,0.65
+Karate club,RC,CNM,0.45
+Karate club,RC,LP,0.55
+Karate club,RC,IP,0.5
+Karate club,RC,SRC,0.45
+Karate club,RC,WP,0.45
+Karate club,RC,BLOCD,0.5
+Średnio,JC,LN,0.8
+Średnio,JC,LV,0.85
+Średnio,JC,CNM,0.8
+Średnio,JC,LP,0.45
+Średnio,JC,IP,0.45
+Średnio,JC,BLOCD,0.45
+Średnio,JC,WP,0.45
+Średnio,JC,GN,0.8
+Średnio,JC,SRC,0.45
+Facebook,JC,LN,0.5
+Facebook,JC,GN,0.55
+Facebook,JC,LV,0.65
+Facebook,JC,CNM,0.85
+Facebook,JC,LP,0.55
+Facebook,JC,IP,0.45
+Facebook,JC,SRC,0.45
+Facebook,JC,WP,0.75
+Facebook,JC,BLOCD,0.55
+SF-1,JC,LN,0.85
+SF-1,JC,GN,0.85
+SF-1,JC,LV,0.85
+SF-1,JC,CNM,0.85
+SF-1,JC,LP,0.45
+SF-1,JC,IP,0.55
+SF-1,JC,SRC,0.45
+SF-1,JC,WP,0.65
+SF-1,JC,BLOCD,0.65
+SF-2,JC,LN,0.85
+SF-2,JC,GN,0.7
+SF-2,JC,LV,0.95
+SF-2,JC,CNM,0.8
+SF-2,JC,LP,0.45
+SF-2,JC,IP,0.45
+SF-2,JC,SRC,0.45
+SF-2,JC,WP,0.45
+SF-2,JC,BLOCD,0.65
+SW-1,JC,LN,0.45
+SW-1,JC,GN,0.85
+SW-1,JC,LV,0.75
+SW-1,JC,CNM,0.85
+SW-1,JC,LP,0.75
+SW-1,JC,IP,0.85
+SW-1,JC,SRC,0.5
+SW-1,JC,WP,0.65
+SW-1,JC,BLOCD,0.95
+SW-2,JC,LN,0.75
+SW-2,JC,GN,0.95
+SW-2,JC,LV,0.95
+SW-2,JC,CNM,0.8
+SW-2,JC,LP,0.8
+SW-2,JC,IP,0.45
+SW-2,JC,SRC,0.45
+SW-2,JC,WP,0.6
+SW-2,JC,BLOCD,0.95
+Social,JC,LN,0.45
+Social,JC,LV,0.45
+Social,JC,CNM,0.85
+Social,JC,LP,0.8
+Social,JC,IP,0.45
+Social,JC,BLOCD,0.8
+Social,JC,WP,0.5
+Social,JC,GN,0.45
+Social,JC,SRC,0.85
+Karate club,JC,LN,0.45
+Karate club,JC,GN,0.45
+Karate club,JC,LV,0.45
+Karate club,JC,CNM,0.45
+Karate club,JC,LP,0.45
+Karate club,JC,IP,0.45
+Karate club,JC,SRC,0.45
+Karate club,JC,WP,0.45
+Karate club,JC,BLOCD,0.45
+Średnio,NS,LN,0.45
+Średnio,NS,LV,0.45
+Średnio,NS,CNM,0.45
+Średnio,NS,LP,0.45
+Średnio,NS,IP,0.45
+Średnio,NS,BLOCD,0.45
+Średnio,NS,GN,0.45
+Średnio,NS,SRC,0.45
+Średnio,NS,WP,0.45
+Facebook,NS,LN,0.45
+Facebook,NS,GN,0.55
+Facebook,NS,LV,0.75
+Facebook,NS,CNM,0.6
+Facebook,NS,LP,0.55
+Facebook,NS,IP,0.55
+Facebook,NS,SRC,0.65
+Facebook,NS,WP,0.85
+Facebook,NS,BLOCD,0.55
+SF-1,NS,LN,0.6
+SF-1,NS,GN,0.55
+SF-1,NS,LV,0.5
+SF-1,NS,CNM,0.45
+SF-1,NS,LP,0.45
+SF-1,NS,IP,0.45
+SF-1,NS,SRC,0.45
+SF-1,NS,WP,0.45
+SF-1,NS,BLOCD,0.45
+SF-2,NS,LN,0.45
+SF-2,NS,GN,0.5
+SF-2,NS,LV,0.45
+SF-2,NS,CNM,0.5
+SF-2,NS,LP,0.45
+SF-2,NS,IP,0.45
+SF-2,NS,SRC,0.45
+SF-2,NS,WP,0.45
+SF-2,NS,BLOCD,0.45
+SW-1,NS,LN,0.45
+SW-1,NS,GN,0.65
+SW-1,NS,LV,0.5
+SW-1,NS,CNM,0.45
+SW-1,NS,LP,0.45
+SW-1,NS,IP,0.65
+SW-1,NS,SRC,0.45
+SW-1,NS,WP,0.5
+SW-1,NS,BLOCD,0.55
+SW-2,NS,LN,0.7
+SW-2,NS,GN,0.45
+SW-2,NS,LV,0.8
+SW-2,NS,CNM,0.65
+SW-2,NS,LP,0.45
+SW-2,NS,IP,0.75
+SW-2,NS,SRC,0.95
+SW-2,NS,WP,0.45
+SW-2,NS,BLOCD,0.45
+Social,NS,LN,0.45
+Social,NS,LV,0.45
+Social,NS,CNM,0.45
+Social,NS,LP,0.45
+Social,NS,IP,0.45
+Social,NS,BLOCD,0.45
+Social,NS,GN,0.45
+Social,NS,SRC,0.55
+Social,NS,WP,0.45
+Karate club,NS,LN,0.45
+Karate club,NS,GN,0.5
+Karate club,NS,LV,0.45
+Karate club,NS,CNM,0.45
+Karate club,NS,LP,0.65
+Karate club,NS,IP,0.5
+Karate club,NS,SRC,0.45
+Karate club,NS,WP,0.45
+Karate club,NS,BLOCD,0.45

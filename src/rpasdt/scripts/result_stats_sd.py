@@ -36,15 +36,15 @@ SD_METHOD_NAMES = {
     "betweenness": "B",
     "centrality": "C",
     "unbiased": "UC",
-    centrality_m: "CM",
+    centrality_m: "BC",
     "unbiased-cm": "UCM",
     rumor: "RC",
     jordan: "JC",
-    netsleuth: "N",
+    netsleuth: "NS",
 }
 SD_METHOD_NAMES_VERBOSE = {
-    "betweenness": "B",
-    "centrality": "C",
+    "betweenness": "BC",
+    "centrality": "BC",
     "unbiased": "UC",
     centrality_m: "BC",
     "unbiased-cm": "UCM",
@@ -98,6 +98,7 @@ NETWORK_NAME = {
     "karate_graph": "Karate club",
     # "dolphin": "Dolphin",
 }
+NETWORK_NAME_REVERTED = {value: key for key, value in NETWORK_NAME.items()}
 METHOD_NAME_LABEL = "Method name"
 
 BIG_NETWORKS = [
@@ -885,6 +886,8 @@ def draw_sd_per_method_final_data(
     ]
     if threshold:
         thresholds = [threshold]
+    if threshold_map:
+        thresholds = [None]
     stats_filename = (
         f"results/final_sd_results_stats/basic_threshold_{sd_method}_{part}.csv"
     )
@@ -907,12 +910,20 @@ def draw_sd_per_method_final_data(
             ],
         )
     for th in thresholds:
-        title = f"SD evaluation based on outbreaks, TH={threshold or 'default'}, {SD_METHOD_NAMES_VERBOSE[sd_method]}"
-        if part:
-            title += f", {NETWORK_NAME[part]}"
+
+
         data_for_threshold = {}
+
         for data_to_process in to_process:
             method = data_to_process.cm_m
+            nn = NETWORK_NAME.get(part, "Średnio")
+            if threshold_map and threshold_map.get(nn):
+                th = threshold_map [nn][SD_METHOD_NAMES[sd_method]][METHOD_NAMES[method]]
+
+            title = f"SD evaluation based on outbreaks, TH={th or 'default'}, {SD_METHOD_NAMES_VERBOSE[sd_method]}"
+            if part:
+                title += f", {nn}"
+
             if method not in data_for_threshold:
                 data_for_threshold[method] = {
                     "ACC": list(),
@@ -1188,25 +1199,32 @@ def generate_finals_sd_report():
                 # draw_sd_per_method_final_data()
 
 
-optimal_thresholds = {
-    jordan: 0.5,
-    centrality_m: 0.5,
-    netsleuth: 0.5,
-    rumor: 0.5,
-    ensemble: 0.5,
-    ensemble_centralities: 0.5,
-}
+def get_optimal_thresholds():
+    optimum_filename = "results/final_sd_results_stats/final_sd_results_optimum.csv"
+    thresholds = {}
+    for row in read_file(optimum_filename):
+        method = row["sd_method"]
+        network = row["network"]
+        sd_method = row["method"]
+        threshold = float(row["threshold"])
+        if network not in thresholds:
+            thresholds[network] = {}
+        if sd_method not in thresholds[network]:
+            thresholds[network][sd_method] = {}
 
+        thresholds[network][sd_method][method] = threshold
+    return thresholds
 
 def generate_reports():
     threshold = 1.0
+    optimal_thresholds = get_optimal_thresholds()
     f_to_process = draw_sd_per_method_final_data
     for sd_method in SD_METHODS_TO_CHECK:
         for n in NETWORK_NAME.keys():
             f_to_process(
-                sd_method=sd_method, part=n, draw_plot=True, threshold=threshold
+                sd_method=sd_method, part=n, draw_plot=True, threshold_map=optimal_thresholds
             )
-        f_to_process(sd_method=sd_method, draw_plot=True, threshold=threshold)
+        f_to_process(sd_method=sd_method, draw_plot=True,  threshold_map=optimal_thresholds)
 
 
 # generate_reports()
