@@ -173,14 +173,14 @@ def watts_strogatz_graph_2():
 
 
 graphs = [
-    # karate_graph,
+    karate_graph,
     # dolphin,
-    # footbal,
-    # barabasi_1,
-    # barabasi_2,
-    # watts_strogatz_graph_1,
-    # watts_strogatz_graph_2,
-    # facebook,
+    footbal,
+    barabasi_1,
+    barabasi_2,
+    watts_strogatz_graph_1,
+    watts_strogatz_graph_2,
+    facebook,
     soc_anybeat,
 ]
 
@@ -317,17 +317,17 @@ source_detectors.update(
 #         for cm in communities
 #     }
 # )
-# source_detectors.update(
-#     {
-#         f"rumor:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
-#             alg=SourceDetectionAlgorithm.RUMOR_CENTER,
-#             config=CommunitiesBasedSourceDetectionConfig(
-#                 number_of_sources=x, communities_algorithm=cm
-#             ),
-#         )
-#         for cm in communities
-#     }
-# )
+source_detectors.update(
+    {
+        f"rumor:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
+            alg=SourceDetectionAlgorithm.RUMOR_CENTER,
+            config=CommunitiesBasedSourceDetectionConfig(
+                number_of_sources=x, communities_algorithm=cm
+            ),
+        )
+        for cm in communities
+    }
+)
 source_detectors.update(
     {
         f"jordan:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(

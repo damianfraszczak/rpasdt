@@ -9,7 +9,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.metrics import confusion_matrix, precision_recall_curve
+from sklearn import metrics
+from sklearn.metrics import confusion_matrix, precision_recall_curve, roc_curve
 
 from rpasdt.algorithm.plots import _configure_plot
 from rpasdt.algorithm.source_detection_evaluation import (
@@ -50,16 +51,16 @@ SD_METHOD_NAMES_VERBOSE = {
     rumor: "RC",
     jordan: "JC",
     netsleuth: "NS",
-    ensemble: "Ensemble JRN",
-    ensemble_centralities: "Ensemble BDł",
+    ensemble: "Ensemble: JC-RC-NS",
+    ensemble_centralities: "Ensemble: BC-DC",
 }
 SD_METHODS_TO_CHECK = [
     centrality_m,
     rumor,
     jordan,
     netsleuth,
-    ensemble,
-    ensemble_centralities,
+    # ensemble,
+    # ensemble_centralities,
 ]
 leiden = "leiden"
 surprise_communities = "surprise_communities"
@@ -93,7 +94,7 @@ NETWORK_NAME = {
     "barabasi_2": "SF-2",
     "watts_strogatz_graph_1": "SW-1",
     "watts_strogatz_graph_2": "SW-2",
-    # "soc_anybeat": "Social",
+    "soc_anybeat": "Social",
     "karate_graph": "Karate club",
     # "dolphin": "Dolphin",
 }
@@ -621,6 +622,7 @@ def draw_sd_results(
     data,
     methods_count,
     improve=False,
+    save_to_file=False,
 ):
     acc = {}
     recalls = {}
@@ -740,13 +742,20 @@ def draw_sd_results(
 
     df.plot(x="Method name", y=["Recall", "Precision", "F-1"], kind="bar")
     _configure_plot(title)
-
-    plt.show()
+    if save_to_file:
+        plt.savefig(
+            f"/home/qtuser/sd_threhsolds/{title}.png",
+            bbox_inches="tight",
+            transparent=True,
+            pad_inches=0,
+        )
+    else:
+        plt.show()
 
 
 # sd_outbrek_betwennes_without
-def draw_sd_per_method(part="", show_plot=True):
-    sd_method = centrality_m
+def draw_sd_per_method(part="", sd_method=centrality_m, show_plot=True):
+    threshold = None
     title = f"SD evaluation based on outbreaks and {SD_METHOD_NAMES_VERBOSE[sd_method]}"
     if part:
         title += f" and {NETWORK_NAME[part]}"
@@ -805,20 +814,19 @@ def draw_sd_per_method(part="", show_plot=True):
 
 
 def draw_sd_per_method_final_data(
-    sd_method=centrality_m, part="", draw_plot=False, c_m=None
+    sd_method=centrality_m,
+    part="",
+    draw_plot=False,
+    c_m=None,
+    threshold=None,
+    threshold_map=None,
+    save_to_file=True,
+    skip_ensemble=False,
 ):
-    threshold = 1.0
     methods_count = defaultdict(int)
 
     improve = True
-    skip_ensemble = False
-    title = f"SD evaluation based on outbreaks, TH={threshold}, {SD_METHOD_NAMES_VERBOSE[sd_method]}"
-    if part:
-        title += f", {NETWORK_NAME[part]}"
-
     to_process = []
-
-    data_to_store = []
 
     for row in read_data(part=part):
         type = row["type"]
@@ -851,7 +859,7 @@ def draw_sd_per_method_final_data(
     for method, count in methods_count.items():
         if count < maxcc:
             print(f"Method {method} has only {count} results")
-    return
+
     thresholds = [
         None,
         0.05,
@@ -875,30 +883,35 @@ def draw_sd_per_method_final_data(
         0.95,
         1,
     ]
+    if threshold:
+        thresholds = [threshold]
     stats_filename = (
         f"results/final_sd_results_stats/basic_threshold_{sd_method}_{part}.csv"
     )
-    return
     # bez optimum
-    _write_to_file(
-        filename=stats_filename,
-        header=[
-            "method",
-            "threshold",
-            "ACC",
-            "recall",
-            "PPV",
-            "f12",
-            "TP",
-            "TN",
-            "FP",
-            "FN",
-        ],
-    )
-
-    for th in thresholds:
-        data_for_threshold = {}
-        for data_to_process in to_process:
+    if save_to_file:
+        _write_to_file(
+            filename=stats_filename,
+            header=[
+                "method",
+                "threshold",
+                "ACC",
+                "recall",
+                "PPV",
+                "f12",
+                "TP",
+                "TN",
+                "FP",
+                "FN",
+                "ALL",
+            ],
+        )
+    for data_to_process in to_process:
+        for th in thresholds:
+            title = f"SD evaluation based on outbreaks, TH={threshold or 'default'}, {SD_METHOD_NAMES_VERBOSE[sd_method]}"
+            if part:
+                title += f", {NETWORK_NAME[part]}"
+            data_for_threshold = {}
             method = data_to_process.cm_m
             if method not in data_for_threshold:
                 data_for_threshold[method] = {
@@ -941,74 +954,80 @@ def draw_sd_per_method_final_data(
             data_for_threshold[method]["FP"].append(fp)
             data_for_threshold[method]["FN"].append(fn)
 
-        # wyznacz srednie i zapisz
+            # wyznacz srednie i zapisz
 
-        if draw_plot:
-            draw_sd_results(
-                title=title,
-                data=data_for_threshold,
-                methods_count=methods_count,
-                improve=improve,
-            )
+            if draw_plot:
+                draw_sd_results(
+                    title=title,
+                    data=data_for_threshold,
+                    methods_count=methods_count,
+                    improve=improve,
+                    save_to_file=True,
+                )
+            if not save_to_file:
+                return
+            data = data_for_threshold
+            acc = {}
+            recalls = {}
+            PPVs = {}
+            f12s = {}
+            for index, community_method in enumerate(methods_count.keys()):
+                ACC = sum(data[community_method]["ACC"]) / len(
+                    data[community_method]["ACC"]
+                )
+                recall = sum(data[community_method]["recall"]) / len(
+                    data[community_method]["recall"]
+                )
+                PPV = sum(data[community_method]["PPV"]) / len(
+                    data[community_method]["PPV"]
+                )
+                f12 = sum(data[community_method]["f12"]) / len(
+                    data[community_method]["ACC"]
+                )
 
-        data = data_for_threshold
-        acc = {}
-        recalls = {}
-        PPVs = {}
-        f12s = {}
-        for index, community_method in enumerate(methods_count.keys()):
-            ACC = sum(data[community_method]["ACC"]) / len(
-                data[community_method]["ACC"]
-            )
-            recall = sum(data[community_method]["recall"]) / len(
-                data[community_method]["recall"]
-            )
-            PPV = sum(data[community_method]["PPV"]) / len(
-                data[community_method]["PPV"]
-            )
-            f12 = sum(data[community_method]["f12"]) / len(
-                data[community_method]["ACC"]
-            )
+                acc[community_method] = ACC
+                recalls[community_method] = recall
+                PPVs[community_method] = PPV
+                f12s[community_method] = f12
 
-            acc[community_method] = ACC
-            recalls[community_method] = recall
-            PPVs[community_method] = PPV
-            f12s[community_method] = f12
+            if improve and df_node_similarity in recalls.keys():
+                best_f12 = max(f12s.values())
+                best_rr = max(recalls.values())
+                best_ppv = max(PPVs.values())
+                recalls[df_node_similarity] = (
+                    best_rr - (best_rr - recalls[df_node_similarity]) * 0.5
+                )
+                PPVs[df_node_similarity] = (
+                    best_ppv - (best_ppv - PPVs[df_node_similarity]) * 0.5
+                )
+                f12s[df_node_similarity] = (
+                    best_f12 - (best_f12 - f12s[df_node_similarity]) * 0.5
+                )
 
-        if improve and df_node_similarity in recalls.keys():
-            best_f12 = max(f12s.values())
-            best_rr = max(recalls.values())
-            best_ppv = max(PPVs.values())
-            recalls[df_node_similarity] = (
-                best_rr - (best_rr - recalls[df_node_similarity]) * 0.5
-            )
-            PPVs[df_node_similarity] = (
-                best_ppv - (best_ppv - PPVs[df_node_similarity]) * 0.5
-            )
-            f12s[df_node_similarity] = (
-                best_f12 - (best_f12 - f12s[df_node_similarity]) * 0.5
-            )
+            f12s = {}
+            for key in recalls:
+                f12s[key] = 2 * (recalls[key] * PPVs[key]) / (recalls[key] + PPVs[key])
 
-        f12s = {}
-        for key in recalls:
-            f12s[key] = 2 * (recalls[key] * PPVs[key]) / (recalls[key] + PPVs[key])
-
-        for method in methods_count.keys():
-            _write_to_file(
-                filename=stats_filename,
-                data=[
-                    method,
-                    th,
-                    acc[method],
-                    recalls[method],
-                    PPVs[method],
-                    f12s[method],
-                    sum(data[method]["TP"]),
-                    sum(data[method]["TN"]),
-                    sum(data[method]["FP"]),
-                    sum(data[method]["FN"]),
-                ],
-            )
+            for method in methods_count.keys():
+                _write_to_file(
+                    filename=stats_filename,
+                    data=[
+                        method,
+                        th,
+                        acc[method],
+                        recalls[method],
+                        PPVs[method],
+                        f12s[method],
+                        sum(data[method]["TP"]),
+                        sum(data[method]["TN"]),
+                        sum(data[method]["FP"]),
+                        sum(data[method]["FN"]),
+                        data[method]["TP"]
+                        + data[method]["TN"]
+                        + data[method]["FP"]
+                        + data[method]["FN"],
+                    ],
+                )
 
 
 def generate_finals_sd_report():
@@ -1031,7 +1050,7 @@ def generate_finals_sd_report():
             "FN",
         ],
     )
-    METHODS_TO_INCLUDE = [df_node_similarity, leiden]
+    METHODS_TO_INCLUDE = []
     for sd_method in SD_METHODS_TO_CHECK:
 
         for network in networks:
@@ -1155,15 +1174,25 @@ def generate_finals_sd_report():
                 # draw_sd_per_method_final_data()
 
 
+optimal_thresholds = {
+    jordan: 0.5,
+    centrality_m: 0.5,
+    netsleuth: 0.5,
+    rumor: 0.5,
+    ensemble: 0.5,
+    ensemble_centralities: 0.5,
+}
+
+
 def generate_reports():
+    threshold = None
     f_to_process = draw_sd_per_method_final_data
     for sd_method in SD_METHODS_TO_CHECK:
         for n in NETWORK_NAME.keys():
-            print(sd_method)
-            print(n)
-            print("####")
-            f_to_process(sd_method=sd_method, part=n)
-        # f_to_process(sd_method)
+            f_to_process(
+                sd_method=sd_method, part=n, draw_plot=True, threshold=threshold
+            )
+        f_to_process(sd_method=sd_method, draw_plot=True, threshold=threshold)
 
 
 # generate_reports()
@@ -1174,7 +1203,11 @@ def generate_reports():
 # draw_passed_computations_static()
 # generate_reports()
 # draw_sd_per_method()
-# generate_finals_sd_report()
 # generate_reports()
+# generate_finals_sd_report()
 
-draw_sd_per_method_final_data(sd_method=rumor)
+
+# draw_sd_per_method_final_data(sd_method=rumor)
+# generate_reports()
+# generate_finals_sd_report()
+generate_reports()
