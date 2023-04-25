@@ -426,63 +426,66 @@ def process_experiment(dp: DataToProcess):
             print(f"skipping {code}")
             continue
 
-        source_detector = get_source_detector(
-            algorithm=source_detector_config.alg,
-            G=G,
-            IG=IG,
-            config=source_detector_config.config,
-            # number_of_sources=number_of_sources,
-        )
+        try:
+            source_detector = get_source_detector(
+                algorithm=source_detector_config.alg,
+                G=G,
+                IG=IG,
+                config=source_detector_config.config,
+                # number_of_sources=number_of_sources,
+            )
 
-        start = time.time()
-        sd_evaluation: SingleSourceDetectionEvaluation = (
-            source_detector.evaluate_sources(sources)
-        )
-        end = time.time()
-        final_time = end - start
-        communities = sd_evaluation.additional_data["communities"]
-        experiment = Experiment(
-            sources=sources,
-            IG=IG,
-            G=G,
-            graph_function=graph_function,
-        )
-        nr_of_missing_communities = 0
-        for cluster, nodes in communities.items():
-            if not any(s in nodes for s in experiment.sources):
-                nr_of_missing_communities += 1
+            start = time.time()
+            sd_evaluation: SingleSourceDetectionEvaluation = (
+                source_detector.evaluate_sources(sources)
+            )
+            end = time.time()
+            final_time = end - start
+            communities = sd_evaluation.additional_data["communities"]
+            experiment = Experiment(
+                sources=sources,
+                IG=IG,
+                G=G,
+                graph_function=graph_function,
+            )
+            nr_of_missing_communities = 0
+            for cluster, nodes in communities.items():
+                if not any(s in nodes for s in experiment.sources):
+                    nr_of_missing_communities += 1
 
-        normalized_node_estimations = sd_evaluation.additional_data.get(
-            "normalized_node_estimations", {}
-        )
-        estimations_per_community = sd_evaluation.additional_data.get(
-            "estimation_per_community", {}
-        )
-        row = [
-            name,
-            index,
-            array_to_str(sorted(sources)),
-            array_to_str(sorted(sd_evaluation.detected_sources)),
-            normalized_node_estimations,
-            estimations_per_community,
-            final_time,
-            nr_of_missing_communities,
-            sd_evaluation.error_distance,
-            sd_evaluation.TP,
-            sd_evaluation.TN,
-            sd_evaluation.FP,
-            sd_evaluation.FN,
-            sd_evaluation.P + sd_evaluation.N,
-            sd_evaluation.TPR,
-            sd_evaluation.TNR,
-            sd_evaluation.PPV,
-            sd_evaluation.ACC,
-            sd_evaluation.F1,
-        ]
-        file = open(filename, "a")
-        csvwriter = csv.writer(file)
-        csvwriter.writerow(row)
-        file.close()
+            normalized_node_estimations = sd_evaluation.additional_data.get(
+                "normalized_node_estimations", {}
+            )
+            estimations_per_community = sd_evaluation.additional_data.get(
+                "estimation_per_community", {}
+            )
+            row = [
+                name,
+                index,
+                array_to_str(sorted(sources)),
+                array_to_str(sorted(sd_evaluation.detected_sources)),
+                normalized_node_estimations,
+                estimations_per_community,
+                final_time,
+                nr_of_missing_communities,
+                sd_evaluation.error_distance,
+                sd_evaluation.TP,
+                sd_evaluation.TN,
+                sd_evaluation.FP,
+                sd_evaluation.FN,
+                sd_evaluation.P + sd_evaluation.N,
+                sd_evaluation.TPR,
+                sd_evaluation.TNR,
+                sd_evaluation.PPV,
+                sd_evaluation.ACC,
+                sd_evaluation.F1,
+            ]
+            file = open(filename, "a")
+            csvwriter = csv.writer(file)
+            csvwriter.writerow(row)
+            file.close()
+        except Exception as e:
+            print(f"ERROR {e}")
 
 
 def sd_evaluation_final():

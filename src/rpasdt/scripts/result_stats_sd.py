@@ -10,7 +10,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn import metrics
-from sklearn.metrics import confusion_matrix, precision_recall_curve, roc_curve
+from sklearn.metrics import (
+    auc,
+    confusion_matrix,
+    precision_recall_curve,
+    roc_curve,
+)
 
 from rpasdt.algorithm.plots import _configure_plot
 from rpasdt.algorithm.source_detection_evaluation import (
@@ -41,6 +46,8 @@ SD_METHOD_NAMES = {
     rumor: "RC",
     jordan: "JC",
     netsleuth: "NS",
+    ensemble: "Ensemble: JC-RC-NS",
+    ensemble_centralities: "Ensemble: BC-DC",
 }
 SD_METHOD_NAMES_VERBOSE = {
     "betweenness": "BC",
@@ -59,8 +66,8 @@ SD_METHODS_TO_CHECK = [
     rumor,
     jordan,
     netsleuth,
-    # ensemble,
-    # ensemble_centralities,
+    ensemble,
+    ensemble_centralities,
 ]
 leiden = "leiden"
 surprise_communities = "surprise_communities"
@@ -623,7 +630,8 @@ def draw_sd_results(
     data,
     methods_count,
     improve=False,
-    save_to_file=False,
+    filename_to_save=None,
+    add_real=False,
 ):
     acc = {}
     recalls = {}
@@ -673,7 +681,10 @@ def draw_sd_results(
 
     f12s = {}
     for key in recalls:
-        f12s[key] = 2 * (recalls[key] * PPVs[key]) / (recalls[key] + PPVs[key])
+        if recalls[key] == 0 or PPVs[key] == 0:
+            f12s[key] = 0
+        else:
+            f12s[key] = 2 * (recalls[key] * PPVs[key]) / (recalls[key] + PPVs[key])
 
     f12s = OrderedDict(
         {k: v for k, v in sorted(f12s.items(), key=lambda item: item[1], reverse=True)}
@@ -706,20 +717,23 @@ def draw_sd_results(
             return "LP"
         return METHOD_NAMES[key]
 
-    labels = [get_label(m) for m in f12s.keys()] + ["REAL"]
+    labels = [get_label(m) for m in f12s.keys()]
+    if add_real:
+        labels.append("Real")
 
     plot_rr = list(recalls.values())
     plot_ppv = list(PPVs.values())
     plot_f12 = list(f12s.values())
 
     # real
-    bias = 1.7
-    real_rr = min(bias * plot_rr[0], 0.95)
-    real_ppv = min(bias * plot_ppv[0], 0.95)
-    real_f1 = 2 * real_ppv * real_rr / (real_ppv + real_rr)
-    plot_rr.append(real_rr)
-    plot_f12.append(real_f1)
-    plot_ppv.append(real_ppv)
+    if add_real:
+        bias = 1.7
+        real_rr = min(bias * plot_rr[0], 0.95)
+        real_ppv = min(bias * plot_ppv[0], 0.95)
+        real_f1 = 2 * real_ppv * real_rr / (real_ppv + real_rr)
+        plot_rr.append(real_rr)
+        plot_f12.append(real_f1)
+        plot_ppv.append(real_ppv)
     # plt.xticks(x_axis, labels)
     # # Add legend
     # fig.supxlabel('Method name')
@@ -743,12 +757,12 @@ def draw_sd_results(
 
     df.plot(x="Method name", y=["Recall", "Precision", "F-1"], kind="bar")
     _configure_plot(title)
-    if save_to_file:
+    if filename_to_save:
         plt.savefig(
-            f"/home/qtuser/sd_threhsolds/{title}.png",
-            bbox_inches="tight",
+            filename_to_save,
+            # bbox_inches="tight",
             transparent=True,
-            pad_inches=0,
+            # pad_inches=0,
         )
     else:
         plt.show()
@@ -812,6 +826,11 @@ def draw_sd_per_method(part="", sd_method=centrality_m, show_plot=True):
             methods_count=methods_count,
             improve=improve,
         )
+
+
+def create_dir_if_not_exists(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 
 def draw_sd_per_method_final_data(
@@ -911,14 +930,13 @@ def draw_sd_per_method_final_data(
         )
     for th in thresholds:
 
-
         data_for_threshold = {}
 
         for data_to_process in to_process:
             method = data_to_process.cm_m
             nn = NETWORK_NAME.get(part, "Średnio")
             if threshold_map and threshold_map.get(nn):
-                th = threshold_map [nn][SD_METHOD_NAMES[sd_method]][METHOD_NAMES[method]]
+                th = threshold_map[nn][SD_METHOD_NAMES[sd_method]][METHOD_NAMES[method]]
 
             title = f"SD evaluation based on outbreaks, TH={th or 'default'}, {SD_METHOD_NAMES_VERBOSE[sd_method]}"
             if part:
@@ -968,12 +986,14 @@ def draw_sd_per_method_final_data(
             # wyznacz srednie i zapisz
 
         if draw_plot:
+            create_dir_if_not_exists(f"/home/qtuser/sd_threhsolds/{sd_method}")
+            filename_to_save = f"/home/qtuser/sd_threhsolds/{sd_method}/{title}.png"
             draw_sd_results(
                 title=title,
                 data=data_for_threshold,
                 methods_count=methods_count,
                 improve=improve,
-                save_to_file=True,
+                filename_to_save=filename_to_save,
             )
         if not save_to_file:
             return
@@ -1136,9 +1156,9 @@ def generate_finals_sd_report():
                     ]
                 else:
                     best_f1 = optimal_for_method.get(
-                        method, [0, 0, 0, 0, 0, 0, 0, 0, 0]
+                        method, [0, 0, 0, 0, -1, 0, 0, 0, 0]
                     )[4]
-                    if f12 > best_f1 and th > 0.4:
+                    if f12 > best_f1 and th > 0.5:
                         optimal_for_method[method] = [
                             th,
                             acc,
@@ -1199,6 +1219,30 @@ def generate_finals_sd_report():
                 # draw_sd_per_method_final_data()
 
 
+def draw_roc_curve(y_true, y_score, title, filename):
+    fpr, tpr, _ = roc_curve(y_true, y_score)
+    roc_auc = auc(fpr, tpr)
+
+    plt.figure()
+    lw = 2
+    plt.plot(
+        fpr,
+        tpr,
+        color="darkorange",
+        lw=lw,
+        label="ROC curve (area = %0.2f)" % roc_auc,
+    )
+    plt.plot([0, 1], [0, 1], color="navy", lw=lw, linestyle="--")
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title(title)
+    plt.legend(loc="lower right")
+    plt.savefig(f"{filename}.png")
+    plt.show()
+
+
 def get_optimal_thresholds():
     optimum_filename = "results/final_sd_results_stats/final_sd_results_optimum.csv"
     thresholds = {}
@@ -1215,6 +1259,7 @@ def get_optimal_thresholds():
         thresholds[network][sd_method][method] = threshold
     return thresholds
 
+
 def generate_reports():
     threshold = 1.0
     optimal_thresholds = get_optimal_thresholds()
@@ -1222,9 +1267,18 @@ def generate_reports():
     for sd_method in SD_METHODS_TO_CHECK:
         for n in NETWORK_NAME.keys():
             f_to_process(
-                sd_method=sd_method, part=n, draw_plot=True, threshold_map=optimal_thresholds
+                sd_method=sd_method,
+                part=n,
+                draw_plot=True,
+                threshold=threshold,
+                threshold_map=optimal_thresholds,
             )
-        f_to_process(sd_method=sd_method, draw_plot=True,  threshold_map=optimal_thresholds)
+        f_to_process(
+            sd_method=sd_method,
+            draw_plot=True,
+            threshold=threshold,
+            threshold_map=optimal_thresholds,
+        )
 
 
 # generate_reports()

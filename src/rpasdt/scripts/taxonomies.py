@@ -239,7 +239,7 @@ communities = [
     CommunityOptionEnum.EIGENVECTOR,
     CommunityOptionEnum.LOUVAIN,
     CommunityOptionEnum.GREEDY_MODULARITY,
-    CommunityOptionEnum.LABEL_PROPAGATION,
+    # CommunityOptionEnum.LABEL_PROPAGATION,
     CommunityOptionEnum.INFOMAP,
     CommunityOptionEnum.SURPRISE_COMMUNITIES,
     CommunityOptionEnum.WALKTRAP,
@@ -364,32 +364,38 @@ source_detectors.update(
 # )
 
 
-source_detectors.update(
-    {
-        f"ensemble:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
-            alg=SourceDetectionAlgorithm.COMMUNITY_ENSEMBLE_LEARNER,
-            config=EnsembleCommunityBasedSourceDetectionConfig(
-                number_of_sources=x,
-                communities_algorithm=cm,
-                source_detectors_config={
-                    "JORDAN": (
-                        SourceDetectionAlgorithm.JORDAN_CENTER,
-                        CommunitiesBasedSourceDetectionConfig(
-                            number_of_sources=x, communities_algorithm=cm
-                        ),
-                    ),
-                    "NETSLEUTH": (
-                        SourceDetectionAlgorithm.NET_SLEUTH,
-                        CommunitiesBasedSourceDetectionConfig(
-                            number_of_sources=x, communities_algorithm=cm
-                        ),
-                    ),
-                },
-            ),
-        )
-        for cm in communities
-    }
-)
+# source_detectors.update(
+#     {
+#         f"ensembleRJN:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
+#             alg=SourceDetectionAlgorithm.COMMUNITY_ENSEMBLE_LEARNER,
+#             config=EnsembleCommunityBasedSourceDetectionConfig(
+#                 number_of_sources=x,
+#                 communities_algorithm=cm,
+#                 source_detectors_config={
+#                     "RUMOR": (
+#                         SourceDetectionAlgorithm.RUMOR_CENTER,
+#                         CommunitiesBasedSourceDetectionConfig(
+#                             number_of_sources=x, communities_algorithm=cm
+#                         ),
+#                     ),
+#                     "JORDAN": (
+#                         SourceDetectionAlgorithm.JORDAN_CENTER,
+#                         CommunitiesBasedSourceDetectionConfig(
+#                             number_of_sources=x, communities_algorithm=cm
+#                         ),
+#                     ),
+#                     "NETSLEUTH": (
+#                         SourceDetectionAlgorithm.NET_SLEUTH,
+#                         CommunitiesBasedSourceDetectionConfig(
+#                             number_of_sources=x, communities_algorithm=cm
+#                         ),
+#                     ),
+#                 },
+#             ),
+#         )
+#         for cm in communities
+#     }
+# )
 source_detectors.update(
     {
         f"ensemble-centralities:{cm}": lambda x, cm=cm: SourceDetectorSimulationConfig(
