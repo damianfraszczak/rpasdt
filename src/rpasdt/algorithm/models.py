@@ -431,12 +431,14 @@ class PropagationReconstructionConfig:
     G: Graph
     IG: Graph
     real_IG: Graph
-    m1: float = 0.6
-    m2: float = 0.4
+
+    m0: float = -0.29
+    m1: float = 88.74
+    m2: float = -32.80
     m3: float = 0.0
     m_free: float = 0.0
     max_iterations: int = 100
-    threshold: float = 0.6
+    threshold: float = 0.439
 
     @cached_property
     def observed_infected_nodes(self) -> Set:

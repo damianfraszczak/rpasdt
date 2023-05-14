@@ -115,11 +115,12 @@ def _compute_node_recovery(
             node=node, infected_nodes=config.real_infected_nodes
         )
     )
+    m0 = config.m0
     m1 = config.m1 * neighbors_probability
     m2 = config.m2 * node_on_path
     m3 = config.m3 * node_in_external_network
     m_free = config.m_free
-    return 1 / (1 + math.exp(-(m1 + m2 + m3 + m_free)))
+    return 1 / (1 + math.exp(-(m0 + m1 + m2 + m3 + m_free)))
 
 
 def _remove_invalid_edges_and_nodes(EG, threshold):
@@ -150,6 +151,17 @@ def create_snapshot_IG(G, delete_ratio=None):
     return IG, to_remove
 
 
+def _remove_invalid_nodes(EG, threshold):
+    """Remove nodes with probability < threshold"""
+    nodes_to_remove = []
+    for node in EG.nodes(data=True):
+        data = node[1]
+        if data[NODE_INFECTION_PROBABILITY_ATTR] < threshold:
+            nodes_to_remove.append(node[0])
+    EG.remove_nodes_from(nodes_to_remove)
+    EG.remove_nodes_from(list(nx.isolates(EG)))
+
+
 def reconstruct_propagation(config: PropagationReconstructionConfig) -> Graph:
     EG = _init_extended_network(G=config.G, IG=config.IG)
     iter = 0
@@ -161,6 +173,7 @@ def reconstruct_propagation(config: PropagationReconstructionConfig) -> Graph:
             EG.nodes[node][NODE_INFECTION_PROBABILITY_ATTR] = _compute_node_recovery(
                 EG=EG, node=node, config=config
             )
-    _compute_edges_weights(EG)
-    _remove_invalid_edges_and_nodes(EG, config.threshold)
+    # _compute_edges_weights(EG)
+    # _remove_invalid_edges_and_nodes(EG, config.threshold)
+    _remove_invalid_nodes(EG, config.threshold)
     return EG

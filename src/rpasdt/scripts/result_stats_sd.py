@@ -62,10 +62,10 @@ SD_METHOD_NAMES_VERBOSE = {
     ensemble_centralities: "Ensemble: BC-DC",
 }
 SD_METHODS_TO_CHECK = [
-    centrality_m,
-    rumor,
-    jordan,
-    netsleuth,
+    # centrality_m,
+    # rumor,
+    # jordan,
+    # netsleuth,
     ensemble,
     ensemble_centralities,
 ]
@@ -840,7 +840,7 @@ def draw_sd_per_method_final_data(
     c_m=None,
     threshold=None,
     threshold_map=None,
-    save_to_file=False,
+    save_to_file=True,
     skip_ensemble=False,
 ):
     methods_count = defaultdict(int)
@@ -1296,5 +1296,9 @@ def generate_reports():
 # draw_sd_per_method_final_data(sd_method=rumor)
 # generate_reports()
 # generate_finals_sd_report()
-generate_reports()
+# generate_reports()
 # generate_finals_sd_report()
+# draw_sd_per_method_final_data(sd_method=ensemble,part="facebook")
+# generate_finals_sd_report()
+
+generate_reports()

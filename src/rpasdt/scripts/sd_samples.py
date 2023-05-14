@@ -1,9 +1,10 @@
 import csv
 import multiprocessing
+import os
 import time
 from collections import defaultdict
 from copy import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from multiprocessing import Pool
 from typing import Any, Callable, Dict, List
 
@@ -12,15 +13,20 @@ import stopit
 from networkx import Graph
 
 from rpasdt.algorithm.models import (
+    PropagationReconstructionConfig,
     SingleSourceDetectionEvaluation,
     SourceDetectionSimulationConfig,
     SourceDetectionSimulationResult,
+)
+from rpasdt.algorithm.propagation_reconstruction import (
+    NODE_INFECTION_PROBABILITY_ATTR,
+    reconstruct_propagation,
 )
 from rpasdt.algorithm.source_detectors.source_detection import (
     get_source_detector,
 )
 from rpasdt.common.exceptions import log_error
-from rpasdt.scripts.taxonomies import graphs, source_detectors
+from rpasdt.scripts.taxonomies import graphs, karate_graph, source_detectors
 from rpasdt.scripts.utils import get_IG
 
 THRESHOLDS = np.arange(0, 1.05, 0.1).round(2)
@@ -61,6 +67,29 @@ header2 = [
     "detected",
     "normalized",
     "per_community",
+    "infection_probability",
+    "time",
+    "nr_of_empty_communities",
+    "error_distance",
+    "TP",
+    "TN",
+    "FP",
+    "FN",
+    "SUM",
+    "TPR",
+    "TNR",
+    "PPV",
+    "ACC",
+    "F1",
+]
+header_reconstruction = [
+    "type",
+    "experiment",
+    "sources",
+    "detected",
+    "normalized",
+    "per_community",
+    "reconstructed_probability",
     "time",
     "nr_of_empty_communities",
     "error_distance",
@@ -379,24 +408,35 @@ def is_in_file(filename, line):
 @dataclass
 class DataToProcess:
     index: int
+    key: str
     row: List
     graph_function: Callable
+    G: Graph
+    IG: Graph
+    sources: List
+    nodes_infection_probability: Dict = None
+    file_postfix: str = ""
+    results_dir: str = "final_sd_results"
 
 
-def process_experiment(dp: DataToProcess):
+def process_experiment(
+    dp: DataToProcess,
+):
     splitted_networks = ["facebook", "soc_anybeat"]
-    index = dp.index
+    key = dp.key
     graph_function = dp.graph_function
-    row = dp.row
-    print(f"PROCESSING {index}-{graph_function.__name__}")
-    G = graph_function()
-    dir_name = "final_sd_results"
+    G = dp.G
+    IG, sources = dp.IG, dp.sources
+
+    print(f"PROCESSING {key}-{graph_function.__name__}")
+
+    dir_name = dp.results_dir
     network_file_name = graph_function.__name__
     if network_file_name in splitted_networks:
-        network_file_name = f"{network_file_name}_{index}"
-    filename = f"results/{dir_name}/{network_file_name}.csv"
+        network_file_name = f"{network_file_name}_{key}"
+    filename = f"results/{dir_name}/{network_file_name}{dp.file_postfix}.csv"
     executed_experiments = set()
-    if WRITE_FROM_SCRATCH:
+    if WRITE_FROM_SCRATCH or not os.path.exists(filename):
         file = open(filename, "w")
         csvwriter = csv.writer(file)
         csvwriter.writerow(header2)
@@ -406,21 +446,13 @@ def process_experiment(dp: DataToProcess):
             for line in f:
                 splitted = line.split(",")
                 executed_experiments.add(f"{splitted[0]}-{splitted[1]}")
-
-    sources, infected_nodes = (
-        row["sources"],
-        row["infected_nodes"],
-    )
-    IG, infected_nodes, sources = get_IG(G, infected_nodes, sources)
-    number_of_sources = len(sources)
-
     sd_local = {name: config(None) for name, config in source_detectors.items()}
 
     for (
         name,
         source_detector_config,
     ) in sd_local.items():
-        code = f"{name}-{index}"
+        code = f"{name}-{key}"
         print(f"PROCESSING {code}")
         if code in executed_experiments:
             print(f"skipping {code}")
@@ -461,11 +493,12 @@ def process_experiment(dp: DataToProcess):
             )
             row = [
                 name,
-                index,
+                key,
                 array_to_str(sorted(sources)),
                 array_to_str(sorted(sd_evaluation.detected_sources)),
                 normalized_node_estimations,
                 estimations_per_community,
+                dp.nodes_infection_probability or {},
                 final_time,
                 nr_of_missing_communities,
                 sd_evaluation.error_distance,
@@ -488,6 +521,111 @@ def process_experiment(dp: DataToProcess):
             print(f"ERROR {e}")
 
 
+BEST_THRESHOLD = 0.439
+
+
+# -0,29 88.74 -32.80
+def read_reconstucted_ig(graph_name: str):
+    filename = f"results/reconstruction/{graph_name}_evaluation.csv"
+    ratio = 0.1
+    result = defaultdict(dict)
+    with open(filename) as csvfile:
+        # index,number_of_sources,delete_ratio,deleted_nodes,reconstructed_nodes,m1,m2,threshold,ALL,TP,TN,FP,FN,accuracy,precision,recall,f1
+        spamreader = csv.DictReader(csvfile)
+        for row in spamreader:
+            index = int(row["index"])
+            threshold = int(float(row["threshold"]))
+            if index != 0:
+                continue
+            if threshold != 1:
+                continue
+            delete_ratio = int(row["delete_ratio"])
+            number_of_sources = int(row["number_of_sources"])
+            key = f"{delete_ratio}-{number_of_sources}"
+
+            if key in result:
+                continue
+            deleted_nodes = row["deleted_nodes"]
+            # snapshot = IG.copy()
+            # snapshot.remove_nodes_from([int(x) for x in deleted_nodes.split("|")])
+            # newIg = reconstruct_propagation(
+            #     PropagationReconstructionConfig(
+            #         G=G,
+            #         IG=snapshot,
+            #         real_IG=IG,
+            #         max_iterations=1,
+            #     )
+            # )
+            result[key] = deleted_nodes
+    return result
+
+
+def sd_evaluation_with_reconstruction_final():
+    for graph_function in graphs:
+        print(f"############### {graph_function.__name__}")
+        reconstructed_map = read_reconstucted_ig(graph_function.__name__)
+        source_file = f"results/propagations/{graph_function.__name__}.csv"
+        with open(source_file) as csvfile:
+            with Pool(processes=4) as pool:
+                spamreader = csv.DictReader(csvfile)
+                for index, row in enumerate(spamreader):
+                    if index % 3 != 0:
+                        continue
+                    G = graph_function()
+                    sources, infected_nodes = (
+                        row["sources"],
+                        row["infected_nodes"],
+                    )
+                    IG, infected_nodes, sources = get_IG(G, infected_nodes, sources)
+                    for ratio_sources, deleted_nodes in reconstructed_map.items():
+                        ratio, number_of_sources = (
+                            int(ratio_sources.split("-")[0]),
+                            int(ratio_sources.split("-")[1]),
+                        )
+                        if number_of_sources != len(sources):
+                            continue
+                        print(
+                            f"PROCESSING {graph_function.__name__}-{index}-{ratio}-{number_of_sources}"
+                        )
+                        snapshot = IG.copy()
+                        snapshot.remove_nodes_from(
+                            [int(x) for x in deleted_nodes.split("|")]
+                        )
+                        snapshot.remove_nodes_from(deleted_nodes.split("|"))
+                        if len(snapshot) == len(IG):
+                            raise Exception(
+                                f"original {len(IG)} vs removed {len(snapshot)}"
+                            )
+                        EIG = reconstruct_propagation(
+                            PropagationReconstructionConfig(
+                                G=G,
+                                IG=snapshot,
+                                real_IG=IG,
+                                max_iterations=1,
+                            )
+                        )
+                        nodes_infection_probability = {
+                            node[0]: node[1][NODE_INFECTION_PROBABILITY_ATTR]
+                            for node in EIG.nodes(data=True)
+                        }
+
+                        data = [
+                            DataToProcess(
+                                index=index,
+                                row=row,
+                                graph_function=graph_function,
+                                G=G,
+                                IG=EIG,
+                                sources=sources,
+                                file_postfix="_reconstruction",
+                                nodes_infection_probability=nodes_infection_probability,
+                                results_dir="sd_with_reconstruction",
+                                key=f"{index}-{ratio}",
+                            )
+                        ]
+                        pool.map(process_experiment, data)
+
+
 def sd_evaluation_final():
     for graph_function in graphs:
         print(f"############### {graph_function.__name__}")
@@ -496,9 +634,21 @@ def sd_evaluation_final():
             with Pool(processes=4) as pool:
                 spamreader = csv.DictReader(csvfile)
                 for index, row in enumerate(spamreader):
+                    G = graph_function()
+                    sources, infected_nodes = (
+                        row["sources"],
+                        row["infected_nodes"],
+                    )
+                    IG, infected_nodes, sources = get_IG(G, infected_nodes, sources)
                     data = [
                         DataToProcess(
-                            index=index, row=row, graph_function=graph_function
+                            index=index,
+                            row=row,
+                            graph_function=graph_function,
+                            G=G,
+                            IG=IG,
+                            sources=sources,
+                            key=str(index),
                         )
                     ]
                     pool.map(process_experiment, data)
@@ -507,4 +657,6 @@ def sd_evaluation_final():
 # do_evaluation()
 # sd_evaluation_with_static_propagations()
 if __name__ == "__main__":
-    sd_evaluation_final()
+    # sd_evaluation_final()
+    sd_evaluation_with_reconstruction_final()
+    # print(read_reconstucted_ig("karate_graph", karate_graph(), karate_graph()))
