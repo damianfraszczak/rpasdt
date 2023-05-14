@@ -37,10 +37,10 @@ METHOD_NAMES = {
 }
 NETWORK_NAME = {
     "facebook": "Facebook",
-    "barabasi_1": "SF-2",
+    "barabasi_1": "SF-1",
     "barabasi_2": "SF-2",
-    "watts_strogatz_graph_1": "SM-1",
-    "watts_strogatz_graph_2": "SM-2",
+    "watts_strogatz_graph_1": "SW-1",
+    "watts_strogatz_graph_2": "SW-2",
     "soc_anybeat": "Social",
     # "football": "Football",
     "footbal": "Football",
@@ -174,14 +174,14 @@ def watts_strogatz_graph_2():
 
 
 graphs = [
-    karate_graph,
+    # karate_graph,
     # dolphin,
-    footbal,
-    barabasi_1,
-    barabasi_2,
-    watts_strogatz_graph_1,
-    watts_strogatz_graph_2,
-    facebook,
+    # footbal,
+    # barabasi_1,
+    # barabasi_2,
+    # watts_strogatz_graph_1,
+    # watts_strogatz_graph_2,
+    # facebook,
     soc_anybeat,  # zmien threhsold
 ]
 

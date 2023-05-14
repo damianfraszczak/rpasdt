@@ -58,8 +58,8 @@ SD_METHOD_NAMES_VERBOSE = {
     rumor: "RC",
     jordan: "JC",
     netsleuth: "NS",
-    ensemble: "Ensemble: JC-RC-NS",
-    ensemble_centralities: "Ensemble: BC-DC",
+    ensemble: "Ensemble: 1",
+    ensemble_centralities: "Ensemble: 2",
 }
 SD_METHODS_TO_CHECK = [
     # centrality_m,
@@ -905,7 +905,7 @@ def draw_sd_per_method_final_data(
     ]
     if threshold:
         thresholds = [threshold]
-    if threshold_map:
+    if threshold_map is not None:
         thresholds = [None]
     stats_filename = (
         f"results/final_sd_results_stats/basic_threshold_{sd_method}_{part}.csv"
@@ -1261,8 +1261,11 @@ def get_optimal_thresholds():
 
 
 def generate_reports():
-    threshold = 1.0
+    # gdy chce domyslny jeden threhsold
+    # optimal_thresholds = defaultdict(lambda: None)
+    threshold = None
     optimal_thresholds = get_optimal_thresholds()
+    # optimal_thresholds = None
     f_to_process = draw_sd_per_method_final_data
     for sd_method in SD_METHODS_TO_CHECK:
         for n in NETWORK_NAME.keys():
