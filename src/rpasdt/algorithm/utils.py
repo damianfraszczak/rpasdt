@@ -10,6 +10,13 @@ from networkx import Graph
 from sklearn.metrics import normalized_mutual_info_score
 
 
+def shortest_path_length(G: Graph, source: int, target: int) -> int:
+    try:
+        return nx.shortest_path_length(G, source=source, target=target)
+    except nx.NetworkXNoPath:
+        return 0
+
+
 def _neighbors_of_k_hops(
     G: Graph, node: int, neighbors: Set, current_level: int, max_level: int
 ):

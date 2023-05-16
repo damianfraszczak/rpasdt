@@ -710,14 +710,11 @@ stats_filename = "results/reconstruction/stats.csv"
 # http://sigmaquality.pl/uncategorized/ustawienie-progow-w-modelu-regresji-logistycznej/
 # https://ksopyla.com/data-science/krzywa-precision-recall-curve-scikit-learn-interpretacja/
 def logistic_regression_with_roc_and_pr(
-    case="",
-    class_weight="balanced",
-    show_plot=True,
-    method=""
+    case="", class_weight="balanced", show_plot=True, method=""
 ):
     dir = "results/reconstruction/regression/"
     data = _read_data(dir, case)
-    case_title = f"dla sieci {CASE_TITLES[case]} SbRP" if case else "ogólnie"
+    case_title = f"dla sieci {CASE_TITLES[case]} SbRP" if case else "ogólnie SbRP"
     # print(data["infected"].value_counts())
     # rozklad
     print(case)
@@ -1069,7 +1066,7 @@ def evaluation_grid():
 def sample_graph_roc(case=""):
     dir = "results/reconstruction/regression/"
     data = _read_data(dir, case)
-    case_title = f"dla sieci {CASE_TITLES[case]}" if case else "ogólnie"
+    case_title = f"dla sieci {CASE_TITLES[case]} SbRP" if case else "ogólnie SbRP"
     # print(data["infected"].value_counts())
     # rozklad
     print(case)
@@ -1121,7 +1118,7 @@ def sample_graph_roc(case=""):
 def sample_graph_precision(case=""):
     dir = "results/reconstruction/regression/"
     data = _read_data(dir, case)
-    case_title = f"dla sieci {CASE_TITLES[case]}" if case else "ogólnie"
+    case_title = f"dla sieci {CASE_TITLES[case]} SbRP" if case else "ogólnie SbRP"
     # print(data["infected"].value_counts())
     # rozklad
     print(case)
@@ -1170,11 +1167,13 @@ def sample_graph_precision(case=""):
     plt.legend(loc=4)
     plt.show()
 
+
 def evaluation_other(skip_graphs=False):
     if not skip_graphs:
         for graph in graphs:
-            logistic_regression_with_roc_and_pr(graph.__name__,class_weight=None)
+            logistic_regression_with_roc_and_pr(graph.__name__, class_weight=None)
     logistic_regression_with_roc_and_pr(class_weight=None)
+
 
 # sample_graph_precision()
 # compute_evaluation()

@@ -1,0 +1,1 @@
+type,experiment,sources,detected,normalized,per_community,infection_probability,time,nr_of_empty_communities,error_distance,TP,TN,FP,FN,SUM,TPR,TNR,PPV,ACC,F1

@@ -174,15 +174,15 @@ def watts_strogatz_graph_2():
 
 
 graphs = [
-    # karate_graph,
+    karate_graph,
     # dolphin,
-    # footbal,
-    # barabasi_1,
+    footbal,
+    barabasi_1,
     # barabasi_2,
-    # watts_strogatz_graph_1,
+    watts_strogatz_graph_1,
     # watts_strogatz_graph_2,
-    # facebook,
-    soc_anybeat,  # zmien threhsold
+    facebook,
+    # soc_anybeat,  # zmien threhsold
 ]
 
 SOURCE_THRESHOLD = None
