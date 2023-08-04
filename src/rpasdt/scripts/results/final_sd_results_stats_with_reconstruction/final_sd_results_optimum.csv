@@ -1,0 +1,10 @@
+network,method,sd_method,threshold
+Średnio,Ensemble: 2,LN,0.95
+Średnio,Ensemble: 2,GN,0.95
+Średnio,Ensemble: 2,LV,0.95
+Średnio,Ensemble: 2,CNM,0.95
+Średnio,Ensemble: 2,LP,0.75
+Średnio,Ensemble: 2,IP,0.55
+Średnio,Ensemble: 2,SRC,0.95
+Średnio,Ensemble: 2,WP,0.55
+Średnio,Ensemble: 2,BLOCD,0.55

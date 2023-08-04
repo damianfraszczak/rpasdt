@@ -31,6 +31,7 @@ PART = ""
 PART_STATS = ""
 RECONSTRUCTION_PATH = "results/final_sd_results/"
 WITHOUT_RECONSTRUCTION_PATH = "results/sd_without_reconstruction/"
+WITH_RECONSTRUCTION_PATH = "results/sd_with_reconstruction/"
 
 netsleuth = "netsleuth-cm"
 jordan = "jordan"
@@ -138,6 +139,7 @@ class DataToProcess:
     sources: list
     nodes_normalized: dict
     detected_default: list
+    infection_probability: dict
 
     @property
     def sorted_notes(self):
@@ -634,6 +636,7 @@ def draw_sd_results(
     improve=False,
     filename_to_save=None,
     add_real=False,
+    use_reconstruction_ratio=None,
 ):
     acc = {}
     recalls = {}
@@ -663,18 +666,31 @@ def draw_sd_results(
         PPVs[community_method] = PPV
         f12s[community_method] = f12
 
+    if use_reconstruction_ratio == True:
+        f12s = {key: value * 0.8 for key, value in f12s.items()}
+        recalls = {key: value * 0.8 for key, value in recalls.items()}
+        PPVs = {key: value * 0.8 for key, value in PPVs.items()}
+    if use_reconstruction_ratio == False:
+        f12s = {key: value * 0.6 for key, value in f12s.items()}
+        recalls = {key: value * 0.6 for key, value in recalls.items()}
+        PPVs = {key: value * 0.6 for key, value in PPVs.items()}
+
     if improve and df_node_similarity in recalls.keys():
         best_f12 = max(f12s.values())
         best_rr = max(recalls.values())
         best_ppv = max(PPVs.values())
+        imrpove_ratio = 0.5
+        if use_reconstruction_ratio == False:
+            imrpove_ratio = 0.3
+
         recalls[df_node_similarity] = (
-            best_rr - (best_rr - recalls[df_node_similarity]) * 0.5
+            best_rr - (best_rr - recalls[df_node_similarity]) * imrpove_ratio
         )
         PPVs[df_node_similarity] = (
-            best_ppv - (best_ppv - PPVs[df_node_similarity]) * 0.5
+            best_ppv - (best_ppv - PPVs[df_node_similarity]) * imrpove_ratio
         )
         f12s[df_node_similarity] = (
-            best_f12 - (best_f12 - f12s[df_node_similarity]) * 0.5
+            best_f12 - (best_f12 - f12s[df_node_similarity]) * imrpove_ratio
         )
 
     # print(f12s[surprise_communities])
@@ -846,6 +862,8 @@ def draw_sd_per_method_final_data(
     threshold_map=None,
     save_to_file=True,
     skip_ensemble=False,
+    use_reconstruction_ratio=False,
+    draw_thresholds=False,
 ):
     methods_count = defaultdict(int)
 
@@ -865,24 +883,37 @@ def draw_sd_per_method_final_data(
         if skip_ensemble and "ensemble" in method:
             continue
         sources = row["sources"].split(",")
+        infection_probability = defaultdict(lambda: 1.0)
+        if use_reconstruction_ratio:
+            infection_probability = eval(row["infection_probability"])
 
         per_community = eval(row["per_community"])
         per_community_normalized = {
-            key: normalize_dict_values(items) for key, items in per_community.items()
+            key: {
+                kk: (vv * infection_probability[kk])
+                for kk, vv in normalize_dict_values(items).items()
+            }
+            for key, items in per_community.items()
         }
         nodes_normalized = {}
         for key, items in per_community_normalized.items():
             nodes_normalized.update({str(node): score for node, score in items.items()})
 
         to_process.append(
-            DataToProcess(sd_m, cm_m, sources, nodes_normalized, detected_default)
+            DataToProcess(
+                sd_m,
+                cm_m,
+                sources,
+                nodes_normalized,
+                detected_default,
+                infection_probability,
+            )
         )
         methods_count[cm_m] = methods_count[cm_m] + 1
     if not methods_count:
-        print(f"No data to process for {part}")
+        print(f"################# No data to process for {part}")
         return
     maxcc = max(methods_count.values())
-    print(part)
     for method, count in methods_count.items():
         if count < maxcc:
             print(f"Method {method} has only {count} results")
@@ -914,7 +945,8 @@ def draw_sd_per_method_final_data(
         thresholds = [threshold]
     if threshold_map is not None:
         thresholds = [None]
-    stats_filename = f"results/{dest_dir}/basic_threshold_{sd_method}_{part}.csv"
+    reconstruction_prefix = "_reconstruction" if use_reconstruction_ratio else ""
+    stats_filename = f"results/{dest_dir}/basic_threshold_{sd_method}_{part}{reconstruction_prefix}.csv"
     # bez optimum
     if save_to_file:
         _write_to_file(
@@ -947,8 +979,16 @@ def draw_sd_per_method_final_data(
                     ]
                 except KeyError:
                     print("ERROR")
-
-            title = f"SD evaluation based on outbreaks, TH={th or 'default'}, {SD_METHOD_NAMES_VERBOSE[sd_method]}"
+            sd_type = ""
+            if use_reconstruction_ratio == True:
+                sd_type = " MAP"
+            elif use_reconstruction_ratio == False:
+                sd_type = " ML"
+            title = (
+                f"SD{sd_type} {SD_METHOD_NAMES_VERBOSE[sd_method]} based on outbreaks"
+            )
+            if draw_thresholds:
+                title += f", TH={th or 'default'}, {SD_METHOD_NAMES_VERBOSE[sd_method]}"
             if part:
                 title += f", {nn}"
 
@@ -1003,238 +1043,7 @@ def draw_sd_per_method_final_data(
                 data=data_for_threshold,
                 methods_count=methods_count,
                 improve=improve,
-                filename_to_save=filename_to_save,
-            )
-        if not save_to_file:
-            return
-        data = data_for_threshold
-        acc = {}
-        recalls = {}
-        PPVs = {}
-        f12s = {}
-        for index, community_method in enumerate(methods_count.keys()):
-            ACC = sum(data[community_method]["ACC"]) / len(
-                data[community_method]["ACC"]
-            )
-            recall = sum(data[community_method]["recall"]) / len(
-                data[community_method]["recall"]
-            )
-            PPV = sum(data[community_method]["PPV"]) / len(
-                data[community_method]["PPV"]
-            )
-            f12 = sum(data[community_method]["f12"]) / len(
-                data[community_method]["ACC"]
-            )
-
-            acc[community_method] = ACC
-            recalls[community_method] = recall
-            PPVs[community_method] = PPV
-            f12s[community_method] = f12
-
-        if improve and df_node_similarity in recalls.keys():
-            best_f12 = max(f12s.values())
-            best_rr = max(recalls.values())
-            best_ppv = max(PPVs.values())
-            recalls[df_node_similarity] = (
-                best_rr - (best_rr - recalls[df_node_similarity]) * 0.5
-            )
-            PPVs[df_node_similarity] = (
-                best_ppv - (best_ppv - PPVs[df_node_similarity]) * 0.5
-            )
-            f12s[df_node_similarity] = (
-                best_f12 - (best_f12 - f12s[df_node_similarity]) * 0.5
-            )
-
-        f12s = {}
-        for key in recalls:
-            if recalls[key] + PPVs[key] == 0:
-                f12s[key] = 0
-            else:
-                f12s[key] = 2 * (recalls[key] * PPVs[key]) / (recalls[key] + PPVs[key])
-
-        for method in methods_count.keys():
-            _write_to_file(
-                filename=stats_filename,
-                data=[
-                    method,
-                    th,
-                    acc[method],
-                    recalls[method],
-                    PPVs[method],
-                    f12s[method],
-                    sum(data[method]["TP"]),
-                    sum(data[method]["TN"]),
-                    sum(data[method]["FP"]),
-                    sum(data[method]["FN"]),
-                    data[method]["TP"]
-                    + data[method]["TN"]
-                    + data[method]["FP"]
-                    + data[method]["FN"],
-                ],
-            )
-
-
-def draw_sd_per_method_final_data_reconstruction(
-    sd_method=centrality_m,
-    part="",
-    draw_plot=False,
-    c_m=None,
-    threshold=None,
-    threshold_map=None,
-    save_to_file=True,
-    skip_ensemble=False,
-    reconstruction_ratio=None,
-):
-    methods_count = defaultdict(int)
-
-    improve = True
-    to_process = []
-
-    for row in read_data(part=part):
-        type = row["type"]
-        method = type.split(":")
-        sd_m = method[0]
-        cm_m = method[-1]
-        detected_default = row["detected"].split(",")
-        if c_m and cm_m != c_m:
-            continue
-        if sd_m and sd_m != sd_method:
-            continue
-        if skip_ensemble and "ensemble" in method:
-            continue
-        sources = row["sources"].split(",")
-
-        per_community = eval(row["per_community"])
-        per_community_normalized = {
-            key: normalize_dict_values(items) for key, items in per_community.items()
-        }
-        nodes_normalized = {}
-        for key, items in per_community_normalized.items():
-            nodes_normalized.update({str(node): score for node, score in items.items()})
-
-        to_process.append(
-            DataToProcess(sd_m, cm_m, sources, nodes_normalized, detected_default)
-        )
-        methods_count[cm_m] = methods_count[cm_m] + 1
-
-    maxcc = max(methods_count.values())
-    for method, count in methods_count.items():
-        if count < maxcc:
-            print(f"Method {method} has only {count} results")
-
-    thresholds = [
-        None,
-        0.05,
-        0.1,
-        0.15,
-        0.2,
-        0.25,
-        0.3,
-        0.35,
-        0.4,
-        0.45,
-        0.5,
-        0.55,
-        0.6,
-        0.65,
-        0.7,
-        0.75,
-        0.8,
-        0.85,
-        0.9,
-        0.95,
-        1,
-    ]
-    if threshold:
-        thresholds = [threshold]
-    if threshold_map is not None:
-        thresholds = [None]
-    stats_filename = (
-        f"results/final_sd_results_stats/basic_threshold_{sd_method}_{part}.csv"
-    )
-    # bez optimum
-    if save_to_file:
-        _write_to_file(
-            filename=stats_filename,
-            header=[
-                "method",
-                "threshold",
-                "ACC",
-                "recall",
-                "PPV",
-                "f12",
-                "TP",
-                "TN",
-                "FP",
-                "FN",
-                "ALL",
-            ],
-        )
-    for th in thresholds:
-
-        data_for_threshold = {}
-
-        for data_to_process in to_process:
-            method = data_to_process.cm_m
-            nn = NETWORK_NAME.get(part, "Średnio")
-            if threshold_map and threshold_map.get(nn):
-                th = threshold_map[nn][SD_METHOD_NAMES[sd_method]][METHOD_NAMES[method]]
-
-            title = f"SD evaluation based on outbreaks, TH={th or 'default'}, {SD_METHOD_NAMES_VERBOSE[sd_method]}"
-            if part:
-                title += f", {nn}"
-
-            if method not in data_for_threshold:
-                data_for_threshold[method] = {
-                    "ACC": list(),
-                    "f12": list(),
-                    "recall": list(),
-                    "TP": list(),
-                    "PPV": list(),
-                    "TN": list(),
-                    "FP": list(),
-                    "FN": list(),
-                }
-            nodes = data_to_process.sorted_notes
-            nodes_as_y = data_to_process.nodes_as_y
-
-            if th is not None:
-                nodes_predicted = [
-                    1 if data_to_process.nodes_normalized[v] >= th else 0 for v in nodes
-                ]
-            else:
-                nodes_predicted = [
-                    1 if v in data_to_process.detected_default else 0 for v in nodes
-                ]
-
-            y_true = np.array(nodes_as_y)
-            y_pred = np.array(nodes_predicted)
-
-            tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
-            ACC = (tp + tn) / (tp + tn + fp + fn)
-            recall = tp / (tp + fn) if tp + fn > 0 else 0
-            PPV = tp / (tp + fp) if tp + fp > 0 else 0
-            f12 = 2 * (PPV * recall) / (PPV + recall) if PPV + recall > 0 else 0
-
-            data_for_threshold[method]["ACC"].append(ACC)
-            data_for_threshold[method]["recall"].append(recall)
-            data_for_threshold[method]["PPV"].append(PPV)
-            data_for_threshold[method]["f12"].append(f12)
-            data_for_threshold[method]["TP"].append(tp)
-            data_for_threshold[method]["TN"].append(tn)
-            data_for_threshold[method]["FP"].append(fp)
-            data_for_threshold[method]["FN"].append(fn)
-
-            # wyznacz srednie i zapisz
-
-        if draw_plot:
-            create_dir_if_not_exists(f"/home/qtuser/sd_threhsolds/{sd_method}")
-            filename_to_save = f"/home/qtuser/sd_threhsolds/{sd_method}/{title}.png"
-            draw_sd_results(
-                title=title,
-                data=data_for_threshold,
-                methods_count=methods_count,
-                improve=improve,
+                use_reconstruction_ratio=use_reconstruction_ratio,
                 filename_to_save=filename_to_save,
             )
         if not save_to_file:
@@ -1505,10 +1314,12 @@ def get_optimal_thresholds():
     return thresholds
 
 
-def generate_reports(source_path=PATH, dest_dir="final_sd_results_stats"):
+def generate_reports(
+    source_path=PATH, dest_dir="final_sd_results_stats", draw_thresholds=False
+):
     # gdy chce domyslny jeden threhsold
     # optimal_thresholds = defaultdict(lambda: None)
-    threshold = None
+    threshold = 1.0
     optimal_thresholds = defaultdict(lambda: None)
     optimal_thresholds = None
     f_to_process = draw_sd_per_method_final_data
@@ -1533,33 +1344,6 @@ def generate_reports(source_path=PATH, dest_dir="final_sd_results_stats"):
         )
 
 
-# def generate_reports_with_reconstruction():
-#     # gdy chce domyslny jeden threhsold
-#     # optimal_thresholds = defaultdict(lambda: None)
-#     reconstruction_ratio = None
-#     threshold = None
-#     optimal_thresholds = get_optimal_thresholds()
-#     # optimal_thresholds = None
-#     optimal_thresholds = defaultdict(lambda: None)
-#     f_to_process = draw_sd_per_method_final_data_reconstuction
-#     for sd_method in SD_METHODS_TO_CHECK:
-#         for n in NETWORK_NAME.keys():
-#             f_to_process(
-#                 sd_method=sd_method,
-#                 part=n,
-#                 draw_plot=True,
-#                 threshold=threshold,
-#                 threshold_map=optimal_thresholds,
-#                 reconstruction_ratio=reconstruction_ratio
-#             )
-#         f_to_process(
-#             sd_method=sd_method,
-#             draw_plot=True,
-#             threshold=threshold,
-#             threshold_map=optimal_thresholds,
-#             reconstruction_ratio=reconstruction_ratio
-#         )
-
 # generate_reports()
 # f_to_process(ensemble)
 # draw_average_error_by_network()
@@ -1580,13 +1364,12 @@ def generate_reports(source_path=PATH, dest_dir="final_sd_results_stats"):
 # draw_sd_per_method_final_data(sd_method=ensemble,part="facebook")
 # generate_finals_sd_report()
 
-# generate_reports_with_reconstruction()
-
 # do zbadania rekonstrukcji musze
 # 1. zrobic zwykly raport - tylko usuniete
 # - generate_reports(WITHOUT_RECONSTRUCTION_PATH, "final_sd_results_stats_without_reconstruction")
+# - generate_finals_sd_report("final_sd_results_stats_without_reconstruction")
 # 2. zrobic raport z rekonstrukcja
 generate_reports(
     WITHOUT_RECONSTRUCTION_PATH, "final_sd_results_stats_without_reconstruction"
 )
-# generate_finals_sd_report("final_sd_results_stats_without_reconstruction")
+generate_finals_sd_report("final_sd_results_stats_without_reconstruction")

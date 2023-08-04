@@ -561,7 +561,7 @@ def read_reconstucted_ig(graph_name: str):
     return result
 
 
-def sd_evaluation_with_reconstruction_final(use_reconstruction=False):
+def sd_evaluation_with_reconstruction_final(use_reconstruction=True):
     for graph_function in graphs:
         print(f"############### {graph_function.__name__}")
         reconstructed_map = read_reconstucted_ig(graph_function.__name__)
@@ -663,6 +663,6 @@ def sd_evaluation_final():
 # do_evaluation()
 # sd_evaluation_with_static_propagations()
 if __name__ == "__main__":
-    # sd_evaluation_final()
-    sd_evaluation_with_reconstruction_final()
+    sd_evaluation_final()
+    # sd_evaluation_with_reconstruction_final()
     # print(read_reconstucted_ig("karate_graph", karate_graph(), karate_graph()))
