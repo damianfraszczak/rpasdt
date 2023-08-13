@@ -115,9 +115,12 @@ def draw_communities(G, partition, name=""):
             ccolors[get_community_index(community)]
             for community in grouped_nodes.values()
         ],
+        edgecolors="black",
     )
-    nx.draw_networkx_edges(G, pos, alpha=0.5)
-    nx.draw_networkx_labels(G, pos)
+    # width=0.3, edge_color='brown', alpha=0.8
+    nx.draw_networkx_edges(G, pos, alpha=0.5, width=0.3)
+    if len(G) < 50:
+        nx.draw_networkx_labels(G, pos)
 
     com_sizes = get_communities_size(partition)
 
