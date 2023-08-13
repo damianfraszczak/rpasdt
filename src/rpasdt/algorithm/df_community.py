@@ -8,7 +8,7 @@ from networkx import Graph
 from scipy.stats import tmean
 
 DEBUG = False
-MOD_THRESHOLD = 0.01
+MOD_THRESHOLD = 0.03
 # MOD_THRESHOLD = 0.01  # florentine
 
 

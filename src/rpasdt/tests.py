@@ -18,7 +18,7 @@ from rpasdt.network.networkx_utils import (
     get_grouped_nodes,
     get_nodes_color,
 )
-from rpasdt.scripts.utils import configure_plot
+from rpasdt.scripts.utils import configure_plot, draw_communities
 
 matplotlib.use("Qt5Agg")
 
@@ -153,72 +153,21 @@ def leiden(G, resolution=1.0):
     )
 
 
-def draw_communities(G, partition, name=""):
-    from matplotlib import pyplot as plt
-
-    plt.clf()
-    grouped_nodes = get_grouped_nodes(partition)
-    if len(G) > 500:
-        pos = nx.spring_layout(G, iterations=15, seed=1721)
-    else:
-        # pos = community_layout(G, grouped_nodes)
-        pos = nx.kamada_kawai_layout(G)
-    pos = pos or nx.spring_layout(G, seed=100)
-    cf = plt.gcf()
-    cf.set_facecolor("w")
-    ax = cf.gca()
-    ax.set_axis_off()
-    plt.draw_if_interactive()
-    # fig, ax = plt.subplots(figsize=(15, 9))
-    # ax.axis("off")
-    # nx.draw_networkx(G, pos=pos, ax=ax, **plot_options)
-    # draw the graph
-    #
-
-    # color the nodes according to their partition
-    # cmap = cm.get_cmap("tab20c", len(grouped_nodes.keys()))
-    ccolors = get_nodes_color(partition)
-
-    configure_plot()
-    nx.draw_networkx_nodes(
-        G,
-        pos,
-        grouped_nodes.keys(),
-        node_size=200,
-        node_color=[
-            ccolors[get_community_index(community)]
-            for community in grouped_nodes.values()
-        ],
-    )
-    nx.draw_networkx_edges(G, pos, alpha=0.5)
-    nx.draw_networkx_labels(G, pos)
-
-    com_sizes = get_communities_size(partition)
-
-    legend_elements = [
-        Line2D(
-            [0],
-            [0],
-            marker="o",
-            color="w",
-            label=f"C{community + 1}, |C{community+ 1}| = {com_sizes[community]}",
-            markerfacecolor=ccolors[get_community_index(community)],
-            markersize=8,
+def data_ego_553587013409325058():
+    return nx.read_adjlist(
+        os.path.join(
+            get_project_root(),
+            "data",
+            "twitter",
+            "ego-graph-553587013409325058.adjlist",
         )
-        for community in range(len(com_sizes))
-    ]
-    plt.legend(loc="lower right", handles=legend_elements)
-    plt.tight_layout(pad=0)
-    plt.show()
-    # plt.savefig(
-    #     f"/home/qtuser/{name}.png", bbox_inches="tight", transparent=True, pad_inches=0
-    # )
+    )
 
 
 GRAPHS = {
     # "divided": divided_by_edge_community,
-    "florentine_graph": florentine_graph,
-    # "karate": karate_graph,
+    # "florentine_graph": florentine_graph,
+    "karate": karate_graph,
     # "windmil": windmil,
     # "football": footbal,
     # "dolphin": dolphin,
@@ -227,6 +176,7 @@ GRAPHS = {
     # "cg": cg,
     # "radnom_partition": random_partition,
     # "facebook": facebook,
+    # "twitter": data_ego_553587013409325058
 }
 similarity_functions = [
     jaccard_node_similarity,
@@ -243,6 +193,7 @@ def draw_community_results():
     for G_name in GRAPHS:
         G = GRAPHS[G_name]()
         for sim_f in similarity_functions:
+
             comm = df_node_similarity(G, node_similarity_function=sim_f)
             # resultat jak z METODY
             comm = {
@@ -259,8 +210,7 @@ def draw_community_results():
 
 
 if __name__ == "__main__":
-    pass
-    # draw_community_results()
+    draw_community_results()
 
 # L = louvain(G)
 # print(len(L))
@@ -281,9 +231,9 @@ if __name__ == "__main__":
 # plt.show()
 #
 # nx.draw(G, with_labels=True)
-G = facebook()
-print(datetime.now())
-print(find_communities(type=CommunityOptionEnum.NODE_SIMILARITY, graph=G))
-print(datetime.now())
-print(find_communities(type=CommunityOptionEnum.NODE_SIMILARITY, graph=G))
-print(datetime.now())
+# G = facebook()
+# print(datetime.now())
+# print(find_communities(type=CommunityOptionEnum.NODE_SIMILARITY, graph=G))
+# print(datetime.now())
+# print(find_communities(type=CommunityOptionEnum.NODE_SIMILARITY, graph=G))
+# print(datetime.now())
