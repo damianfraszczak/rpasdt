@@ -162,6 +162,7 @@ class DiffusionGraphController(
         if config:
             run_long_task(
                 function=source_detector.estimate_sources,
+                function_kwargs={"G": self.graph, "IG": IG},
                 title="Source estimation",
                 callback=lambda sources: self.process_source_detection(
                     source_detector=source_detector
