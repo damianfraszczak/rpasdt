@@ -3,7 +3,7 @@ import networkx as nx
 from matplotlib import pyplot as plt
 from utils import FIG_SIZE, draw_communities
 
-from rpasdt.algorithm.df_community import df_node_similarity
+from rpasdt.algorithm.df_community import blocd
 from rpasdt.common.utils import get_object_value
 
 PATH = "obrazki"
@@ -29,7 +29,7 @@ def draw_g():
 
 
 def draw_1_step():
-    comm = df_node_similarity(G, max_step=1)
+    comm = blocd(G, max_step=1)
     comm = {
         index: community
         for index, community in enumerate(get_object_value(comm, "communities"))
@@ -38,7 +38,7 @@ def draw_1_step():
 
 
 def draw_2_step():
-    comm = df_node_similarity(G, max_step=2)
+    comm = blocd(G, max_step=2)
     comm = {
         index: community
         for index, community in enumerate(get_object_value(comm, "communities"))
@@ -47,7 +47,7 @@ def draw_2_step():
 
 
 def draw_3_step():
-    comm = df_node_similarity(G, max_step=3)
+    comm = blocd(G, max_step=3)
     comm = {
         index: community
         for index, community in enumerate(get_object_value(comm, "communities"))

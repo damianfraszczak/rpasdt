@@ -580,7 +580,7 @@ def initial_communities_each_separate(
     return {node: {node} for node in g_original}
 
 
-def df_node_similarity(
+def blocd(
     g_original: Graph,
     node_similarity_function: Optional[Callable] = None,
     similarity_threshold: Optional[float] = None,

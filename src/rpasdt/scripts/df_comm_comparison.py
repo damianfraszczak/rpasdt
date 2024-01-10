@@ -32,8 +32,7 @@ def read_clusters_from_file(path):
 def map_communities(result):
     return {
         index: community
-        for index, community in
-        enumerate(get_object_value(result, "communities"))
+        for index, community in enumerate(get_object_value(result, "communities"))
     }
 
 
@@ -47,64 +46,55 @@ def karate_gt() -> dict:
 
 def dolphin_gt():
     return read_clusters_from_file(
-        os.path.join(get_project_root(), "data", "community",
-                     "dolphins.clusters.txt")
+        os.path.join(get_project_root(), "data", "community", "dolphins.clusters.txt")
     )
 
 
 def football_gt():
     return read_clusters_from_file(
-        os.path.join(get_project_root(), "data", "community",
-                     "football.clusters.txt")
+        os.path.join(get_project_root(), "data", "community", "football.clusters.txt")
     )
 
 
 def eu_core():
     return nx.read_adjlist(
-        os.path.join(get_project_root(), "data", "community",
-                     "eu-core.edges.txt")
+        os.path.join(get_project_root(), "data", "community", "eu-core.edges.txt")
     )
 
 
 def eu_core_gt():
     return read_clusters_from_file(
-        os.path.join(get_project_root(), "data", "community",
-                     "eu-core.clusters.txt")
+        os.path.join(get_project_root(), "data", "community", "eu-core.clusters.txt")
     )
 
 
 def polbooks():
     return nx.read_adjlist(
-        os.path.join(get_project_root(), "data", "community",
-                     "polbooks.edges.txt")
+        os.path.join(get_project_root(), "data", "community", "polbooks.edges.txt")
     )
 
 
 def polbooks_gt():
     return read_clusters_from_file(
-        os.path.join(get_project_root(), "data", "community",
-                     "polbooks.clusters.txt")
+        os.path.join(get_project_root(), "data", "community", "polbooks.clusters.txt")
     )
 
 
 def polblogs():
     return nx.read_adjlist(
-        os.path.join(get_project_root(), "data", "community",
-                     "polblogs.edges.txt")
+        os.path.join(get_project_root(), "data", "community", "polblogs.edges.txt")
     )
 
 
 def polblogs_gt():
     return read_clusters_from_file(
-        os.path.join(get_project_root(), "data", "community",
-                     "polblogs.clusters.txt")
+        os.path.join(get_project_root(), "data", "community", "polblogs.clusters.txt")
     )
 
 
 def sp_data():
     return nx.read_gml(
-        os.path.join(get_project_root(), "data", "community",
-                     "sp_school_day_1.gml")
+        os.path.join(get_project_root(), "data", "community", "sp_school_day_1.gml")
     )
 
 
@@ -122,8 +112,7 @@ def amazon_gt() -> dict:
 
 
 def amazon() -> Graph:
-    return datasets.fetch_network_data(net_name="amazon_club",
-                                       net_type="networkx")
+    return datasets.fetch_network_data(net_name="amazon_club", net_type="networkx")
 
 
 def youtube_gt() -> dict:
@@ -191,10 +180,10 @@ METHODS = [
     CommunityOptionEnum.WALKTRAP,
     # CommunityOptionEnum.SPECTRAL,
     # CommunityOptionEnum.SBM_DL,
-    CommunityOptionEnum.NODE_SIMILARITY,
+    CommunityOptionEnum.BLOCD,
 ]
 
-# METHODS = [CommunityOptionEnum.NODE_SIMILARITY]
+# METHODS = [CommunityOptionEnum.BLOCD]
 header = [
     "graph",
     "method",

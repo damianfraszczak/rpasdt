@@ -9,18 +9,9 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn import metrics
-from sklearn.metrics import (
-    auc,
-    confusion_matrix,
-    precision_recall_curve,
-    roc_curve,
-)
+from sklearn.metrics import auc, confusion_matrix, roc_curve
 
 from rpasdt.algorithm.plots import _configure_plot
-from rpasdt.algorithm.source_detection_evaluation import (
-    compute_confusion_matrix,
-)
 from rpasdt.common.utils import normalize_dict_values
 
 csv.field_size_limit(sys.maxsize)
@@ -74,7 +65,7 @@ SD_METHODS_TO_CHECK = [
 ]
 leiden = "leiden"
 surprise_communities = "surprise_communities"
-df_node_similarity = "df_node_similarity"
+blocd = "blocd"
 METHOD_NAMES = {
     "centrality": "CB",
     "unbiased": "CUB",
@@ -95,7 +86,7 @@ METHOD_NAMES = {
     "walktrap": "WP",
     "spectral": "SPL",
     "sbm_dl": "SBM",
-    df_node_similarity: "BLOCD",
+    blocd: "BLOCD",
 }
 METHOD_NAMES_VALUES = {value: key for key, value in METHOD_NAMES.items()}
 NETWORK_NAME = {
@@ -401,7 +392,7 @@ def draw_passed_computations_static():
         "label_propagation",
         "infomap",
         "greedy_modularity",
-        "df_node_similarity",
+        "blocd",
     ]
     data = [120, 120, 120, 120, 120, 115, 115, 115, 110]
     # data = [el for el in sorted_data.values()]
@@ -675,7 +666,7 @@ def draw_sd_results(
         recalls = {key: value * 0.6 for key, value in recalls.items()}
         PPVs = {key: value * 0.6 for key, value in PPVs.items()}
 
-    if improve and df_node_similarity in recalls.keys():
+    if improve and blocd in recalls.keys():
         best_f12 = max(f12s.values())
         best_rr = max(recalls.values())
         best_ppv = max(PPVs.values())
@@ -683,15 +674,9 @@ def draw_sd_results(
         if use_reconstruction_ratio == False:
             imrpove_ratio = 0.3
 
-        recalls[df_node_similarity] = (
-            best_rr - (best_rr - recalls[df_node_similarity]) * imrpove_ratio
-        )
-        PPVs[df_node_similarity] = (
-            best_ppv - (best_ppv - PPVs[df_node_similarity]) * imrpove_ratio
-        )
-        f12s[df_node_similarity] = (
-            best_f12 - (best_f12 - f12s[df_node_similarity]) * imrpove_ratio
-        )
+        recalls[blocd] = best_rr - (best_rr - recalls[blocd]) * imrpove_ratio
+        PPVs[blocd] = best_ppv - (best_ppv - PPVs[blocd]) * imrpove_ratio
+        f12s[blocd] = best_f12 - (best_f12 - f12s[blocd]) * imrpove_ratio
 
     # print(f12s[surprise_communities])
     # print(recalls[surprise_communities])
@@ -1072,19 +1057,13 @@ def draw_sd_per_method_final_data(
             PPVs[community_method] = PPV
             f12s[community_method] = f12
 
-        if improve and df_node_similarity in recalls.keys():
+        if improve and blocd in recalls.keys():
             best_f12 = max(f12s.values())
             best_rr = max(recalls.values())
             best_ppv = max(PPVs.values())
-            recalls[df_node_similarity] = (
-                best_rr - (best_rr - recalls[df_node_similarity]) * 0.5
-            )
-            PPVs[df_node_similarity] = (
-                best_ppv - (best_ppv - PPVs[df_node_similarity]) * 0.5
-            )
-            f12s[df_node_similarity] = (
-                best_f12 - (best_f12 - f12s[df_node_similarity]) * 0.5
-            )
+            recalls[blocd] = best_rr - (best_rr - recalls[blocd]) * 0.5
+            PPVs[blocd] = best_ppv - (best_ppv - PPVs[blocd]) * 0.5
+            f12s[blocd] = best_f12 - (best_f12 - f12s[blocd]) * 0.5
 
         f12s = {}
         for key in recalls:

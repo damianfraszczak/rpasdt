@@ -86,7 +86,7 @@ class NodeStatusEnum(StringChoiceEnum):
     SUSCEPTIBLE = "Susceptible"
     INFECTED = "Infected"
     RECOVERED = "Recovered"
-    BLOCKED = "Blocked"
+    BLOCDED = "Blocked"
 
 
 #  Numbers based on cdlib.
@@ -94,7 +94,7 @@ NodeStatusToValueMapping = {
     NodeStatusEnum.SUSCEPTIBLE: 0,
     NodeStatusEnum.INFECTED: 1,
     NodeStatusEnum.RECOVERED: 2,
-    NodeStatusEnum.BLOCKED: -1,
+    NodeStatusEnum.BLOCDED: -1,
 }
 
 
@@ -169,7 +169,6 @@ class CommunityOptionEnum(StringChoiceEnum):
         "The procedure uses random walks to approximate the pointwise mutual information matrix obtained by pooling normalized adjacency matrix powers.",
     )
     GIRVAN_NEWMAN = (
-        "girvan_newman",
         "girvan_newman",
         "The Girvan-Newman algorithm detects communities by progressively removing edges from the original graph.",
     )
@@ -277,7 +276,8 @@ class CommunityOptionEnum(StringChoiceEnum):
         "threshold_clustering",
         "Developed for semantic similarity networks, this algorithm specifically targets weighted and directed graphs.",
     )
-    NODE_SIMILARITY = ("df_node_similarity", "BLOCD")
+
+    BLOCD = ("blocd", "BLOCD")
 
 
 class NetworkAnalysisOptionEnum(StringChoiceEnum):

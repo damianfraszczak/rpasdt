@@ -1,24 +1,16 @@
 # do sprawdzenia
 # https://orbifold.net/default/community-detection-using-networkx/
 import os
-from datetime import datetime
 
 import matplotlib
 import networkx as nx
-from matplotlib.lines import Line2D
 
 from rpasdt.algorithm.communities import find_communities
-from rpasdt.algorithm.df_community import df_node_similarity
+from rpasdt.algorithm.df_community import blocd
 from rpasdt.algorithm.similarity import jaccard_node_similarity
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
-from rpasdt.algorithm.utils import get_communities_size
 from rpasdt.common.utils import get_object_value, get_project_root, method_time
-from rpasdt.network.networkx_utils import (
-    get_community_index,
-    get_grouped_nodes,
-    get_nodes_color,
-)
-from rpasdt.scripts.utils import configure_plot, draw_communities
+from rpasdt.scripts.utils import draw_communities
 
 matplotlib.use("Qt5Agg")
 
@@ -136,7 +128,7 @@ def watts_strogatz_graph():
 
 @method_time
 def df_similarity(G, **kwargs):
-    return find_communities(graph=G, type=CommunityOptionEnum.NODE_SIMILARITY, **kwargs)
+    return find_communities(graph=G, type=CommunityOptionEnum.BLOCD, **kwargs)
 
 
 @method_time
@@ -194,7 +186,7 @@ def draw_community_results():
         G = GRAPHS[G_name]()
         for sim_f in similarity_functions:
 
-            comm = df_node_similarity(G, node_similarity_function=sim_f)
+            comm = blocd(G, node_similarity_function=sim_f)
             # resultat jak z METODY
             comm = {
                 index: community
@@ -233,7 +225,7 @@ if __name__ == "__main__":
 # nx.draw(G, with_labels=True)
 # G = facebook()
 # print(datetime.now())
-# print(find_communities(type=CommunityOptionEnum.NODE_SIMILARITY, graph=G))
+# print(find_communities(type=CommunityOptionEnum.BLOCD, graph=G))
 # print(datetime.now())
-# print(find_communities(type=CommunityOptionEnum.NODE_SIMILARITY, graph=G))
+# print(find_communities(type=CommunityOptionEnum.BLOCD, graph=G))
 # print(datetime.now())
