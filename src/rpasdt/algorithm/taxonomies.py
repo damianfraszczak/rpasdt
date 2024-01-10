@@ -170,6 +170,7 @@ class CommunityOptionEnum(StringChoiceEnum):
     )
     GIRVAN_NEWMAN = (
         "girvan_newman",
+        "girvan_newman",
         "The Girvan-Newman algorithm detects communities by progressively removing edges from the original graph.",
     )
     GREEDY_MODULARITY = (
@@ -276,7 +277,7 @@ class CommunityOptionEnum(StringChoiceEnum):
         "threshold_clustering",
         "Developed for semantic similarity networks, this algorithm specifically targets weighted and directed graphs.",
     )
-    NODE_SIMILARITY = ("df_node_similarity", "DF")
+    NODE_SIMILARITY = ("df_node_similarity", "BLOCD")
 
 
 class NetworkAnalysisOptionEnum(StringChoiceEnum):
