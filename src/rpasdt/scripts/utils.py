@@ -4,7 +4,7 @@ import networkx as nx
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 
-from rpasdt.algorithm.df_community import (
+from rpasdt.algorithm.blocd import (
     get_communities_size,
     get_grouped_nodes,
 )

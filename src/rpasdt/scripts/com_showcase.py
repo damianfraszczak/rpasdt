@@ -3,7 +3,7 @@ import networkx as nx
 from matplotlib import pyplot as plt
 from utils import FIG_SIZE, draw_communities
 
-from rpasdt.algorithm.df_community import blocd
+from rpasdt.algorithm.blocd import blocd
 from rpasdt.common.utils import get_object_value
 
 PATH = "obrazki"

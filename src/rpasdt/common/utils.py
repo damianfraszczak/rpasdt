@@ -102,6 +102,8 @@ def sort_dict_by_value(data: Dict[any, any], reverse=True) -> Dict[any, any]:
 
 
 def normalize_dict_values(data: Dict[any, float]) -> Dict[any, float]:
+    if not data:
+        return data
     data = {key: cmath.phase(value) if isinstance(value,complex) else value for key, value in data.items()}
     maxv = max(data.values())
     minv = min(data.values())

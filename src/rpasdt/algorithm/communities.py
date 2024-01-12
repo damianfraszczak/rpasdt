@@ -6,7 +6,7 @@ import networkx as nx
 from cdlib import algorithms
 from networkx import Graph
 
-# noqa: F401
+from rpasdt.algorithm.blocd import blocd as blocd_imp
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.common.utils import (
     get_enum,
@@ -19,9 +19,14 @@ NUMBER_OF_COMMUNITIES_KWARG_NAMES = ["k", "number_communities", "level"]
 MAX_NUMBER_OF_COMMUNITIES_KWARG_NAMES = ["kmax"]
 
 
+def blocd(*args, **kwargs):
+    return blocd_imp(*args, **kwargs)
+
+
 def _update_communities_kwarg(
-    graph: Graph, type: CommunityOptionEnum, kwargs: Dict, number_communities: int
-):
+    graph: Graph, type: CommunityOptionEnum, kwargs: dict,
+    number_communities: int
+) -> dict:
     # correctly set the desired number of communities for given alg
     for name in NUMBER_OF_COMMUNITIES_KWARG_NAMES:
         if name in kwargs:
@@ -40,6 +45,7 @@ def _update_communities_kwarg(
         value = kwargs[key]
         if isinstance(value, Collection) and not value:
             kwargs.pop(key)
+    return kwargs
 
 
 COMMUNITY_CACHE = {}
@@ -63,15 +69,18 @@ def find_communities(
     alg = getattr(algorithms, alg_function_name, None) or getattr(
         thismodule, alg_function_name
     )
-    kwargs = {**get_function_default_kwargs(alg), **alg_kwargs, **{"g_original": graph}}
+    kwargs = {**get_function_default_kwargs(alg), **alg_kwargs,
+              **{"g_original": graph}}
     _update_communities_kwarg(
-        graph=graph, type=type, kwargs=kwargs, number_communities=number_communities
+        graph=graph, type=type, kwargs=kwargs,
+        number_communities=number_communities
     )
 
     result = alg(**kwargs)
     communities = {
         index: community
-        for index, community in enumerate(get_object_value(result, "communities"))
+        for index, community in
+        enumerate(get_object_value(result, "communities"))
     }
 
     COMMUNITY_CACHE[cache_key] = communities

@@ -6,7 +6,7 @@ import matplotlib
 import networkx as nx
 
 from rpasdt.algorithm.communities import find_communities
-from rpasdt.algorithm.df_community import blocd
+from rpasdt.algorithm.blocd import blocd
 from rpasdt.algorithm.similarity import jaccard_node_similarity
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.common.utils import get_object_value, get_project_root, method_time
