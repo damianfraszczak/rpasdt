@@ -36,6 +36,7 @@ class SourceDetectionGraphController(
                 G=self.experiment.diffusion_graph,
                 real_sources=self.experiment.source_nodes,
                 detected_sources=self.source_detector.detected_sources,
+                additional_data=self.source_detector.get_additional_data_for_source_evaluation(),
             ),
         )
         self.mark_nodes()

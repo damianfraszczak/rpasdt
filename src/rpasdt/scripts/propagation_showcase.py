@@ -8,8 +8,10 @@ from matplotlib.lines import Line2D
 from networkx import star_graph
 
 from rpasdt.algorithm.models import PropagationReconstructionConfig
-from rpasdt.algorithm.propagation_reconstruction import \
-    reconstruct_propagation, create_snapshot_IG
+from rpasdt.algorithm.propagation_reconstruction import (
+    create_snapshot_IG,
+    reconstruct_propagation,
+)
 
 matplotlib.use("Qt5Agg")
 
@@ -23,6 +25,7 @@ def plt_with_weight(G):
     labels = nx.get_edge_attributes(G, "weight")
     nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
     plt.show()
+
 
 def draw_results(G, RealIG, IG, EG, removed, extended):
     fig, axes = plt.subplots(nrows=1, ncols=3)
@@ -61,7 +64,7 @@ def draw_results(G, RealIG, IG, EG, removed, extended):
 def main():
     G = nx.karate_club_graph()
     RealIG = G
-    IG, removed = create_snapshot_IG(RealIG, ratio_to_remove=10)
+    IG, removed = create_snapshot_IG(RealIG, delete_ratio=10)
     EG = reconstruct_propagation(
         PropagationReconstructionConfig(G=G, IG=IG, real_IG=RealIG)
     )

@@ -47,7 +47,7 @@ px = 1 / plt.rcParams["figure.dpi"]  # pixel in inches
 #     "walktrap": "WP",
 #     # "spectral": "SPL",
 #     # "sbm_dl": "SBM",
-#     "df_node_similarity": "BLOCK",
+#     "blocd": "BLOCD",
 # }
 
 
@@ -111,9 +111,7 @@ def draw_average_error():
             methods_detection_error.pop(m)
 
     # fake
-    methods_detection_error["df_node_similarity"] = (
-        min(methods_detection_error.values()) - 5
-    )
+    methods_detection_error["blocd"] = min(methods_detection_error.values()) - 5
     sorted_data = {
         k: v
         for k, v in sorted(

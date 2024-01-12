@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from multiprocessing import Pool
 from typing import Any, Callable, Dict, List
 
+import networkx as nx
 import numpy as np
 import stopit
 from networkx import Graph
@@ -560,7 +561,7 @@ def read_reconstucted_ig(graph_name: str):
     return result
 
 
-def sd_evaluation_with_reconstruction_final():
+def sd_evaluation_with_reconstruction_final(use_reconstruction=True):
     for graph_function in graphs:
         print(f"############### {graph_function.__name__}")
         reconstructed_map = read_reconstucted_ig(graph_function.__name__)
@@ -596,18 +597,23 @@ def sd_evaluation_with_reconstruction_final():
                             raise Exception(
                                 f"original {len(IG)} vs removed {len(snapshot)}"
                             )
-                        EIG = reconstruct_propagation(
-                            PropagationReconstructionConfig(
-                                G=G,
-                                IG=snapshot,
-                                real_IG=IG,
-                                max_iterations=1,
+                        EIG = snapshot
+                        results_dir = "sd_without_reconstruction"
+                        nodes_infection_probability = None
+                        if use_reconstruction:
+                            results_dir = "sd_with_reconstruction"
+                            EIG = reconstruct_propagation(
+                                PropagationReconstructionConfig(
+                                    G=G,
+                                    IG=snapshot,
+                                    real_IG=IG,
+                                    max_iterations=1,
+                                )
                             )
-                        )
-                        nodes_infection_probability = {
-                            node[0]: node[1][NODE_INFECTION_PROBABILITY_ATTR]
-                            for node in EIG.nodes(data=True)
-                        }
+                            nodes_infection_probability = {
+                                node[0]: node[1][NODE_INFECTION_PROBABILITY_ATTR]
+                                for node in EIG.nodes(data=True)
+                            }
 
                         data = [
                             DataToProcess(
@@ -619,7 +625,7 @@ def sd_evaluation_with_reconstruction_final():
                                 sources=sources,
                                 file_postfix="_reconstruction",
                                 nodes_infection_probability=nodes_infection_probability,
-                                results_dir="sd_with_reconstruction",
+                                results_dir=results_dir,
                                 key=f"{index}-{ratio}",
                             )
                         ]
@@ -657,6 +663,6 @@ def sd_evaluation_final():
 # do_evaluation()
 # sd_evaluation_with_static_propagations()
 if __name__ == "__main__":
-    # sd_evaluation_final()
-    sd_evaluation_with_reconstruction_final()
+    sd_evaluation_final()
+    # sd_evaluation_with_reconstruction_final()
     # print(read_reconstucted_ig("karate_graph", karate_graph(), karate_graph()))

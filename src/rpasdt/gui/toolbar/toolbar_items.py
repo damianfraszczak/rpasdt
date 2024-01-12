@@ -17,7 +17,7 @@ from rpasdt.gui.utils import create_action
 def _get_toolbar_choices(enum: StringChoiceEnum):
     return {
         f"{enum.__class__.__name__}_{enum.name}": (format_label(enum.value), enum.label)
-        for enum in enum
+        for enum in sorted(enum, key=lambda x: x.name)
     }
 
 

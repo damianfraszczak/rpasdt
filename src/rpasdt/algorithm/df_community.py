@@ -8,12 +8,12 @@ from networkx import Graph
 from scipy.stats import tmean
 
 DEBUG = False
-MOD_THRESHOLD = 0.002
+MOD_THRESHOLD = 0.03
 # MOD_THRESHOLD = 0.01  # florentine
 
 
 # dla soc anybeat
-MOD_THRESHOLD = 0.0001
+# MOD_THRESHOLD = 0.0001
 
 
 def get_communities_size(communities):
@@ -580,7 +580,7 @@ def initial_communities_each_separate(
     return {node: {node} for node in g_original}
 
 
-def df_node_similarity(
+def blocd(
     g_original: Graph,
     node_similarity_function: Optional[Callable] = None,
     similarity_threshold: Optional[float] = None,

@@ -9,6 +9,7 @@ from rpasdt.algorithm.models import (
     ExperimentSourceDetectionEvaluation,
     SingleSourceDetectionEvaluation,
 )
+from rpasdt.algorithm.utils import shortest_path_length
 from rpasdt.common.utils import multi_sum
 
 
@@ -24,7 +25,7 @@ def compute_error_distance(
         [
             min(
                 [
-                    nx.shortest_path_length(G, source=source, target=smaller)
+                    shortest_path_length(G, source=source, target=smaller)
                     if source in G and smaller in G
                     else len(G)
                     for smaller in invalid_detected_sources

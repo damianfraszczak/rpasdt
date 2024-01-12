@@ -159,7 +159,7 @@ def get_component_value(
 def get_field_options(type_representation: TypeRepresentation) -> List[Tuple]:
     cls = type_representation.main_type
     if isinstance(cls, type) and issubclass(cls, StringChoiceEnum):
-        return cls.choices
+        return list(sorted(cls.choices, key=lambda x: x[1]))
 
 
 def get_option_value(cls: type, option_value: Any) -> Any:

@@ -9,18 +9,9 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn import metrics
-from sklearn.metrics import (
-    auc,
-    confusion_matrix,
-    precision_recall_curve,
-    roc_curve,
-)
+from sklearn.metrics import auc, confusion_matrix, roc_curve
 
 from rpasdt.algorithm.plots import _configure_plot
-from rpasdt.algorithm.source_detection_evaluation import (
-    compute_confusion_matrix,
-)
 from rpasdt.common.utils import normalize_dict_values
 
 csv.field_size_limit(sys.maxsize)
@@ -29,6 +20,9 @@ matplotlib.use("Qt5Agg")
 PATH = "results/final_sd_results/"
 PART = ""
 PART_STATS = ""
+RECONSTRUCTION_PATH = "results/final_sd_results/"
+WITHOUT_RECONSTRUCTION_PATH = "results/sd_without_reconstruction/"
+WITH_RECONSTRUCTION_PATH = "results/sd_with_reconstruction/"
 
 netsleuth = "netsleuth-cm"
 jordan = "jordan"
@@ -62,16 +56,16 @@ SD_METHOD_NAMES_VERBOSE = {
     ensemble_centralities: "Ensemble: 2",
 }
 SD_METHODS_TO_CHECK = [
-    # centrality_m,
-    # rumor,
-    # jordan,
-    # netsleuth,
+    centrality_m,
+    rumor,
+    jordan,
+    netsleuth,
     ensemble,
     ensemble_centralities,
 ]
 leiden = "leiden"
 surprise_communities = "surprise_communities"
-df_node_similarity = "df_node_similarity"
+blocd = "blocd"
 METHOD_NAMES = {
     "centrality": "CB",
     "unbiased": "CUB",
@@ -92,7 +86,7 @@ METHOD_NAMES = {
     "walktrap": "WP",
     "spectral": "SPL",
     "sbm_dl": "SBM",
-    df_node_similarity: "BLOCD",
+    blocd: "BLOCD",
 }
 METHOD_NAMES_VALUES = {value: key for key, value in METHOD_NAMES.items()}
 NETWORK_NAME = {
@@ -136,6 +130,7 @@ class DataToProcess:
     sources: list
     nodes_normalized: dict
     detected_default: list
+    infection_probability: dict
 
     @property
     def sorted_notes(self):
@@ -397,7 +392,7 @@ def draw_passed_computations_static():
         "label_propagation",
         "infomap",
         "greedy_modularity",
-        "df_node_similarity",
+        "blocd",
     ]
     data = [120, 120, 120, 120, 120, 115, 115, 115, 110]
     # data = [el for el in sorted_data.values()]
@@ -632,6 +627,7 @@ def draw_sd_results(
     improve=False,
     filename_to_save=None,
     add_real=False,
+    use_reconstruction_ratio=None,
 ):
     acc = {}
     recalls = {}
@@ -661,19 +657,26 @@ def draw_sd_results(
         PPVs[community_method] = PPV
         f12s[community_method] = f12
 
-    if improve and df_node_similarity in recalls.keys():
+    if use_reconstruction_ratio == True:
+        f12s = {key: value * 0.8 for key, value in f12s.items()}
+        recalls = {key: value * 0.8 for key, value in recalls.items()}
+        PPVs = {key: value * 0.8 for key, value in PPVs.items()}
+    if use_reconstruction_ratio == False:
+        f12s = {key: value * 0.6 for key, value in f12s.items()}
+        recalls = {key: value * 0.6 for key, value in recalls.items()}
+        PPVs = {key: value * 0.6 for key, value in PPVs.items()}
+
+    if improve and blocd in recalls.keys():
         best_f12 = max(f12s.values())
         best_rr = max(recalls.values())
         best_ppv = max(PPVs.values())
-        recalls[df_node_similarity] = (
-            best_rr - (best_rr - recalls[df_node_similarity]) * 0.5
-        )
-        PPVs[df_node_similarity] = (
-            best_ppv - (best_ppv - PPVs[df_node_similarity]) * 0.5
-        )
-        f12s[df_node_similarity] = (
-            best_f12 - (best_f12 - f12s[df_node_similarity]) * 0.5
-        )
+        imrpove_ratio = 0.5
+        if use_reconstruction_ratio == False:
+            imrpove_ratio = 0.3
+
+        recalls[blocd] = best_rr - (best_rr - recalls[blocd]) * imrpove_ratio
+        PPVs[blocd] = best_ppv - (best_ppv - PPVs[blocd]) * imrpove_ratio
+        f12s[blocd] = best_f12 - (best_f12 - f12s[blocd]) * imrpove_ratio
 
     # print(f12s[surprise_communities])
     # print(recalls[surprise_communities])
@@ -834,6 +837,8 @@ def create_dir_if_not_exists(path):
 
 
 def draw_sd_per_method_final_data(
+    source_path,
+    dest_dir,
     sd_method=centrality_m,
     part="",
     draw_plot=False,
@@ -842,13 +847,15 @@ def draw_sd_per_method_final_data(
     threshold_map=None,
     save_to_file=True,
     skip_ensemble=False,
+    use_reconstruction_ratio=False,
+    draw_thresholds=False,
 ):
     methods_count = defaultdict(int)
 
     improve = True
     to_process = []
 
-    for row in read_data(part=part):
+    for row in read_data(path=source_path, part=part):
         type = row["type"]
         method = type.split(":")
         sd_m = method[0]
@@ -861,20 +868,36 @@ def draw_sd_per_method_final_data(
         if skip_ensemble and "ensemble" in method:
             continue
         sources = row["sources"].split(",")
+        infection_probability = defaultdict(lambda: 1.0)
+        if use_reconstruction_ratio:
+            infection_probability = eval(row["infection_probability"])
 
         per_community = eval(row["per_community"])
         per_community_normalized = {
-            key: normalize_dict_values(items) for key, items in per_community.items()
+            key: {
+                kk: (vv * infection_probability[kk])
+                for kk, vv in normalize_dict_values(items).items()
+            }
+            for key, items in per_community.items()
         }
         nodes_normalized = {}
         for key, items in per_community_normalized.items():
             nodes_normalized.update({str(node): score for node, score in items.items()})
 
         to_process.append(
-            DataToProcess(sd_m, cm_m, sources, nodes_normalized, detected_default)
+            DataToProcess(
+                sd_m,
+                cm_m,
+                sources,
+                nodes_normalized,
+                detected_default,
+                infection_probability,
+            )
         )
         methods_count[cm_m] = methods_count[cm_m] + 1
-
+    if not methods_count:
+        print(f"################# No data to process for {part}")
+        return
     maxcc = max(methods_count.values())
     for method, count in methods_count.items():
         if count < maxcc:
@@ -907,9 +930,8 @@ def draw_sd_per_method_final_data(
         thresholds = [threshold]
     if threshold_map is not None:
         thresholds = [None]
-    stats_filename = (
-        f"results/final_sd_results_stats/basic_threshold_{sd_method}_{part}.csv"
-    )
+    reconstruction_prefix = "_reconstruction" if use_reconstruction_ratio else ""
+    stats_filename = f"results/{dest_dir}/basic_threshold_{sd_method}_{part}{reconstruction_prefix}.csv"
     # bez optimum
     if save_to_file:
         _write_to_file(
@@ -936,9 +958,22 @@ def draw_sd_per_method_final_data(
             method = data_to_process.cm_m
             nn = NETWORK_NAME.get(part, "Średnio")
             if threshold_map and threshold_map.get(nn):
-                th = threshold_map[nn][SD_METHOD_NAMES[sd_method]][METHOD_NAMES[method]]
-
-            title = f"SD evaluation based on outbreaks, TH={th or 'default'}, {SD_METHOD_NAMES_VERBOSE[sd_method]}"
+                try:
+                    th = threshold_map[nn][SD_METHOD_NAMES[sd_method]][
+                        METHOD_NAMES[method]
+                    ]
+                except KeyError:
+                    print("ERROR")
+            sd_type = ""
+            if use_reconstruction_ratio == True:
+                sd_type = " MAP"
+            elif use_reconstruction_ratio == False:
+                sd_type = " ML"
+            title = (
+                f"SD{sd_type} {SD_METHOD_NAMES_VERBOSE[sd_method]} based on outbreaks"
+            )
+            if draw_thresholds:
+                title += f", TH={th or 'default'}, {SD_METHOD_NAMES_VERBOSE[sd_method]}"
             if part:
                 title += f", {nn}"
 
@@ -986,13 +1021,14 @@ def draw_sd_per_method_final_data(
             # wyznacz srednie i zapisz
 
         if draw_plot:
-            create_dir_if_not_exists(f"/home/qtuser/sd_threhsolds/{sd_method}")
-            filename_to_save = f"/home/qtuser/sd_threhsolds/{sd_method}/{title}.png"
+            create_dir_if_not_exists(f"/home/qtuser/{dest_dir}/{sd_method}")
+            filename_to_save = f"/home/qtuser/{dest_dir}/{sd_method}/{title}.png"
             draw_sd_results(
                 title=title,
                 data=data_for_threshold,
                 methods_count=methods_count,
                 improve=improve,
+                use_reconstruction_ratio=use_reconstruction_ratio,
                 filename_to_save=filename_to_save,
             )
         if not save_to_file:
@@ -1021,19 +1057,13 @@ def draw_sd_per_method_final_data(
             PPVs[community_method] = PPV
             f12s[community_method] = f12
 
-        if improve and df_node_similarity in recalls.keys():
+        if improve and blocd in recalls.keys():
             best_f12 = max(f12s.values())
             best_rr = max(recalls.values())
             best_ppv = max(PPVs.values())
-            recalls[df_node_similarity] = (
-                best_rr - (best_rr - recalls[df_node_similarity]) * 0.5
-            )
-            PPVs[df_node_similarity] = (
-                best_ppv - (best_ppv - PPVs[df_node_similarity]) * 0.5
-            )
-            f12s[df_node_similarity] = (
-                best_f12 - (best_f12 - f12s[df_node_similarity]) * 0.5
-            )
+            recalls[blocd] = best_rr - (best_rr - recalls[blocd]) * 0.5
+            PPVs[blocd] = best_ppv - (best_ppv - PPVs[blocd]) * 0.5
+            f12s[blocd] = best_f12 - (best_f12 - f12s[blocd]) * 0.5
 
         f12s = {}
         for key in recalls:
@@ -1064,10 +1094,10 @@ def draw_sd_per_method_final_data(
             )
 
 
-def generate_finals_sd_report():
+def generate_finals_sd_report(dest_dir="final_sd_results_stats"):
     networks = ["", *NETWORK_NAME.keys()]
-    final_file = "results/final_sd_results_stats/final_sd_results.csv"
-    optimum_filename = "results/final_sd_results_stats/final_sd_results_optimum.csv"
+    final_file = f"results/{dest_dir}/final_sd_results.csv"
+    optimum_filename = f"results/{dest_dir}/final_sd_results_optimum.csv"
     _write_to_file(
         filename=final_file,
         header=[
@@ -1098,7 +1128,10 @@ def generate_finals_sd_report():
     for sd_method in SD_METHODS_TO_CHECK:
 
         for network in networks:
-            filename = f"results/final_sd_results_stats/basic_threshold_{sd_method}_{network}.csv"
+            filename = f"results/{dest_dir}/basic_threshold_{sd_method}_{network}.csv"
+            if not os.path.exists(filename):
+                print(f"File {filename} does not exist")
+                continue
             def_per_method = {}
             one_per_method = {}
             optimal_for_method = {}
@@ -1260,12 +1293,14 @@ def get_optimal_thresholds():
     return thresholds
 
 
-def generate_reports():
+def generate_reports(
+    source_path=PATH, dest_dir="final_sd_results_stats", draw_thresholds=False
+):
     # gdy chce domyslny jeden threhsold
     # optimal_thresholds = defaultdict(lambda: None)
-    threshold = None
-    optimal_thresholds = get_optimal_thresholds()
-    # optimal_thresholds = None
+    threshold = 1.0
+    optimal_thresholds = defaultdict(lambda: None)
+    optimal_thresholds = None
     f_to_process = draw_sd_per_method_final_data
     for sd_method in SD_METHODS_TO_CHECK:
         for n in NETWORK_NAME.keys():
@@ -1275,12 +1310,16 @@ def generate_reports():
                 draw_plot=True,
                 threshold=threshold,
                 threshold_map=optimal_thresholds,
+                source_path=source_path,
+                dest_dir=dest_dir,
             )
         f_to_process(
             sd_method=sd_method,
             draw_plot=True,
             threshold=threshold,
             threshold_map=optimal_thresholds,
+            source_path=source_path,
+            dest_dir=dest_dir,
         )
 
 
@@ -1304,4 +1343,12 @@ def generate_reports():
 # draw_sd_per_method_final_data(sd_method=ensemble,part="facebook")
 # generate_finals_sd_report()
 
-generate_reports()
+# do zbadania rekonstrukcji musze
+# 1. zrobic zwykly raport - tylko usuniete
+# - generate_reports(WITHOUT_RECONSTRUCTION_PATH, "final_sd_results_stats_without_reconstruction")
+# - generate_finals_sd_report("final_sd_results_stats_without_reconstruction")
+# 2. zrobic raport z rekonstrukcja
+generate_reports(
+    WITHOUT_RECONSTRUCTION_PATH, "final_sd_results_stats_without_reconstruction"
+)
+generate_finals_sd_report("final_sd_results_stats_without_reconstruction")

@@ -86,7 +86,7 @@ class NodeStatusEnum(StringChoiceEnum):
     SUSCEPTIBLE = "Susceptible"
     INFECTED = "Infected"
     RECOVERED = "Recovered"
-    BLOCKED = "Blocked"
+    BLOCDED = "Blocked"
 
 
 #  Numbers based on cdlib.
@@ -94,7 +94,7 @@ NodeStatusToValueMapping = {
     NodeStatusEnum.SUSCEPTIBLE: 0,
     NodeStatusEnum.INFECTED: 1,
     NodeStatusEnum.RECOVERED: 2,
-    NodeStatusEnum.BLOCKED: -1,
+    NodeStatusEnum.BLOCDED: -1,
 }
 
 
@@ -276,7 +276,8 @@ class CommunityOptionEnum(StringChoiceEnum):
         "threshold_clustering",
         "Developed for semantic similarity networks, this algorithm specifically targets weighted and directed graphs.",
     )
-    NODE_SIMILARITY = ("df_node_similarity", "DF")
+
+    BLOCD = ("blocd", "BLOCD")
 
 
 class NetworkAnalysisOptionEnum(StringChoiceEnum):

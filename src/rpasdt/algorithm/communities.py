@@ -6,14 +6,13 @@ import networkx as nx
 from cdlib import algorithms
 from networkx import Graph
 
+# noqa: F401
 from rpasdt.algorithm.taxonomies import CommunityOptionEnum
 from rpasdt.common.utils import (
     get_enum,
     get_function_default_kwargs,
     get_object_value,
 )
-# noqa: F401
-from rpasdt.algorithm.df_community import df_node_similarity
 
 thismodule = sys.modules[__name__]
 NUMBER_OF_COMMUNITIES_KWARG_NAMES = ["k", "number_communities", "level"]

@@ -33,7 +33,7 @@ METHOD_NAMES = {
     "walktrap": "WP",
     "spectral": "SPL",
     "sbm_dl": "SBM",
-    "df_node_similarity": "BLOCD",
+    "blocd": "BLOCD",
 }
 NETWORK_NAME = {
     "facebook": "Facebook",
@@ -202,10 +202,10 @@ communities = [
     CommunityOptionEnum.SURPRISE_COMMUNITIES,
     CommunityOptionEnum.WALKTRAP,
     CommunityOptionEnum.SPECTRAL,
-    CommunityOptionEnum.NODE_SIMILARITY,
+    CommunityOptionEnum.BLOCD,
     # CommunityOptionEnum.SBM_DL,
 ]
-communities = [CommunityOptionEnum.NODE_SIMILARITY]
+communities = [CommunityOptionEnum.BLOCD]
 # LN
 # GN
 # LV
@@ -237,14 +237,14 @@ METHOD_NAMES = {
 
 communities = [
     CommunityOptionEnum.LEIDEN,
-    CommunityOptionEnum.EIGENVECTOR,
+    # CommunityOptionEnum.EIGENVECTOR,
     CommunityOptionEnum.LOUVAIN,
     CommunityOptionEnum.GREEDY_MODULARITY,
     CommunityOptionEnum.LABEL_PROPAGATION,
     CommunityOptionEnum.INFOMAP,
     CommunityOptionEnum.SURPRISE_COMMUNITIES,
     CommunityOptionEnum.WALKTRAP,
-    CommunityOptionEnum.NODE_SIMILARITY,
+    CommunityOptionEnum.BLOCD,
 ]
 sources_number = [0.001, 0.01, 0.1]
 # sources_number = [0.1]
