@@ -2,6 +2,11 @@
 
 RP&SDT - Rumour propagation and source detection toolkit.
 
+If you use _RP&SDT_ as support to your research consider citing:
+
+`D. Frąszczak. RPaSDT - Rumor Propagation and Source Detection Toolkit. SoftwareX. 2022. DOI:10.1016/j.softx.2022.100988`
+
+
 ## Documentation
 
 Documentation is available [here](https://rpasdt.readthedocs.io/en/latest/).
