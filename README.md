@@ -6,6 +6,7 @@ If you use _RP&SDT_ as support to your research consider citing:
 
 `D. Frąszczak. RPaSDT - Rumor Propagation and Source Detection Toolkit. SoftwareX. 2022. DOI:10.1016/j.softx.2022.100988`
 
+[RG Paper](https://www.researchgate.net/publication/358197265_RPaSDT_-_Rumor_Propagation_and_Source_Detection_Toolkit?_tp=eyJjb250ZXh0Ijp7ImZpcnN0UGFnZSI6InByb2ZpbGUiLCJwYWdlIjoic2VhcmNoIiwicG9zaXRpb24iOiJwYWdlSGVhZGVyIn19)
 
 ## Documentation
 
